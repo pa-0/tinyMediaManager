@@ -51,6 +51,7 @@ import org.tinymediamanager.scraper.exceptions.HttpException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMediaProvider;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkTypeRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkTypeResponse;
 import org.tinymediamanager.scraper.thetvdb.entities.Character;
@@ -372,7 +373,7 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
    *          the {@link ArtworkBaseRecord} from TVDB
    * @return the parsed {@link MediaArtwork}
    */
-  protected MediaArtwork parseArtwork(ArtworkBaseRecord image) {
+  protected MediaArtwork parseArtwork(ArtworkExtendedRecord image) {
     if (image.id == null) {
       return null;
     }
@@ -444,8 +445,8 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
     }
 
     // get the season number
-    if ((ma.getType() == SEASON_BANNER || ma.getType() == SEASON_POSTER || ma.getType() == SEASON_THUMB) && image.season != null) {
-      ma.setSeason(image.season);
+    if ((ma.getType() == SEASON_BANNER || ma.getType() == SEASON_POSTER || ma.getType() == SEASON_THUMB) && image.seasonId != null) {
+      ma.setSeason(image.seasonId);
     }
 
     return ma;

@@ -24,6 +24,18 @@ public class EpisodeBaseRecord {
   @SerializedName("aired")
   public String                 aired                = null;
 
+  @SerializedName("airsAfterSeason")
+  public Integer                airsAfterSeason      = null;
+
+  @SerializedName("airsBeforeEpisode")
+  public Integer                airsBeforeEpisode    = null;
+
+  @SerializedName("airsBeforeSeason")
+  public Integer                airsBeforeSeason     = null;
+
+  @SerializedName("finaleType")
+  public String                 finaleType           = null;
+
   @SerializedName("id")
   public Integer                id                   = null;
 
@@ -34,7 +46,13 @@ public class EpisodeBaseRecord {
   public Integer                imageType            = null;
 
   @SerializedName("isMovie")
-  public Integer                isMovie              = null;
+  public Long                   isMovie              = null;
+
+  @SerializedName("lastUpdated")
+  public String                 lastUpdated          = null;
+
+  @SerializedName("linkedMovie")
+  public Integer                linkedMovie          = null;
 
   @SerializedName("name")
   public String                 name                 = null;
@@ -45,6 +63,9 @@ public class EpisodeBaseRecord {
   @SerializedName("nameTranslations")
   public List<String>           nameTranslations     = null;
 
+  @SerializedName("number")
+  public Integer                number               = null;
+
   @SerializedName("overview")
   public String                 overview             = null;
 
@@ -54,15 +75,18 @@ public class EpisodeBaseRecord {
   @SerializedName("runtime")
   public Integer                runtime              = null;
 
+  @SerializedName("seasonNumber")
+  public Integer                seasonNumber         = null;
+
   @SerializedName("seasons")
   public List<SeasonBaseRecord> seasons              = null;
 
   @SerializedName("seriesId")
   public Integer                seriesId             = null;
 
-  @SerializedName("number")
-  public Integer                episodeNumber        = null;
+  @SerializedName("seasonName")
+  public String                 seasonName           = null;
 
-  @SerializedName("seasonNumber")
-  public Integer                seasonNumber         = null;
+  @SerializedName("year")
+  public String                 year                 = null;
 }

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.tinymediamanager.scraper.exceptions.HttpException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMovieArtworkProvider;
-import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.MovieExtendedResponse;
 
 import retrofit2.Response;
@@ -47,8 +47,8 @@ public class TheTvDbMovieArtworkProvider extends TheTvDbArtworkProvider implemen
   }
 
   @Override
-  protected List<ArtworkBaseRecord> fetchArtwork(int id) throws ScrapeException {
-    List<ArtworkBaseRecord> images = new ArrayList<>();
+  protected List<ArtworkExtendedRecord> fetchArtwork(int id) throws ScrapeException {
+    List<ArtworkExtendedRecord> images = new ArrayList<>();
     try {
       // get all types of artwork we can get
       Response<MovieExtendedResponse> response = tvdb.getMoviesService().getMovieExtended(id).execute();

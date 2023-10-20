@@ -89,7 +89,7 @@ public class ITTheTvDbApiTest extends BasicITest {
     assertThat(response.data.number).isEqualTo(1);
     assertThat(response.data.seriesId).isEqualTo(79335);
     assertThat(response.data.episodes).isNotEmpty();
-    assertThat(response.data.episodes.get(0).episodeNumber).isEqualTo(1);
+    assertThat(response.data.episodes.get(0).number).isEqualTo(1);
     assertThat(response.data.episodes.get(0).seasonNumber).isEqualTo(1);
   }
 
@@ -97,7 +97,7 @@ public class ITTheTvDbApiTest extends BasicITest {
   public void testEpisodesBase() throws Exception {
     EpisodeBaseResponse response = theTvDbController.getEpisodesService().getEpisodeBase(307497).execute().body();
     assertThat(response.data).isNotNull();
-    assertThat(response.data.episodeNumber).isEqualTo(1);
+    assertThat(response.data.number).isEqualTo(1);
     assertThat(response.data.seasonNumber).isEqualTo(1);
   }
 
@@ -105,7 +105,7 @@ public class ITTheTvDbApiTest extends BasicITest {
   public void testEpisodesExtended() throws Exception {
     EpisodeExtendedResponse response = theTvDbController.getEpisodesService().getEpisodeExtended(307497).execute().body();
     assertThat(response.data).isNotNull();
-    assertThat(response.data.episodeNumber).isEqualTo(1);
+    assertThat(response.data.number).isEqualTo(1);
     assertThat(response.data.seasonNumber).isEqualTo(1);
   }
 }

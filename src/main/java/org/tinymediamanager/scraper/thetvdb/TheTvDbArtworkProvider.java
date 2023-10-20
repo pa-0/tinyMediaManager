@@ -26,6 +26,7 @@ import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMediaArtworkProvider;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
 import org.tinymediamanager.scraper.util.LanguageUtils;
 import org.tinymediamanager.scraper.util.ListUtils;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
@@ -69,7 +70,7 @@ public abstract class TheTvDbArtworkProvider extends TheTvDbMetadataProvider imp
     }
 
     // get artwork from thetvdb
-    List<ArtworkBaseRecord> images = fetchArtwork(id);
+    List<ArtworkExtendedRecord> images = fetchArtwork(id);
 
     if (ListUtils.isEmpty(images)) {
       return artwork;
@@ -79,7 +80,7 @@ public abstract class TheTvDbArtworkProvider extends TheTvDbMetadataProvider imp
     images.sort(new TheTvDbArtworkProvider.ImageComparator(LanguageUtils.getIso3Language(options.getLanguage().toLocale())));
 
     // get base show artwork
-    for (ArtworkBaseRecord image : images) {
+    for (ArtworkExtendedRecord image : images) {
       MediaArtwork ma = parseArtwork(image);
 
       if (ma == null) {
@@ -103,12 +104,12 @@ public abstract class TheTvDbArtworkProvider extends TheTvDbMetadataProvider imp
    * @throws ScrapeException
    *           any exception occurred while scraping
    */
-  protected abstract List<ArtworkBaseRecord> fetchArtwork(int id) throws ScrapeException;
+  protected abstract List<ArtworkExtendedRecord> fetchArtwork(int id) throws ScrapeException;
 
   /**********************************************************************
    * local helper classes
    **********************************************************************/
-  protected static class ImageComparator implements Comparator<ArtworkBaseRecord> {
+  protected static class ImageComparator implements Comparator<ArtworkExtendedRecord> {
     private final String preferredLangu;
     private final String english;
 
@@ -121,7 +122,7 @@ public abstract class TheTvDbArtworkProvider extends TheTvDbMetadataProvider imp
      * sort artwork: primary by language: preferred lang (ie de), en, others; then: score
      */
     @Override
-    public int compare(ArtworkBaseRecord arg0, ArtworkBaseRecord arg1) {
+    public int compare(ArtworkExtendedRecord arg0, ArtworkExtendedRecord arg1) {
       if (preferredLangu.equals(arg0.language) && !preferredLangu.equals(arg1.language)) {
         return -1;
       }
@@ -145,7 +146,7 @@ public abstract class TheTvDbArtworkProvider extends TheTvDbMetadataProvider imp
 
       if (arg0.score != null && arg1.score != null) {
         // swap arg0 and arg1 to sort reverse
-        result = Long.compare(arg1.score, arg0.score);
+        result = arg1.score.compareTo(arg0.score);
       }
 
       // if the result is still 0, we need to compare by ID (returning a zero here will treat it as a duplicate and remove the previous one)

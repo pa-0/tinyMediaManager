@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2023 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package org.tinymediamanager.scraper.thetvdb;
 
 import static org.tinymediamanager.scraper.MediaMetadata.TVDB;
-import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.AIRED;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.ABSOLUTE;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.AIRED;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.DVD;
 
+import java.io.IOException;
 import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -59,9 +60,9 @@ import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMediaIdProvider;
 import org.tinymediamanager.scraper.interfaces.ITvShowMetadataProvider;
 import org.tinymediamanager.scraper.interfaces.ITvShowTvdbMetadataProvider;
-import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkTypeRecord;
-import org.tinymediamanager.scraper.thetvdb.entities.CompanyBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.Company;
 import org.tinymediamanager.scraper.thetvdb.entities.ContentRating;
 import org.tinymediamanager.scraper.thetvdb.entities.EpisodeBaseRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.EpisodeExtendedRecord;
@@ -100,8 +101,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
   private static final CacheMap<String, List<MediaMetadata>> EPISODE_LIST_CACHE_MAP = new CacheMap<>(600, 5);
   private static final CacheMap<String, MediaMetadata>       EPISODE_CACHE_MAP      = new CacheMap<>(600, 5);
 
-  private static final MediaEpisodeGroup                     ALTERNATE              = new MediaEpisodeGroup(
-      MediaEpisodeGroup.EpisodeGroupType.ALTERNATE);
+  private static final MediaEpisodeGroup                     ALTERNATE              = new MediaEpisodeGroup(MediaEpisodeGroup.EpisodeGroup.ALTERNATE);
 
   @Override
   protected MediaProviderInfo createMediaProviderInfo() {
@@ -109,7 +109,6 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
 
     info.getConfig().addText("apiKey", "", true);
     info.getConfig().addText("pin", "", true);
-    info.getConfig().addBoolean("scrapeLanguageNames", true);
 
     ArrayList<String> fallbackLanguages = new ArrayList<>();
     for (MediaLanguages mediaLanguages : MediaLanguages.values()) {
@@ -196,7 +195,9 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
 
     // populate metadata
     md.setId(getId(), show.id);
-    parseRemoteIDs(show.remoteIds).forEach(md::setId);
+    parseRemoteIDs(show.remoteIds).forEach((k, v) -> {
+      md.setId(k, v);
+    });
 
     if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.name)) {
       md.setTitle(baseTranslation.name);
@@ -249,22 +250,6 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     }
 
     md.setRuntime(MetadataUtil.unboxInteger(show.averageRuntime, 0));
-    if (show.originalCountry != null) {
-      if (Boolean.TRUE.equals(getProviderInfo().getConfig().getValueAsBool("scrapeLanguageNames"))) {
-        md.addCountry(LanguageUtils.getLocalizedCountryForLanguage(options.getLanguage().toLocale(), show.originalCountry));
-      }
-      else {
-        md.addCountry(show.originalCountry);
-      }
-    }
-    if (show.originalLanguage != null) {
-      if (Boolean.TRUE.equals(getProviderInfo().getConfig().getValueAsBool("scrapeLanguageNames"))) {
-        md.setOriginalLanguage(LanguageUtils.getLocalizedLanguageNameFromLocalizedString(options.getLanguage().toLocale(), show.originalLanguage));
-      }
-      else {
-        md.setOriginalLanguage(show.originalLanguage);
-      }
-    }
 
     // scrape networks before all other production companies
     if (show.originalNetwork != null) {
@@ -273,7 +258,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     if (show.latestNetwork != null) {
       md.addProductionCompany(show.latestNetwork.name);
     }
-    for (CompanyBaseRecord company : ListUtils.nullSafe(show.companies)) {
+    for (Company company : ListUtils.nullSafe(show.companies)) {
       md.addProductionCompany(company.name);
     }
 
@@ -298,58 +283,71 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       }
     }
 
-    // episode groups
-    for (SeasonBaseRecord seasonBaseRecord : ListUtils.nullSafe(show.seasons)) {
-      MediaEpisodeGroup.EpisodeGroupType episodeGroupType = mapEpisodeGroup(seasonBaseRecord.type.type);
-      if (episodeGroupType != null) {
-        MediaEpisodeGroup mediaEpisodeGroup = new MediaEpisodeGroup(episodeGroupType, seasonBaseRecord.type.name);
-        md.addEpisodeGroup(mediaEpisodeGroup);
-
-        // season names/plot
-        baseTranslation = null;
-        fallbackTranslation = null;
-        try {
-          Response<TranslationResponse> translationResponse = null;
-          if (fakeListToList(seasonBaseRecord.nameTranslations).contains(baseLanguage)
-              || fakeListToList(seasonBaseRecord.overviewTranslations).contains(baseLanguage)) {
-            translationResponse = tvdb.getSeasonsService().getSeasonTranslation(seasonBaseRecord.id, baseLanguage).execute();
-            if (translationResponse.isSuccessful()) {
-              baseTranslation = translationResponse.body().data;
-            }
-          }
-          // also get fallback is either title or overview of the base translation is missing
-          if ((baseTranslation == null || StringUtils.isAnyBlank(baseTranslation.name, baseTranslation.overview))
-              && (fakeListToList(seasonBaseRecord.nameTranslations).contains(fallbackLanguage)
-                  || fakeListToList(seasonBaseRecord.overviewTranslations).contains(fallbackLanguage))) {
-            translationResponse = tvdb.getSeasonsService().getSeasonTranslation(seasonBaseRecord.id, fallbackLanguage).execute();
-            if (translationResponse.isSuccessful()) {
-              fallbackTranslation = translationResponse.body().data;
-            }
-          }
-          // season title
-          if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.name)) {
-            md.addSeasonName(mediaEpisodeGroup, seasonBaseRecord.number, baseTranslation.name);
-          }
-          else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.name)) {
-            md.addSeasonName(mediaEpisodeGroup, seasonBaseRecord.number, fallbackTranslation.name);
-          }
-          // season overview
-          if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.overview)) {
-            md.addSeasonOverview(mediaEpisodeGroup, seasonBaseRecord.number, baseTranslation.overview);
-          }
-          else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.overview)) {
-            md.addSeasonOverview(mediaEpisodeGroup, seasonBaseRecord.number, fallbackTranslation.overview);
+    // season names/plot
+    for (SeasonBaseRecord season : show.seasons) {
+      baseTranslation = null;
+      fallbackTranslation = null;
+      try {
+        Response<TranslationResponse> translationResponse = null;
+        if (fakeListToList(season.nameTranslations).contains(baseLanguage) || fakeListToList(season.overviewTranslations).contains(baseLanguage)) {
+          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(season.id, baseLanguage).execute();
+          if (translationResponse.isSuccessful()) {
+            baseTranslation = translationResponse.body().data;
           }
         }
-        catch (Exception e) {
-          LOGGER.error("failed to get season meta data: {}", e.getMessage());
-          throw new ScrapeException(e);
+        // also get fallback is either title or overview of the base translation is missing
+        if ((baseTranslation == null || StringUtils.isAnyBlank(baseTranslation.name, baseTranslation.overview))
+            && (fakeListToList(season.nameTranslations).contains(fallbackLanguage)
+                || fakeListToList(season.overviewTranslations).contains(fallbackLanguage))) {
+          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(season.id, fallbackLanguage).execute();
+          if (translationResponse.isSuccessful()) {
+            fallbackTranslation = translationResponse.body().data;
+          }
+        }
+        // season title
+        if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.name)) {
+          md.addSeasonName(season.number, baseTranslation.name);
+        }
+        else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.overview)) {
+          md.addSeasonName(season.number, fallbackTranslation.name);
+        }
+        // season overview
+        if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.overview)) {
+          md.addSeasonOverview(season.number, baseTranslation.overview);
+        }
+        else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.overview)) {
+          md.addSeasonOverview(season.number, fallbackTranslation.overview);
+        }
+      }
+      catch (IOException e) {
+        LOGGER.error("failed to get season meta data: {}", e.getMessage());
+        throw new ScrapeException(e);
+      }
+
+    }
+
+    // episode groups
+    for (SeasonTypeRecord seasonTypeRecord : ListUtils.nullSafe(show.seasonTypes)) {
+      boolean seasonAvailable = false;
+
+      // first check, if there is any episode mapped in this season type
+      for (SeasonBaseRecord seasonBaseRecord : ListUtils.nullSafe(show.seasons)) {
+        if (seasonBaseRecord.type.type == seasonTypeRecord.type) {
+          seasonAvailable = true;
+          break;
+        }
+      }
+
+      if (seasonAvailable) {
+        MediaEpisodeGroup.EpisodeGroup episodeGroup = mapEpisodeGroup(seasonTypeRecord.type);
+        if (episodeGroup != null) {
+          md.addEpisodeGroup(new MediaEpisodeGroup(episodeGroup, seasonTypeRecord.name));
         }
       }
     }
 
     // artwork
-    for (ArtworkBaseRecord artworkBaseRecord : ListUtils.nullSafe(show.artworks)) {
+    for (ArtworkExtendedRecord artworkBaseRecord : ListUtils.nullSafe(show.artworks)) {
       MediaArtwork mediaArtwork = parseArtwork(artworkBaseRecord);
       if (mediaArtwork != null) {
         md.addMediaArt(mediaArtwork);
@@ -371,7 +369,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       return ret;
     }
     for (String entry : entries) {
-      ret.addAll(Stream.of(entry.split(",", -1)).toList());
+      ret.addAll(Stream.of(entry.split(",", -1)).collect(Collectors.toList()));
     }
     return ret;
   }
@@ -393,31 +391,14 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
 
     int episodeTvdbId = options.getIdAsIntOrDefault(TVDB, 0);
 
+    // get episode number and season number
+    int seasonNr = options.getIdAsIntOrDefault(MediaMetadata.SEASON_NR, -1);
+    int episodeNr = options.getIdAsIntOrDefault(MediaMetadata.EPISODE_NR, -1);
     MediaEpisodeGroup episodeGroup = options.getEpisodeGroup();
 
-    // get episode number and season number
-    int seasonNr = -1;
-    int episodeNr = -1;
-    // new style
-    if (options.getIds().get(MediaMetadata.EPISODE_NR) instanceof List<?> episodeNumbers) {
-      for (Object obj : episodeNumbers) {
-        if (obj instanceof MediaEpisodeNumber episodeNumber && episodeNumber.episodeGroup() == episodeGroup) {
-          episodeNr = episodeNumber.episode();
-          seasonNr = episodeNumber.season();
-          break;
-        }
-      }
-    }
-
-    // old style
-    if (seasonNr == -1 && episodeNr == -1) {
-      seasonNr = options.getIdAsIntOrDefault(MediaMetadata.SEASON_NR, -1);
-      episodeNr = options.getIdAsIntOrDefault(MediaMetadata.EPISODE_NR, -1);
-    }
-
-    LocalDate releaseDate = null;
+    Date releaseDate = null;
     if (options.getMetadata() != null && options.getMetadata().getReleaseDate() != null) {
-      releaseDate = LocalDate.ofInstant(options.getMetadata().getReleaseDate().toInstant(), ZoneId.systemDefault());
+      releaseDate = options.getMetadata().getReleaseDate();
     }
     if (releaseDate == null && (seasonNr == -1 || episodeNr == -1) && episodeTvdbId == 0) {
       LOGGER.warn("no aired date/season number/episode number found");
@@ -443,7 +424,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     if (foundEpisode == null) {
       for (MediaMetadata episode : episodes) {
         MediaEpisodeNumber episodeNumber = episode.getEpisodeNumber(episodeGroup);
-        if (episodeNumber == null && episodeGroup.getEpisodeGroupType() == AIRED) {
+        if (episodeNumber == null && episodeGroup.getEpisodeGroup() == AIRED) {
           // legacy
           episodeNumber = episode.getEpisodeNumber(AIRED);
         }
@@ -458,12 +439,9 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     if (foundEpisode == null && releaseDate != null) {
       // we did not find the episode via season/episode number - search via release date
       for (MediaMetadata episode : episodes) {
-        if (episode.getReleaseDate() != null) {
-          LocalDate epdate = LocalDate.ofInstant(episode.getReleaseDate().toInstant(), ZoneId.systemDefault());
-          if (epdate.equals(releaseDate)) {
-            foundEpisode = episode;
-            break;
-          }
+        if (episode.getReleaseDate() == releaseDate) {
+          foundEpisode = episode;
+          break;
         }
       }
     }
@@ -505,9 +483,17 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     MediaMetadata md = new MediaMetadata(getId());
     md.setScrapeOptions(options);
     md.setId(getId(), episode.id);
-    parseRemoteIDs(episode.remoteIDs).forEach(md::setId);
+    parseRemoteIDs(episode.remoteIds).forEach((k, v) -> {
+      md.setId(k, v);
+    });
 
-    md.setEpisodeNumbers(foundEpisode.getEpisodeNumbers());
+    md.setEpisodeNumber(new MediaEpisodeNumber(MediaEpisodeGroup.DEFAULT_AIRED, episode.seasonNumber, episode.number));
+    if (foundEpisode.getEpisodeNumber(DVD) != null) {
+      md.setEpisodeNumber(foundEpisode.getEpisodeNumber(DVD));
+    }
+    if (foundEpisode.getEpisodeNumber(ABSOLUTE) != null) {
+      md.setEpisodeNumber(foundEpisode.getEpisodeNumber(ABSOLUTE));
+    }
 
     if (MetadataUtil.unboxInteger(episode.airsBeforeSeason, -1) > -1 || MetadataUtil.unboxInteger(episode.airsBeforeEpisode, -1) > -1) {
       md.setEpisodeNumber(MediaEpisodeGroup.DEFAULT_DISPLAY, MetadataUtil.unboxInteger(episode.airsBeforeSeason),
@@ -695,20 +681,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
           result.setOverview(searchResultRecord.overview);
         }
       }
-      int year = MetadataUtil.parseInt(searchResultRecord.year, 0);
-      result.setYear(year);
-      // we do the same in getMetadata, do it also here to improve search result score calculation!
-      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
-        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
-        result.setTitle(clearYearFromTitle(result.getTitle(), year));
-      }
-      // same, but with search year; eg "Battlestar Galactica (2003), from 2005"
-      year = options.getSearchYear();
-      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
-        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
-        result.setTitle(clearYearFromTitle(result.getTitle(), year));
-      }
-
+      result.setYear(MetadataUtil.parseInt(searchResultRecord.year, 0));
       result.setPosterUrl(searchResultRecord.imageUrl);
 
       // calculate score
@@ -782,7 +755,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       // now merge all episode records by the ids (to merge the different episode numbers)
       Map<Integer, MediaMetadata> episodeMap = new HashMap<>();
 
-      for (var entry : eps.entrySet()) {
+      for (Map.Entry<MediaEpisodeGroup, List<EpisodeBaseRecord>> entry : eps.entrySet()) {
         MediaEpisodeGroup episodeGroup = entry.getKey();
         for (EpisodeBaseRecord ep : entry.getValue()) {
           MediaMetadata fromMap = episodeMap.get(ep.id);
@@ -790,7 +763,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
             MediaMetadata episode = new MediaMetadata(getProviderInfo().getId());
             episode.setScrapeOptions(options);
             episode.setId(getProviderInfo().getId(), ep.id);
-            episode.setEpisodeNumber(episodeGroup, ep.seasonNumber, ep.episodeNumber);
+            episode.setEpisodeNumber(episodeGroup, ep.seasonNumber, ep.number);
             episode.setTitle(ep.name);
             episode.setPlot(ep.overview);
             episode.setRuntime(ep.runtime);
@@ -805,7 +778,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
             episodeMap.put(MetadataUtil.unboxInteger(ep.id), episode);
           }
           else {
-            fromMap.setEpisodeNumber(episodeGroup, ep.seasonNumber, ep.episodeNumber);
+            fromMap.setEpisodeNumber(episodeGroup, ep.seasonNumber, ep.number);
           }
         }
       }
@@ -1036,26 +1009,22 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       }
       if (StringUtils.isBlank(toInject.name)) {
         // still empty? we never got anything from TVDB, so add the same fallback as in TMDB
-        toInject.name = "Episode " + toInject.episodeNumber;
+        toInject.name = "Episode " + toInject.number;
       }
 
       if (StringUtils.isBlank(toInject.originalName)) {
         // still empty? we never got anything from TVDB, so add the same fallback as in TMDB
-        toInject.originalName = "Episode " + toInject.episodeNumber;
+        toInject.originalName = "Episode " + toInject.number;
       }
     }
   }
 
-  private MediaEpisodeGroup.EpisodeGroupType mapEpisodeGroup(SeasonType type) {
-    if (type == null) {
-      return null;
-    }
-
+  private MediaEpisodeGroup.EpisodeGroup mapEpisodeGroup(SeasonType type) {
     return switch (type) {
-      case DEFAULT, OFFICIAL -> MediaEpisodeGroup.EpisodeGroupType.AIRED;
-      case ABSOLUTE -> MediaEpisodeGroup.EpisodeGroupType.ABSOLUTE;
-      case DVD -> MediaEpisodeGroup.EpisodeGroupType.DVD;
-      case ALTERNATE, REGIONAL -> MediaEpisodeGroup.EpisodeGroupType.ALTERNATE;
+      case DEFAULT, OFFICIAL -> MediaEpisodeGroup.EpisodeGroup.AIRED;
+      case ABSOLUTE -> MediaEpisodeGroup.EpisodeGroup.ABSOLUTE;
+      case DVD -> MediaEpisodeGroup.EpisodeGroup.DVD;
+      case ALTERNATE, REGIONAL -> MediaEpisodeGroup.EpisodeGroup.ALTERNATE;
     };
   }
 }

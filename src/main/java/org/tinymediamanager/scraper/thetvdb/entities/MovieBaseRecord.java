@@ -24,13 +24,16 @@ public class MovieBaseRecord {
   public List<Alias>  aliases              = null;
 
   @SerializedName("id")
-  public Integer      id                   = null;
+  public Long         id                   = null;
 
   @SerializedName("image")
   public String       image                = null;
 
+  @SerializedName("lastUpdated")
+  public String       lastUpdated          = null;
+
   @SerializedName("name")
-  public Object       name                 = null;
+  public String       name                 = null;
 
   @SerializedName("nameTranslations")
   public List<String> nameTranslations     = null;
@@ -46,4 +49,10 @@ public class MovieBaseRecord {
 
   @SerializedName("status")
   public Status       status               = null;
+
+  @SerializedName("runtime")
+  public Integer      runtime              = null;
+
+  @SerializedName("year")
+  public String       year                 = null;
 }

@@ -16,20 +16,16 @@
 
 package org.tinymediamanager.scraper.thetvdb.entities;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
 public class SeasonExtendedRecord {
-  @SerializedName("abbreviation")
-  public String                  abbreviation         = null;
-
   @SerializedName("artwork")
   public List<ArtworkBaseRecord> artwork              = null;
 
-  @SerializedName("country")
-  public String                  country              = null;
+  @SerializedName("companies")
+  public Companies               companies            = null;
 
   @SerializedName("episodes")
   public List<EpisodeBaseRecord> episodes             = null;
@@ -41,7 +37,10 @@ public class SeasonExtendedRecord {
   public String                  image                = null;
 
   @SerializedName("imageType")
-  public BigDecimal              imageType            = null;
+  public Integer                 imageType            = null;
+
+  @SerializedName("lastUpdated")
+  public String                  lastUpdated          = null;
 
   @SerializedName("name")
   public String                  name                 = null;
@@ -58,12 +57,18 @@ public class SeasonExtendedRecord {
   @SerializedName("seriesId")
   public Integer                 seriesId             = null;
 
-  @SerializedName("slug")
-  public String                  slug                 = null;
-
   @SerializedName("trailers")
   public List<Trailer>           trailers             = null;
 
   @SerializedName("type")
-  public SeasonTypeRecord        type                 = null;
+  public SeasonType              type                 = null;
+
+  @SerializedName("tagOptions")
+  public List<TagOption>         tagOptions           = null;
+
+  @SerializedName("translations")
+  public List<Translation>       translations         = null;
+
+  @SerializedName("year")
+  public String                  year                 = null;
 }

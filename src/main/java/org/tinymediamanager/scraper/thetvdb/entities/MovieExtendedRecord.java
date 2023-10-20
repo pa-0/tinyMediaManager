@@ -21,83 +21,110 @@ import com.google.gson.annotations.SerializedName;
 
 public class MovieExtendedRecord {
   @SerializedName("aliases")
-  public List<Alias>               aliases              = null;
+  public List<Alias>                 aliases              = null;
 
   @SerializedName("artworks")
-  public List<ArtworkBaseRecord>   artworks             = null;
+  public List<ArtworkExtendedRecord> artworks             = null;
 
   @SerializedName("audioLanguages")
-  public List<String>              audioLanguages       = null;
+  public List<String>                audioLanguages       = null;
 
   @SerializedName("awards")
-  public List<AwardBaseRecord>     awards               = null;
+  public List<AwardBaseRecord>       awards               = null;
 
   @SerializedName("boxOffice")
-  public String                    boxOffice            = null;
+  public String                      boxOffice            = null;
+
+  @SerializedName("boxOfficeUS")
+  public String                      boxOfficeUS          = null;
 
   @SerializedName("budget")
-  public String                    budget               = null;
+  public String                      budget               = null;
 
   @SerializedName("characters")
-  public List<Character>           characters           = null;
+  public List<Character>             characters           = null;
 
   @SerializedName("companies")
-  public Companies                 companies            = null;
+  public Companies                   companies            = null;
 
   @SerializedName("contentRatings")
-  public List<ContentRating>       contentRatings       = null;
+  public List<ContentRating>         contentRatings       = null;
 
-  @SerializedName("franchises")
-  public List<FranchiseBaseRecord> franchises           = null;
+  @SerializedName("first_release")
+  public Release                     firstRelease         = null;
 
   @SerializedName("genres")
-  public List<GenreBaseRecord>     genres               = null;
+  public List<GenreBaseRecord>       genres               = null;
 
   @SerializedName("id")
-  public Integer                   id                   = null;
+  public Long                        id                   = null;
 
   @SerializedName("image")
-  public String                    image                = null;
+  public String                      image                = null;
+
+  @SerializedName("inspirations")
+  public List<Inspiration>           inspirations         = null;
+
+  @SerializedName("lastUpdated")
+  public String                      lastUpdated          = null;
+
+  @SerializedName("lists")
+  public List<ListBaseRecord>        lists                = null;
 
   @SerializedName("name")
-  public String                    name                 = null;
+  public String                      name                 = null;
 
   @SerializedName("nameTranslations")
-  public List<String>              nameTranslations     = null;
+  public List<String>                nameTranslations     = null;
 
   @SerializedName("originalCountry")
-  public String                    originalCountry      = null;
+  public String                      originalCountry      = null;
 
   @SerializedName("originalLanguage")
-  public String                    originalLanguage     = null;
+  public String                      originalLanguage     = null;
 
   @SerializedName("overviewTranslations")
-  public List<String>              overviewTranslations = null;
+  public List<String>                overviewTranslations = null;
+
+  @SerializedName("production_countries")
+  public List<ProductionCountry>     productionCountries  = null;
 
   @SerializedName("releases")
-  public List<Release>             releases             = null;
+  public List<Release>               releases             = null;
 
   @SerializedName("remoteIds")
-  public List<RemoteID>            remoteIds            = null;
+  public List<RemoteID>              remoteIds            = null;
 
   @SerializedName("runtime")
-  public Integer                   runtime              = null;
+  public Integer                     runtime              = null;
 
   @SerializedName("score")
-  public Double                    score                = null;
+  public Double                      score                = null;
 
   @SerializedName("slug")
-  public String                    slug                 = null;
+  public String                      slug                 = null;
+
+  @SerializedName("spoken_languages")
+  public List<String>                spokenLanguages      = null;
 
   @SerializedName("status")
-  public Status                    status               = null;
+  public Status                      status               = null;
 
   @SerializedName("studios")
-  public List<StudioBaseRecord>    studios              = null;
+  public List<StudioBaseRecord>      studios              = null;
 
   @SerializedName("subtitleLanguages")
-  public List<String>              subtitleLanguages    = null;
+  public List<String>                subtitleLanguages    = null;
+
+  @SerializedName("tagOptions")
+  public List<TagOption>             tagOptions           = null;
 
   @SerializedName("trailers")
-  public List<Trailer>             trailers             = null;
+  public List<Trailer>               trailers             = null;
+
+  @SerializedName("translations")
+  public TranslationExtended         translations         = null;
+
+  @SerializedName("year")
+  public String                      year                 = null;
 }

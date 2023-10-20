@@ -21,12 +21,6 @@ import java.util.List;
 import com.google.gson.annotations.SerializedName;
 
 public class SeasonBaseRecord {
-  @SerializedName("abbreviation")
-  public String           abbreviation         = null;
-
-  @SerializedName("country")
-  public String           country              = null;
-
   @SerializedName("id")
   public Integer          id                   = null;
 
@@ -35,6 +29,9 @@ public class SeasonBaseRecord {
 
   @SerializedName("imageType")
   public Integer          imageType            = null;
+
+  @SerializedName("lastUpdated")
+  public String           lastUpdated          = null;
 
   @SerializedName("name")
   public String           name                 = null;
@@ -48,12 +45,15 @@ public class SeasonBaseRecord {
   @SerializedName("overviewTranslations")
   public List<String>     overviewTranslations = null;
 
-  @SerializedName("seriesId")
-  public Integer          seriesId             = null;
+  @SerializedName("companies")
+  public Companies        companies            = null;
 
-  @SerializedName("slug")
-  public String           slug                 = null;
+  @SerializedName("seriesId")
+  public Long             seriesId             = null;
 
   @SerializedName("type")
   public SeasonTypeRecord type                 = null;
+
+  @SerializedName("year")
+  public String           year                 = null;
 }

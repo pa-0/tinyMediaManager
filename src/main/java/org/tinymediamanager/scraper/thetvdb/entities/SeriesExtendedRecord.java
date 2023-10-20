@@ -21,101 +21,119 @@ import com.google.gson.annotations.SerializedName;
  */
 public class SeriesExtendedRecord {
   @SerializedName("abbreviation")
-  public String                    abbreviation         = null;
+  public String                      abbreviation         = null;
 
   @SerializedName("airsDays")
-  public SeriesAirsDays            airsDays             = null;
+  public SeriesAirsDays              airsDays             = null;
 
   @SerializedName("airsTime")
-  public String                    airsTime             = null;
+  public String                      airsTime             = null;
 
   @SerializedName("aliases")
-  public List<Alias>               aliases              = null;
+  public List<Alias>                 aliases              = null;
 
   @SerializedName("artworks")
-  public List<ArtworkBaseRecord>   artworks             = null;
-
-  @SerializedName("characters")
-  public List<Character>           characters           = null;
-
-  @SerializedName("country")
-  public String                    country              = null;
-
-  @SerializedName("defaultSeasonType")
-  public Long                      defaultSeasonType    = null;
-
-  @SerializedName("seasonTypes")
-  public List<SeasonTypeRecord>    seasonTypes          = null;
-
-  @SerializedName("firstAired")
-  public String                    firstAired           = null;
-
-  @SerializedName("franchises")
-  public List<FranchiseBaseRecord> franchises           = null;
-
-  @SerializedName("genres")
-  public List<GenreBaseRecord>     genres               = null;
-
-  @SerializedName("id")
-  public Integer                   id                   = null;
-
-  @SerializedName("image")
-  public String                    image                = null;
-
-  @SerializedName("isOrderRandomized")
-  public Boolean                   isOrderRandomized    = null;
-
-  @SerializedName("lastAired")
-  public String                    lastAired            = null;
-
-  @SerializedName("name")
-  public String                    name                 = null;
-
-  @SerializedName("nameTranslations")
-  public List<String>              nameTranslations     = null;
-
-  @SerializedName("originalNetwork")
-  public CompanyBaseRecord         originalNetwork      = null;
-
-  @SerializedName("latestNetwork")
-  public CompanyBaseRecord         latestNetwork        = null;
-
-  @SerializedName("companies")
-  public List<CompanyBaseRecord>   companies            = null;
-
-  @SerializedName("nextAired")
-  public String                    nextAired            = null;
-
-  @SerializedName("originalCountry")
-  public String                    originalCountry      = null;
-
-  @SerializedName("originalLanguage")
-  public String                    originalLanguage     = null;
-
-  @SerializedName("overviewTranslations")
-  public List<String>              overviewTranslations = null;
-
-  @SerializedName("remoteIds")
-  public List<RemoteID>            remoteIds            = null;
-
-  @SerializedName("score")
-  public Double                    score                = null;
-
-  @SerializedName("seasons")
-  public List<SeasonBaseRecord>    seasons              = null;
-
-  @SerializedName("slug")
-  public String                    slug                 = null;
-
-  @SerializedName("status")
-  public Status                    status               = null;
-
-  @SerializedName("trailers")
-  public List<Trailer>             trailers             = null;
+  public List<ArtworkExtendedRecord> artworks             = null;
 
   @SerializedName("averageRuntime")
-  public Integer                   averageRuntime       = null;
+  public Integer                     averageRuntime       = null;
+
+  @SerializedName("characters")
+  public List<Character>             characters           = null;
 
   @SerializedName("contentRatings")
-  public List<ContentRating>       contentRatings       = null;
+  public List<ContentRating>         contentRatings       = null;
+
+  @SerializedName("country")
+  public String                      country              = null;
+
+  @SerializedName("defaultSeasonType")
+  public Long                        defaultSeasonType    = null;
+
+  @SerializedName("episodes")
+  public List<EpisodeBaseRecord>     episodes             = null;
+
+  @SerializedName("firstAired")
+  public String                      firstAired           = null;
+
+  @SerializedName("lists")
+  public List<ListBaseRecord>        lists                = null;
+
+  @SerializedName("genres")
+  public List<GenreBaseRecord>       genres               = null;
+
+  @SerializedName("id")
+  public Integer                     id                   = null;
+
+  @SerializedName("image")
+  public String                      image                = null;
+
+  @SerializedName("isOrderRandomized")
+  public Boolean                     isOrderRandomized    = null;
+
+  @SerializedName("lastAired")
+  public String                      lastAired            = null;
+
+  @SerializedName("lastUpdated")
+  public String                      lastUpdated          = null;
+
+  @SerializedName("name")
+  public String                      name                 = null;
+
+  @SerializedName("nameTranslations")
+  public List<String>                nameTranslations     = null;
+
+  @SerializedName("companies")
+  public List<Company>               companies            = null;
+
+  @SerializedName("nextAired")
+  public String                      nextAired            = null;
+
+  @SerializedName("originalCountry")
+  public String                      originalCountry      = null;
+
+  @SerializedName("originalLanguage")
+  public String                      originalLanguage     = null;
+
+  @SerializedName("originalNetwork")
+  public Company                     originalNetwork      = null;
+
+  @SerializedName("overview")
+  public String                      overview             = null;
+
+  @SerializedName("latestNetwork")
+  public Company                     latestNetwork        = null;
+
+  @SerializedName("overviewTranslations")
+  public List<String>                overviewTranslations = null;
+
+  @SerializedName("remoteIds")
+  public List<RemoteID>              remoteIds            = null;
+
+  @SerializedName("score")
+  public Double                      score                = null;
+
+  @SerializedName("seasons")
+  public List<SeasonBaseRecord>      seasons              = null;
+
+  @SerializedName("seasonTypes")
+  public List<SeasonTypeRecord>      seasonTypes          = null;
+
+  @SerializedName("slug")
+  public String                      slug                 = null;
+
+  @SerializedName("status")
+  public Status                      status               = null;
+
+  @SerializedName("tags")
+  public List<TagOption>             tags                 = null;
+
+  @SerializedName("trailers")
+  public List<Trailer>               trailers             = null;
+
+  @SerializedName("translations")
+  public TranslationExtended         translations         = null;
+
+  @SerializedName("year")
+  public String                      year                 = null;
 }

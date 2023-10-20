@@ -41,8 +41,8 @@ import org.tinymediamanager.scraper.exceptions.HttpException;
 import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMovieMetadataProvider;
-import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
-import org.tinymediamanager.scraper.thetvdb.entities.CompanyBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.Company;
 import org.tinymediamanager.scraper.thetvdb.entities.ContentRating;
 import org.tinymediamanager.scraper.thetvdb.entities.GenreBaseRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.MovieExtendedRecord;
@@ -422,19 +422,19 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
     md.setRuntime(MetadataUtil.unboxInteger(movie.runtime, 0));
 
     if (movie.companies != null) {
-      for (CompanyBaseRecord baseRecord : ListUtils.nullSafe(movie.companies.production)) {
+      for (Company baseRecord : ListUtils.nullSafe(movie.companies.production)) {
         md.addProductionCompany(baseRecord.name);
       }
-      for (CompanyBaseRecord baseRecord : ListUtils.nullSafe(movie.companies.studio)) {
+      for (Company baseRecord : ListUtils.nullSafe(movie.companies.studio)) {
         md.addProductionCompany(baseRecord.name);
       }
-      for (CompanyBaseRecord baseRecord : ListUtils.nullSafe(movie.companies.network)) {
+      for (Company baseRecord : ListUtils.nullSafe(movie.companies.network)) {
         md.addProductionCompany(baseRecord.name);
       }
-      for (CompanyBaseRecord baseRecord : ListUtils.nullSafe(movie.companies.specialEffects)) {
+      for (Company baseRecord : ListUtils.nullSafe(movie.companies.specialEffects)) {
         md.addProductionCompany(baseRecord.name);
       }
-      for (CompanyBaseRecord baseRecord : ListUtils.nullSafe(movie.companies.distributor)) {
+      for (Company baseRecord : ListUtils.nullSafe(movie.companies.distributor)) {
         md.addProductionCompany(baseRecord.name);
       }
     }
@@ -449,7 +449,7 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
     }
 
     // artwork
-    for (ArtworkBaseRecord artworkBaseRecord : ListUtils.nullSafe(movie.artworks)) {
+    for (ArtworkExtendedRecord artworkBaseRecord : ListUtils.nullSafe(movie.artworks)) {
       MediaArtwork mediaArtwork = parseArtwork(artworkBaseRecord);
       if (mediaArtwork != null) {
         md.addMediaArt(mediaArtwork);

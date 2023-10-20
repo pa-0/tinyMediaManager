@@ -32,7 +32,7 @@ import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.NothingFoundException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.ITvShowArtworkProvider;
-import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
+import org.tinymediamanager.scraper.thetvdb.entities.ArtworkExtendedRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.SeasonBaseRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.SeriesExtendedResponse;
 import org.tinymediamanager.scraper.util.ListUtils;
@@ -58,8 +58,8 @@ public class TheTvDbTvShowArtworkProvider extends TheTvDbArtworkProvider impleme
   }
 
   @Override
-  protected List<ArtworkBaseRecord> fetchArtwork(int id) throws ScrapeException {
-    List<ArtworkBaseRecord> images = new ArrayList<>();
+  protected List<ArtworkExtendedRecord> fetchArtwork(int id) throws ScrapeException {
+    List<ArtworkExtendedRecord> images = new ArrayList<>();
     try {
       // get all types of artwork we can get
       Response<SeriesExtendedResponse> response = tvdb.getSeriesService().getSeriesExtended(id).execute();
@@ -68,24 +68,24 @@ public class TheTvDbTvShowArtworkProvider extends TheTvDbArtworkProvider impleme
       }
 
       if (response.body() != null && response.body().data != null) {
-        for (ArtworkBaseRecord image : ListUtils.nullSafe(response.body().data.artworks)) {
+        for (ArtworkExtendedRecord image : ListUtils.nullSafe(response.body().data.artworks)) {
           // mix in the season number for season artwork
-          if (image.season != null) {
+          if (image.seasonId != null) {
             try {
               SeasonBaseRecord season = response.body().data.seasons.stream()
-                  .filter(seasonBaseRecord -> seasonBaseRecord.id.equals(image.season))
+                  .filter(seasonBaseRecord -> seasonBaseRecord.id.equals(image.seasonId))
                   .findFirst()
                   .orElse(null);
               if (season != null) {
-                image.season = season.number;
+                image.seasonId = season.number;
               }
               else {
-                image.season = null;
+                image.seasonId = null;
               }
             }
             catch (Exception e) {
               // just do not crash
-              image.season = null;
+              image.seasonId = null;
             }
           }
 

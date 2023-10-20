@@ -21,57 +21,66 @@ import java.util.List;
 import com.google.gson.annotations.SerializedName;
 
 public class SeriesBaseRecord {
-  @SerializedName("abbreviation")
-  public String       abbreviation         = null;
-
   @SerializedName("aliases")
-  public List<Alias>  aliases              = null;
+  public List<Alias>             aliases              = null;
+
+  @SerializedName("averageRuntime")
+  public Integer                 averageRuntime       = null;
 
   @SerializedName("country")
-  public String       country              = null;
+  public String                  country              = null;
 
   @SerializedName("defaultSeasonType")
-  public Integer      defaultSeasonType    = null;
+  public Long                    defaultSeasonType    = null;
+
+  @SerializedName("episodes")
+  public List<EpisodeBaseRecord> episodes             = null;
 
   @SerializedName("firstAired")
-  public String       firstAired           = null;
+  public String                  firstAired           = null;
 
   @SerializedName("id")
-  public Integer      id                   = null;
+  public Integer                 id                   = null;
 
   @SerializedName("image")
-  public String       image                = null;
+  public String                  image                = null;
 
   @SerializedName("isOrderRandomized")
-  public Boolean      isOrderRandomized    = null;
+  public Boolean                 isOrderRandomized    = null;
 
   @SerializedName("lastAired")
-  public String       lastAired            = null;
+  public String                  lastAired            = null;
+
+  @SerializedName("lastUpdated")
+  public String                  lastUpdated          = null;
 
   @SerializedName("name")
-  public String       name                 = null;
+  public String                  name                 = null;
 
   @SerializedName("nameTranslations")
-  public List<String> nameTranslations     = null;
+  public List<String>            nameTranslations     = null;
 
   @SerializedName("nextAired")
-  public String       nextAired            = null;
+  public String                  nextAired            = null;
 
   @SerializedName("originalCountry")
-  public String       originalCountry      = null;
+  public String                  originalCountry      = null;
 
   @SerializedName("originalLanguage")
-  public String       originalLanguage     = null;
+  public String                  originalLanguage     = null;
 
   @SerializedName("overviewTranslations")
-  public List<String> overviewTranslations = null;
+  public List<String>            overviewTranslations = null;
 
   @SerializedName("score")
-  public Double       score                = null;
+  public Double                  score                = null;
 
   @SerializedName("slug")
-  public String       slug                 = null;
+  public String                  slug                 = null;
 
   @SerializedName("status")
-  public Status       status               = null;
+  public Status                  status               = null;
+
+  @SerializedName("year")
+  public String                  year                 = null;
 }

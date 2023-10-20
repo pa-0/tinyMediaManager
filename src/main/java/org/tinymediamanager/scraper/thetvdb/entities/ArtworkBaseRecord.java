@@ -20,23 +20,8 @@ import com.google.gson.annotations.SerializedName;
 
 public class ArtworkBaseRecord {
   @SerializedName("id")
-  public Integer id        = null;
+  public Integer id   = null;
 
-  @SerializedName("seasonId")
-  public Integer season    = null;
-
-  @SerializedName("image")
-  public String  image     = null;
-
-  @SerializedName("language")
-  public String  language  = null;
-
-  @SerializedName("score")
-  public Integer score     = null;
-
-  @SerializedName("thumbnail")
-  public String  thumbnail = null;
-
-  @SerializedName("type")
-  public Integer type      = null;
+  @SerializedName("name")
+  public String  name = null;
 }

@@ -21,17 +21,17 @@ import com.google.gson.annotations.SerializedName;
 
 public class Companies {
   @SerializedName("studio")
-  public List<CompanyBaseRecord> studio         = null;
+  public List<Company> studio         = null;
 
   @SerializedName("network")
-  public List<CompanyBaseRecord> network        = null;
+  public List<Company> network        = null;
 
   @SerializedName("production")
-  public List<CompanyBaseRecord> production     = null;
+  public List<Company> production     = null;
 
   @SerializedName("distributor")
-  public List<CompanyBaseRecord> distributor    = null;
+  public List<Company> distributor    = null;
 
-  @SerializedName("specialEffects")
-  public List<CompanyBaseRecord> specialEffects = null;
+  @SerializedName("special_effects")
+  public List<Company> specialEffects = null;
 }
