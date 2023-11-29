@@ -329,12 +329,6 @@ public class MovieEditorDialog extends AbstractEditorDialog {
       taNote.setText(movieToEdit.getNote());
 
       movieSets.addAll(movieToEdit.getMovieSets());
-      Collections.sort(movieSets, new Comparator<MovieSet>() {
-        @Override
-        public int compare(MovieSet m1, MovieSet m2) {
-          return m1.getTitle().compareTo(m2.getTitle());
-        }
-      });
 
       showlinks.addAll(movieToEdit.getShowlinks());
       showlinks.sort(Comparator.naturalOrder());
@@ -786,6 +780,12 @@ public class MovieEditorDialog extends AbstractEditorDialog {
 
         JButton btnRemoveMovieSet = new SquareIconButton(new RemoveMovieSetAction());
         details2Panel.add(btnRemoveMovieSet, "cell 0 4,alignx right");
+
+        JButton btnMoveMovieSetUp = new SquareIconButton(new MoveMovieSetUpAction());
+        details2Panel.add(btnMoveMovieSetUp, "cell 0 4,alignx right");
+
+        JButton btnMoveMovieSetDown = new SquareIconButton(new MoveMovieSetDownAction());
+        details2Panel.add(btnMoveMovieSetDown, "cell 0 4,alignx right");
 
         JButton btnAddShowlink = new SquareIconButton(new AddShowlinkAction());
         details2Panel.add(btnAddShowlink, "cell 0 6,alignx right");
@@ -1902,6 +1902,38 @@ public class MovieEditorDialog extends AbstractEditorDialog {
       List<MovieSet> selectedMovieSets = listMovieSets.getSelectedValuesList();
       for (MovieSet set : selectedMovieSets) {
         movieSets.remove(set);
+      }
+    }
+  }
+
+  private class MoveMovieSetUpAction extends AbstractAction {
+    public MoveMovieSetUpAction() {
+      putValue(SHORT_DESCRIPTION, TmmResourceBundle.getString("movieset.moveup"));
+      putValue(SMALL_ICON, IconManager.ARROW_UP_INV);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      int row = listMovieSets.getSelectedIndex();
+      if (row > 0) {
+        Collections.rotate(movieSets.subList(row - 1, row + 1), 1);
+        listMovieSets.getSelectionModel().setSelectionInterval(row - 1, row - 1);
+      }
+    }
+  }
+
+  private class MoveMovieSetDownAction extends AbstractAction {
+    public MoveMovieSetDownAction() {
+      putValue(SHORT_DESCRIPTION, TmmResourceBundle.getString("movieset.movedown"));
+      putValue(SMALL_ICON, IconManager.ARROW_DOWN_INV);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      int row = listMovieSets.getSelectedIndex();
+      if (row < movieSets.size() - 1) {
+        Collections.rotate(movieSets.subList(row, row + 2), -1);
+        listMovieSets.getSelectionModel().setSelectionInterval(row + 1, row + 1);
       }
     }
   }
