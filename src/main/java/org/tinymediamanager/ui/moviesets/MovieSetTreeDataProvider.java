@@ -136,12 +136,14 @@ public class MovieSetTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
     }
     else if (child.getUserObject() instanceof Movie) {
       Movie movie = (Movie) child.getUserObject();
-      TmmTreeNode node = getNodeFromCache(movie.getMovieSet());
-      // parent movie set not yet added? add it
-      if (node == null && movie.getMovieSet() != null) {
-        node = addMovieSet(movie.getMovieSet());
+      for (MovieSet set : movie.getMovieSets()) {
+        TmmTreeNode node = getNodeFromCache(set);
+        // parent movie set not yet added? add it
+        if (node == null) {
+          node = addMovieSet(set);
+        }
+        return node;
       }
-      return node;
     }
     return null;
   }
@@ -231,12 +233,15 @@ public class MovieSetTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
     TmmTreeNode cachedNode = getNodeFromCache(movie);
     if (cachedNode != null) {
       // cross check if the parent (movie set) has the same node
-      TmmTreeNode parent = getNodeFromCache(movie.getMovieSet());
-      if (parent == cachedNode.getParent()) {
-        return cachedNode;
-      }
-      else {
-        removeNodeFromCache(movie);
+      // FIXME: remove?
+      for (MovieSet set : movie.getMovieSets()) {
+        TmmTreeNode parent = getNodeFromCache(set);
+        if (parent == cachedNode.getParent()) {
+          return cachedNode;
+        }
+        else {
+          // removeNodeFromCache(movie);
+        }
       }
     }
 
@@ -335,6 +340,7 @@ public class MovieSetTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
       if (userObject1 instanceof Movie && userObject2 instanceof Movie) {
         Movie movie1 = (Movie) userObject1;
         Movie movie2 = (Movie) userObject2;
+        // FIXME: intersect
         if (movie1.getMovieSet() != null && movie1.getMovieSet() == movie2.getMovieSet()) {
           List<Movie> moviesInSet = movie1.getMovieSet().getMoviesForDisplay();
           return moviesInSet.indexOf(movie1) - moviesInSet.indexOf(movie2);
