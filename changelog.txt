@@ -23,6 +23,7 @@ x added some enhancements for "display missing episodes" when using alternate or
 x always offer aired order in the episode number editor #2564
 x do not exhaust vertical space in the image chooser #2431
 x removed duplicate function of double click in tree-tables - double click will now open the editor
+x (TVDB) improve search result matching of duplicated shows / different year
 
 
 Version 5.0.5

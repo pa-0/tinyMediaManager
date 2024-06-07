@@ -693,7 +693,20 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
           result.setOverview(searchResultRecord.overview);
         }
       }
-      result.setYear(MetadataUtil.parseInt(searchResultRecord.year, 0));
+      int year = MetadataUtil.parseInt(searchResultRecord.year, 0);
+      result.setYear(year);
+      // we do the same in getMetadata, do it also here to improve search result score calculation!
+      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
+        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
+        result.setTitle(clearYearFromTitle(result.getTitle(), year));
+      }
+      // same, but with search year; eg "Battlestar Galactica (2003), from 2005"
+      year = options.getSearchYear();
+      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
+        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
+        result.setTitle(clearYearFromTitle(result.getTitle(), year));
+      }
+
       result.setPosterUrl(searchResultRecord.imageUrl);
 
       // calculate score
