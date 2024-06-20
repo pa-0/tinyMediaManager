@@ -161,7 +161,7 @@ public class TvShowEpisodeAndSeasonParser {
         result.season = result2.season;
       }
     }
-    else if (result.episodes.isEmpty()) {
+    else if (result.episodes.isEmpty() && result.date == null) {
       // nothing found - check whole string as such
       result = detect(name, showname);
     }
@@ -416,39 +416,35 @@ public class TvShowEpisodeAndSeasonParser {
 
   private static EpisodeMatchingResult parseDatePattern(EpisodeMatchingResult result, String name) {
     Matcher m;
-    if (result.season == -1) {
-      // Date1 pattern yyyy-mm-dd
-      m = DATE_1.matcher(name);
-      if (m.find()) {
-        int s = result.season;
-        try {
-          s = Integer.parseInt(m.group(1));
-          result.date = new SimpleDateFormat("yyyy-MM-dd").parse(m.group(1) + "-" + m.group(2) + "-" + m.group(3));
-        }
-        catch (NumberFormatException | ParseException nfe) {
-          // can not happen from regex since we only come here with max 2 numeric chars
-        }
-        result.season = s;
-        LOGGER.trace("add found year as season '{}', date: '{}'", s, result.date);
-        return result; // since we have a matching year, we wont find episodes solely by number
+    // Date1 pattern yyyy-mm-dd
+    m = DATE_1.matcher(name);
+    if (m.find()) {
+      int s = result.season;
+      try {
+        s = Integer.parseInt(m.group(1));
+        result.date = new SimpleDateFormat("yyyy-MM-dd").parse(m.group(1) + "-" + m.group(2) + "-" + m.group(3));
       }
+      catch (NumberFormatException | ParseException nfe) {
+        // can not happen from regex since we only come here with max 2 numeric chars
+      }
+      result.season = s;
+      LOGGER.trace("add found year as season '{}', date: '{}'", s, result.date);
+      return result; // since we have a matching year, we wont find episodes solely by number
     }
-    if (result.season == -1) {
-      // Date2 pattern dd-mm-yyyy
-      m = DATE_2.matcher(name);
-      if (m.find()) {
-        int s = result.season;
-        try {
-          s = Integer.parseInt(m.group(3));
-          result.date = new SimpleDateFormat("dd-MM-yyyy").parse(m.group(1) + "-" + m.group(2) + "-" + m.group(3));
-        }
-        catch (NumberFormatException | ParseException nfe) {
-          // can not happen from regex since we only come here with max 2 numeric chars
-        }
-        result.season = s;
-        LOGGER.trace("add found year as season '{}', date: '{}'", s, result.date);
-        return result; // since we have a matching year, we wont find episodes solely by number
+    // Date2 pattern dd-mm-yyyy
+    m = DATE_2.matcher(name);
+    if (m.find()) {
+      int s = result.season;
+      try {
+        s = Integer.parseInt(m.group(3));
+        result.date = new SimpleDateFormat("dd-MM-yyyy").parse(m.group(1) + "-" + m.group(2) + "-" + m.group(3));
       }
+      catch (NumberFormatException | ParseException nfe) {
+        // can not happen from regex since we only come here with max 2 numeric chars
+      }
+      result.season = s;
+      LOGGER.trace("add found year as season '{}', date: '{}'", s, result.date);
+      return result; // since we have a matching year, we wont find episodes solely by number
     }
 
     return result;
