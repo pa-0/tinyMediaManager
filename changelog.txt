@@ -14,6 +14,8 @@ x (HTTP API) added an action for downloading missing artwork #2622
 x enhanced the SSL bypass to disable hostname verification #2638
 x (movie) fixed secondary sorting of the movie table (with CTRL) #2637
 x (movie/TV show) do not delete non tinyMediaManager NFO files on scrape
+x do not hide the status bar when using high scaling factors #2636
+x do not remove data sources when other tasks are running
 
 
 Version 5.0.7

@@ -337,7 +337,7 @@ public class TmmTaskManager implements TmmTaskListener {
   public void shutdownNow() {
     isShutdown = true;
 
-    if (poolRunning()) {
+    if (isPoolRunning()) {
       // give the threads 4 seconds to finish
       try {
         Thread.sleep(4000);
@@ -370,8 +370,17 @@ public class TmmTaskManager implements TmmTaskListener {
   /**
    * is a TMM thread pool running?!
    */
-  public boolean poolRunning() {
+  public boolean isPoolRunning() {
     return checkForThreadAlive("tmmpool");
+  }
+
+  /**
+   * check if there is any main task running
+   *
+   * @return true/false
+   */
+  public boolean isMainTaskRunning() {
+    return mainTaskExecutor.getActiveCount() > 0 || !mainTaskExecutor.getQueue().isEmpty();
   }
 
   /**
@@ -379,7 +388,7 @@ public class TmmTaskManager implements TmmTaskListener {
    * 
    * @return true/false
    */
-  public boolean imageDownloadsRunning() {
+  public boolean isImageDownloadsRunning() {
     return imageDownloadExecutor.getActiveCount() > 0 || !imageDownloadExecutor.getQueue().isEmpty();
   }
 

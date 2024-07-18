@@ -279,7 +279,7 @@ public final class TinyMediaManager {
 
       TinyMediaManagerCLI.start(args);
       // wait for other tmm threads (artwork download etall)
-      while (TmmTaskManager.getInstance().poolRunning()) {
+      while (TmmTaskManager.getInstance().isPoolRunning()) {
         try {
           Thread.sleep(1000);
         }
