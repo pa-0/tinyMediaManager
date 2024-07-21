@@ -31,6 +31,7 @@ ARG PREFIX=https://mediaarea.net/download/binary
 ARG WGET="wget --progress=dot:mega"
 
 RUN TMPD=$(mktemp -d) && \
+    echo ${TARGETPLATFORM} && \
     if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then \
         LIBZEN=${PREFIX}/libzen0/0.4.41/libzen0v5_0.4.41-1_amd64.Debian_11.deb; \
         LIBMEDIAINFO=${PREFIX}/libmediainfo0/24.05/libmediainfo0v5_24.05-1_amd64.Debian_11.deb; \
