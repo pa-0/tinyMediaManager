@@ -69,7 +69,6 @@ deploy-docker-amd64:
     entrypoint: [ "" ]
   variables:
     IMAGE_NAME: tinymediamanager/tinymediamanager
-    TARGETPLATFORM: linux/amd64
   needs:
     - build
   tags:
@@ -88,9 +87,8 @@ deploy-docker-amd64:
     - |
       /kaniko/executor \
       --context "${CI_PROJECT_DIR}/target/docker" \
-      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
-      --custom-platform="${TARGETPLATFORM}" \
-      --build-arg=TARGETPLATFORM="${TARGETPLATFORM}" \
+      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile.amd64" \
+      --custom-platform=linux/amd64 \
       --destination "${IMAGE_NAME}:5-test-amd64"
 
     #--destination "${IMAGE_NAME}:${$VERSION}" \
@@ -102,7 +100,6 @@ deploy-docker-arm64:
     entrypoint: [ "" ]
   variables:
     IMAGE_NAME: tinymediamanager/tinymediamanager
-    TARGETPLATFORM: linux/arm64
   needs:
     - build
   tags:
@@ -121,9 +118,8 @@ deploy-docker-arm64:
     - |
       /kaniko/executor \
       --context "${CI_PROJECT_DIR}/target/docker" \
-      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
-      --custom-platform="${TARGETPLATFORM}" \
-      --build-arg TARGETPLATFORM="${TARGETPLATFORM}" \
+      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile.arm64" \
+      --custom-platform=linux/arm64 \
       --destination "${IMAGE_NAME}:5-test-arm64"
 
     #--destination "${IMAGE_NAME}:${$VERSION}" \
