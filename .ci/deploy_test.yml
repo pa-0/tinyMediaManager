@@ -90,7 +90,7 @@ deploy-docker-amd64:
       --context "${CI_PROJECT_DIR}/target/docker" \
       --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
       --custom-platform="${TARGETPLATFORM}" \
-      --build-arg=TARGETPLATFORM="${TARGETPLATFORM}" \
+      --build-arg TARGETPLATFORM="${TARGETPLATFORM}" \
       --destination "${IMAGE_NAME}:5-test-amd64"
 
     #--destination "${IMAGE_NAME}:${$VERSION}" \
