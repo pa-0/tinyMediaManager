@@ -208,6 +208,8 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1", detectEpisode("Touch 01(DVD) - (112ceb61) Central Anime"));
     assertEqual("S:1 E:2", detectEpisode("Cross Game 02 - Central Anime (1280x720) [BF23052D].mp4"));
     assertEqual("S:1 E:135", detectEpisode("[Taka]_Naruto_Shippuuden_135_[480p][9073B8C2]"));
+    assertEqual("S:2 E:4", detectEpisode("Season 2/[Erai-raws] Shy 2nd Season - 04 [1080p][Multiple Subtitle][79770C75].mkv"));
+    assertEqual("S:13 E:2", detectEpisode("Season 13/[Erai-raws] Yami Shibai 13 - 02 [1080p][Multiple Subtitle][D7E29CA3].mkv"));
     // APPEND (no hash!)
     assertEqual("S:2 E:14", detectEpisode("Saki/Season 2/[HorribleSubs] Saki Episode of Side A - 14 [720p]"));
     assertEqual("S:2 E:1", detectEpisode("[DeadFish] Toaru Kagaku no Railgun S - S2 - 01 [720p][AAC].mp4"));

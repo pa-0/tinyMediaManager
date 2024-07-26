@@ -225,8 +225,8 @@ public class MovieSetTreePanel extends TmmListPanel {
     tree.addPropertyChangeListener("filterChanged", evt -> updateFilterIndicator());
 
     tree.setName("movieSets.movieSetTree");
-    TmmUILayoutStore.getInstance().install(tree);
     TmmTreeTableComparatorChooser.install(tree);
+    TmmUILayoutStore.getInstance().install(tree);
 
     tree.addFilter(searchField);
     JScrollPane scrollPane = new JScrollPane();

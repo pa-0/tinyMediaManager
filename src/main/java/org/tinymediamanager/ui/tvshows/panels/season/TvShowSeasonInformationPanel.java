@@ -58,6 +58,7 @@ import org.tinymediamanager.ui.ColumnLayout;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.TmmUILayoutStore;
 import org.tinymediamanager.ui.components.ImageLabel;
+import org.tinymediamanager.ui.components.NoBorderScrollPane;
 import org.tinymediamanager.ui.components.ReadOnlyTextPane;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.table.TmmTable;
@@ -202,7 +203,7 @@ public class TvShowSeasonInformationPanel extends InformationPanel {
     {
       JPanel panelRight = new JPanel();
       add(panelRight, "cell 1 0,grow");
-      panelRight.setLayout(new MigLayout("insets 0 n n n, hidemode 2", "[100lp,grow]", "[][][shrink 0][][75lp:n][shrink 0][][300lp,grow]"));
+      panelRight.setLayout(new MigLayout("insets 0 n n n, hidemode 2", "[100lp,grow]", "[][][shrink 0][][75lp:n][shrink 0][][25%:50%,grow]"));
       {
         lblTvshowTitle = new TmmLabel("", 1.33);
         panelRight.add(lblTvshowTitle, "cell 0 0");
@@ -219,8 +220,10 @@ public class TvShowSeasonInformationPanel extends InformationPanel {
         lblPlotT = new TmmLabel(TmmResourceBundle.getString("metatag.plot"));
         panelRight.add(lblPlotT, "cell 0 3");
 
+        JScrollPane scrollPane = new NoBorderScrollPane();
         taOverview = new ReadOnlyTextPane();
-        panelRight.add(taOverview, "cell 0 4,growx,wmin 0,aligny top");
+        scrollPane.setViewportView(taOverview);
+        panelRight.add(scrollPane, "cell 0 4,growx,wmin 0,aligny top");
       }
       {
         panelRight.add(new JSeparator(), "cell 0 5,growx");

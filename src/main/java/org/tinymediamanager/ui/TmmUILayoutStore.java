@@ -42,6 +42,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.TmmProperties;
 import org.tinymediamanager.ui.components.table.TmmTable;
+import org.tinymediamanager.ui.components.treetable.TmmTreeTable;
 
 /**
  * The Class TmmUiLayoutStore. To save UI settings (like window size/positions, splitpane divider location, visible table columns, ...)
@@ -117,8 +118,15 @@ public class TmmUILayoutStore {
       List<String> hiddenColumns = Arrays.asList(hiddenColumnsAsString.split(","));
       table.readHiddenColumns(hiddenColumns);
 
-      if (table.getTableComparatorChooser() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
-        table.getTableComparatorChooser().fromString(properties.getProperty(componentName + ".sortState"));
+      if (table instanceof TmmTreeTable treeTable) {
+        if (treeTable.getSortStrategy() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
+          treeTable.setSortStrategy(properties.getProperty(componentName + ".sortState"));
+        }
+      }
+      else {
+        if (table.getTableComparatorChooser() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
+          table.getTableComparatorChooser().fromString(properties.getProperty(componentName + ".sortState"));
+        }
       }
     }
     else if (hiddenColumnsAsString == null) {
@@ -295,6 +303,9 @@ public class TmmUILayoutStore {
     if (component instanceof JSplitPane splitPane) {
       saveJSplitPane(splitPane);
     }
+    else if (component instanceof TmmTreeTable treeTable) {
+      saveTmmTreeTable(treeTable);
+    }
     else if (component instanceof TmmTable tmmTable) {
       saveTmmTable(tmmTable);
     }
@@ -314,6 +325,15 @@ public class TmmUILayoutStore {
 
     if (table.getTableComparatorChooser() != null) {
       addParam(componentName + ".sortState", table.getTableComparatorChooser().toString());
+    }
+  }
+
+  private void saveTmmTreeTable(TmmTreeTable table) {
+    String componentName = table.getName();
+    addParam(componentName + ".hiddenColumns", String.join(",", table.getHiddenColumns()));
+
+    if (table.getSortStrategy() != null) {
+      addParam(componentName + ".sortState", table.getSortStrategy().toString());
     }
   }
 
