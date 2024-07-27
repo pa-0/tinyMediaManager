@@ -1,5 +1,6 @@
 package org.tinymediamanager.scraper.subdl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.FeatureNotEnabledException;
@@ -10,7 +11,6 @@ abstract class SubdlSubtitleProvider implements IMediaProvider {
 
   public static final String      ID         = "subdl";
   protected Controller            controller = null;
-  private static final Logger     LOGGER     = LoggerFactory.getLogger(SubdlSubtitleProvider.class);
 
   protected abstract String getSubId();
 
@@ -18,8 +18,7 @@ abstract class SubdlSubtitleProvider implements IMediaProvider {
 
   @Override
   public boolean isActive() {
-    return true;
-    //return isFeatureEnabled() && StringUtils.isNotBlank(getSecretKey()) && isApiKeyAvailable(null);
+    return isFeatureEnabled() && StringUtils.isNotBlank(controller.getSecretKey());
   }
 
   // thread safe initialization of the API
