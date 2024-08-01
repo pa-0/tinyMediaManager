@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tinymediamanager.scraper.subdl.model;
 
-import java.util.List;
-
-import com.google.gson.annotations.SerializedName;
-
-public class SubdlModel {
-
-  @SerializedName("status")
-  public boolean         status;
-
-  @SerializedName("results")
-  public List<Results>   results;
-
-  @SerializedName("subtitles")
-  public List<Subtitles> subtitles;
-
+/**
+ * This enum represents the types which are supported by Subdl
+ * 
+ * @author Manuel Laggner
+ */
+public enum Type {
+  MOVIE,
+  TV
 }

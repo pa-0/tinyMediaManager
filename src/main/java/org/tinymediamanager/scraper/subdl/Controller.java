@@ -1,10 +1,28 @@
+/*
+ * Copyright 2012 - 2024 Manuel Laggner
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.tinymediamanager.scraper.subdl;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.tinymediamanager.scraper.http.TmmHttpClient;
 import org.tinymediamanager.scraper.subdl.model.SubdlModel;
+import org.tinymediamanager.scraper.subdl.model.Type;
 import org.tinymediamanager.scraper.subdl.service.SubdlService;
 
 import com.google.gson.GsonBuilder;
@@ -13,16 +31,16 @@ import com.google.gson.internal.bind.DateTypeAdapter;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class Controller {
+class Controller {
 
   private final Retrofit retrofit;
   private String         secretKey;
 
-  public Controller() {
+  Controller() {
     OkHttpClient.Builder builder = TmmHttpClient.newBuilder();
     builder.addInterceptor(chain -> {
       Request request = chain.request();
@@ -32,11 +50,11 @@ public class Controller {
 
   }
 
-  public void setSecretKey(String apiKey) {
+  void setSecretKey(String apiKey) {
     this.secretKey = apiKey;
   }
 
-  public String getSecretKey() {
+  String getSecretKey() {
     return secretKey;
   }
 
@@ -66,16 +84,55 @@ public class Controller {
     return retrofit.create(SubdlService.class);
   }
 
-  public retrofit2.Response<SubdlModel> getResults(String query) throws IOException {
-    return getService().fetchResults(getSecretKey(), query, "movie").execute();
+  /**
+   * get the Subdl results for the given query
+   * 
+   * @param query
+   *          the search query
+   * @param language
+   *          the language to get the result for (ISO 639-1, uppercase)
+   * @param type
+   *          the video {@link Type}
+   * @return the {@link Response<SubdlModel>} for the request
+   * @throws IOException
+   *           any {@link IOException} occurred for the request
+   */
+  Response<SubdlModel> getResultsForQuery(String query, String language, Type type) throws IOException {
+    return getService().fetchResults(getSecretKey(), query, type.name().toLowerCase(Locale.ROOT), language).execute();
   }
 
-  public retrofit2.Response<SubdlModel> getResultsFromImdbId(String imdbId, String language) throws IOException {
-    return getService().fetchResultswithImdbId(getSecretKey(), imdbId, "movie", language).execute();
+  /**
+   * get the Subdl results for the given IMDB id
+   * 
+   * @param imdbId
+   *          the IMDB id to search for
+   * @param language
+   *          the language to get the result for (ISO 639-1, uppercase)
+   * @param type
+   *          the video {@link Type}
+   * @return the {@link Response<SubdlModel>} for the request
+   * @throws IOException
+   *           any {@link IOException} occurred for the request
+   */
+  Response<SubdlModel> getResultsFromImdbId(String imdbId, String language, Type type) throws IOException {
+    return getService().fetchResultswithImdbId(getSecretKey(), imdbId, type.name().toLowerCase(Locale.ROOT), language).execute();
   }
 
-  public retrofit2.Response<SubdlModel> getResultsFromTmdbId(int tmdbId, String language) throws IOException {
-    return getService().fetchResultswithTmDbId(getSecretKey(), tmdbId, "movie", language).execute();
+  /**
+   * get the Subdl results for the given TMDB id
+   * 
+   * @param tmdbId
+   *          the TMDB id to search for
+   * @param language
+   *          the language to get the result for (ISO 639-1, uppercase)
+   * @param type
+   *          the video {@link Type}
+   * @return the {@link Response<SubdlModel>} for the request
+   * @throws IOException
+   *           any {@link IOException} occurred for the request
+   */
+  Response<SubdlModel> getResultsFromTmdbId(int tmdbId, String language, Type type) throws IOException {
+    return getService().fetchResultswithTmdbId(getSecretKey(), tmdbId, type.name().toLowerCase(Locale.ROOT), language).execute();
   }
 
 }
