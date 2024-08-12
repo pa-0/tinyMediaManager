@@ -42,6 +42,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.TmmProperties;
 import org.tinymediamanager.ui.components.table.TmmTable;
+import org.tinymediamanager.ui.components.treetable.TmmTreeTable;
 
 /**
  * The Class TmmUiLayoutStore. To save UI settings (like window size/positions, splitpane divider location, visible table columns, ...)
@@ -117,8 +118,15 @@ public class TmmUILayoutStore {
       List<String> hiddenColumns = Arrays.asList(hiddenColumnsAsString.split(","));
       table.readHiddenColumns(hiddenColumns);
 
-      if (table.getTableComparatorChooser() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
-        table.getTableComparatorChooser().fromString(properties.getProperty(componentName + ".sortState"));
+      if (table instanceof TmmTreeTable treeTable) {
+        if (treeTable.getSortStrategy() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
+          treeTable.setSortStrategy(properties.getProperty(componentName + ".sortState"));
+        }
+      }
+      else {
+        if (table.getTableComparatorChooser() != null && StringUtils.isNotBlank(properties.getProperty(componentName + ".sortState"))) {
+          table.getTableComparatorChooser().fromString(properties.getProperty(componentName + ".sortState"));
+        }
       }
     }
     else if (hiddenColumnsAsString == null) {
@@ -139,32 +147,12 @@ public class TmmUILayoutStore {
       // only set location/size if something was stored
       Rectangle rect = getWindowBounds("mainWindow");
       if (rect.width > 0) {
-        GraphicsDevice ge = getScreenForBounds(rect);
-        if (ge.getDefaultConfiguration() != frame.getGraphicsConfiguration()) {
+        GraphicsDevice graphicsDevice = getScreenForBounds(rect);
+        if (graphicsDevice.getDefaultConfiguration() != frame.getGraphicsConfiguration()) {
           // move to another screen
-          JFrame dummy = new JFrame(ge.getDefaultConfiguration());
+          JFrame dummy = new JFrame(graphicsDevice.getDefaultConfiguration());
           frame.setLocationRelativeTo(dummy);
           dummy.dispose();
-        }
-
-        // re-calculate the window rect (maybe it is bigger than the visible screen size)
-        Rectangle screenBounds = ge.getDefaultConfiguration().getBounds();
-        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(ge.getDefaultConfiguration());
-
-        if (rect.width > screenBounds.width - screenInsets.left - screenInsets.right) {
-          rect.width = screenBounds.width - screenInsets.left - screenInsets.right;
-        }
-
-        if (rect.x < screenInsets.left) {
-          rect.x = screenInsets.left;
-        }
-
-        if (rect.height > screenBounds.height - screenInsets.top - screenInsets.bottom) {
-          rect.height = screenBounds.height - screenInsets.top - screenInsets.bottom;
-        }
-
-        if (rect.y < screenInsets.top) {
-          rect.y = screenInsets.top;
         }
 
         frame.setBounds(rect);
@@ -182,6 +170,39 @@ public class TmmUILayoutStore {
         frame.setLocationRelativeTo(null);
       }
     }
+  }
+
+  /**
+   * Check if the given {@link Rectangle} is fully visible on the screen setup
+   * 
+   * @param rect
+   *          the {@link Rectangle} to check
+   * @return true/false
+   */
+  private boolean isRectFullyVisible(Rectangle rect) {
+    long rectArea = square(rect);
+    long coveredArea = 0;
+
+    for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+      coveredArea += square(device.getDefaultConfiguration().getBounds().intersection(rect));
+
+      if (coveredArea >= rectArea) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * calculate the area from a {@link Rectangle}
+   * 
+   * @param rect
+   *          the {@link Rectangle} to calculate the area from
+   * @return the calculated area
+   */
+  private long square(Rectangle rect) {
+    return Math.abs(rect.width * rect.height);
   }
 
   /**
@@ -295,6 +316,9 @@ public class TmmUILayoutStore {
     if (component instanceof JSplitPane splitPane) {
       saveJSplitPane(splitPane);
     }
+    else if (component instanceof TmmTreeTable treeTable) {
+      saveTmmTreeTable(treeTable);
+    }
     else if (component instanceof TmmTable tmmTable) {
       saveTmmTable(tmmTable);
     }
@@ -314,6 +338,15 @@ public class TmmUILayoutStore {
 
     if (table.getTableComparatorChooser() != null) {
       addParam(componentName + ".sortState", table.getTableComparatorChooser().toString());
+    }
+  }
+
+  private void saveTmmTreeTable(TmmTreeTable table) {
+    String componentName = table.getName();
+    addParam(componentName + ".hiddenColumns", String.join(",", table.getHiddenColumns()));
+
+    if (table.getSortStrategy() != null) {
+      addParam(componentName + ".sortState", table.getSortStrategy().toString());
     }
   }
 
@@ -394,44 +427,46 @@ public class TmmUILayoutStore {
       return rect;
     }
 
-    // prevent from moving out of the screen (can happen in Docker/VNC)
-    if (rect.x < 0) {
-      rect.x = 0;
-    }
-    if (rect.y < 0) {
-      rect.y = 0;
-    }
+    boolean isFullyVisible = isRectFullyVisible(rect);
+    if (!isFullyVisible) {
+      // check if the stored sizes fit to any screen
+      GraphicsConfiguration graphicsConfiguration = null;
 
-    // check if the stored sizes fit to any screen
-    GraphicsConfiguration graphicsConfiguration = null;
+      GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+      GraphicsDevice[] gs = ge.getScreenDevices();
 
-    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    GraphicsDevice[] gs = ge.getScreenDevices();
-
-    for (GraphicsDevice device : gs) {
-      GraphicsConfiguration gc = device.getDefaultConfiguration();
-      Rectangle bounds = gc.getBounds();
-      if (bounds.contains(rect)) {
-        graphicsConfiguration = gc;
-        break;
+      for (GraphicsDevice device : gs) {
+        GraphicsConfiguration gc = device.getDefaultConfiguration();
+        Rectangle bounds = gc.getBounds();
+        if (bounds.contains(rect)) {
+          graphicsConfiguration = gc;
+          break;
+        }
       }
-    }
 
-    if (graphicsConfiguration == null) {
-      graphicsConfiguration = ge.getDefaultScreenDevice().getDefaultConfiguration();
-    }
+      if (graphicsConfiguration == null) {
+        graphicsConfiguration = ge.getDefaultScreenDevice().getDefaultConfiguration();
+      }
 
-    // screen insets / taskbar
-    Rectangle screenBounds = graphicsConfiguration.getBounds();
-    Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(graphicsConfiguration);
-    if ((rect.x - scnMax.left + rect.width) > (screenBounds.x + screenBounds.width - scnMax.right)) {
-      rect.x = screenBounds.x + scnMax.left;
-      rect.width = screenBounds.width - scnMax.right;
-    }
+      // re-calculate the window rect (maybe it is bigger than the visible screen size)
+      Rectangle screenBounds = graphicsConfiguration.getBounds();
+      Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(graphicsConfiguration);
 
-    if ((rect.y - scnMax.top + rect.height) > (screenBounds.y + screenBounds.height - scnMax.bottom)) {
-      rect.y = screenBounds.y + scnMax.top;
-      rect.height = screenBounds.height - scnMax.bottom;
+      if (rect.width > screenBounds.width - screenInsets.left - screenInsets.right) {
+        rect.width = screenBounds.width - screenInsets.left - screenInsets.right;
+      }
+
+      if (rect.x < screenBounds.x + screenInsets.left) {
+        rect.x = screenBounds.x + screenInsets.left;
+      }
+
+      if (rect.height > screenBounds.height - screenInsets.top - screenInsets.bottom) {
+        rect.height = screenBounds.height - screenInsets.top - screenInsets.bottom;
+      }
+
+      if (rect.y < screenBounds.y + screenInsets.top) {
+        rect.y = screenBounds.y + screenInsets.top;
+      }
     }
 
     return rect;

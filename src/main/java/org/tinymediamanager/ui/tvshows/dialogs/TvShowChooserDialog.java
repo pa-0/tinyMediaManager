@@ -664,6 +664,7 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
             if (!episodesToScrape.isEmpty()) {
               // create the episode scrape options
               TvShowEpisodeSearchAndScrapeOptions scrapeOptions = new TvShowEpisodeSearchAndScrapeOptions(md.getIds());
+              scrapeOptions.loadDefaults();
               scrapeOptions.setMetadataScraper(model.getMediaScraper());
               scrapeOptions.setArtworkScraper(model.getArtworkScrapers());
               scrapeOptions.setLanguage(model.getLanguage());

@@ -3,6 +3,7 @@ package org.tinymediamanager.scraper.rating.services;
 import java.io.IOException;
 import java.util.Date;
 
+import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.scraper.http.TmmHttpClient;
 import org.tinymediamanager.scraper.rating.entities.MdbListRatingEntity;
 
@@ -57,20 +58,28 @@ public class MdbListController {
     return retrofit.create(MdbListService.class);
   }
 
-  public retrofit2.Response<MdbListRatingEntity> getRatingsByImdbId(String apikey, String imdbId) throws IOException {
-    return getService().getRatingsByImdbId(apikey, imdbId).execute();
+  private String getMediaTypeForQuery(MediaType mediaType) {
+    String mt = "movie";
+    if (mediaType == MediaType.TV_SHOW || mediaType == MediaType.TV_EPISODE) {
+      mt = "show";
+    }
+    return mt;
   }
 
-  public retrofit2.Response<MdbListRatingEntity> getRatingsByTraktId(String apikey, String traktId) throws IOException {
-    return getService().getRatingsByTraktId(apikey, traktId).execute();
+  public retrofit2.Response<MdbListRatingEntity> getRatingsByImdbId(String apikey, String imdbId, MediaType mediaType) throws IOException {
+    return getService().getRatingsByImdbId(apikey, imdbId, getMediaTypeForQuery(mediaType)).execute();
   }
 
-  public retrofit2.Response<MdbListRatingEntity> getRatingsByTmdbId(String apikey, String tmdbId) throws IOException {
-    return getService().getRatingsByTmdbId(apikey, tmdbId).execute();
+  public retrofit2.Response<MdbListRatingEntity> getRatingsByTraktId(String apikey, String traktId, MediaType mediaType) throws IOException {
+    return getService().getRatingsByTraktId(apikey, traktId, getMediaTypeForQuery(mediaType)).execute();
   }
 
-  public retrofit2.Response<MdbListRatingEntity> getRatingsByTvdbId(String apikey, String tvdbId) throws IOException {
-    return getService().getRatingsByTvdbId(apikey, tvdbId).execute();
+  public retrofit2.Response<MdbListRatingEntity> getRatingsByTmdbId(String apikey, String tmdbId, MediaType mediaType) throws IOException {
+    return getService().getRatingsByTmdbId(apikey, tmdbId, getMediaTypeForQuery(mediaType)).execute();
+  }
+
+  public retrofit2.Response<MdbListRatingEntity> getRatingsByTvdbId(String apikey, String tvdbId, MediaType mediaType) throws IOException {
+    return getService().getRatingsByTvdbId(apikey, tvdbId, getMediaTypeForQuery(mediaType)).execute();
   }
 
 }

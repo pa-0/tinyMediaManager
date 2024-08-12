@@ -98,19 +98,28 @@ public class MediaEpisodeGroup implements Comparable<MediaEpisodeGroup> {
     }
 
     MediaEpisodeGroup that = (MediaEpisodeGroup) o;
-    return episodeGroupType == that.episodeGroupType && Objects.equals(name, that.name);
+    boolean result = episodeGroupType == that.episodeGroupType;
+    if (episodeGroupType != EpisodeGroupType.AIRED && episodeGroupType != EpisodeGroupType.ABSOLUTE && result) {
+      result = Objects.equals(name, that.name);
+    }
+    return result;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(episodeGroupType, name);
+    if (episodeGroupType != EpisodeGroupType.AIRED && episodeGroupType != EpisodeGroupType.ABSOLUTE) {
+      return Objects.hash(episodeGroupType, name);
+    }
+    else {
+      return Objects.hash(episodeGroupType);
+    }
   }
 
   @Override
   public int compareTo(@NotNull MediaEpisodeGroup o) {
     int result = Integer.compare(episodeGroupType.ordinal(), o.episodeGroupType.ordinal());
 
-    if (result == 0) {
+    if (episodeGroupType != EpisodeGroupType.AIRED && episodeGroupType != EpisodeGroupType.ABSOLUTE && result == 0) {
       result = name.compareTo(o.name);
     }
 

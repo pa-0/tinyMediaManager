@@ -40,6 +40,7 @@ abstract class AbstractCheckComboBoxMovieUIFilter<E> extends AbstractMovieUIFilt
   @Override
   protected JComponent createFilterComponent() {
     checkComboBox = new TmmCheckComboBox<>();
+    checkComboBox.setSingleLineEditor();
     return checkComboBox;
   }
 

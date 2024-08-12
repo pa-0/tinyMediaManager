@@ -56,8 +56,8 @@ import org.tinymediamanager.scraper.util.MetadataUtil;
 public class TvShowHelpers {
   private static final Logger  LOGGER               = LoggerFactory.getLogger(TvShowHelpers.class);
 
-  private static final Pattern SEASON_NUMBER        = Pattern.compile("(?i)season(\\d+).*");
-  private static final Pattern SEASON_FOLDER_NUMBER = Pattern.compile("(?i).*(\\d+).*");
+  private static final Pattern SEASON_NUMBER        = Pattern.compile("(?i)season\\s?(\\d+).*");
+  private static final Pattern SEASON_FOLDER_NUMBER = Pattern.compile("(?i).*?(\\d+).*");
 
   private TvShowHelpers() {
     throw new IllegalAccessError();

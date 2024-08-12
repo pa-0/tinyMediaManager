@@ -16,6 +16,8 @@
 
 package org.tinymediamanager.core.jmte;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -52,14 +54,33 @@ public class NamedSplitRenderer implements NamedRenderer {
         return o.toString(); // unmodified
       }
 
-      int idx = MetadataUtil.parseInt(s, -1);
-      if (idx >= split.length) {
-        LOGGER.debug("Wanted entry {} greater than what we have splitted: {}", idx, split);
-        return o.toString();// unmodified
+      // from/to
+      if (s != null && s.contains(",")) {
+        String[] fromTo = s.split(",");
+        if (fromTo.length == 2) {
+          int from = MetadataUtil.parseInt(fromTo[0], -1);
+          int to = MetadataUtil.parseInt(fromTo[1], -1);
+          if (from >= 0 && to >= 0 && from < to) {
+            List<String> ret = new ArrayList<String>();
+            for (int i = from; i <= to; i++) {
+              if (i < split.length) {
+                ret.add(split[i].strip());
+              }
+            }
+            return String.join(", ", ret);
+          }
+        }
       }
+      else {
+        int idx = MetadataUtil.parseInt(s, -1);
+        if (idx >= split.length) {
+          LOGGER.debug("Wanted entry {} greater than what we have splitted: {}", idx, split);
+          return o.toString();// unmodified
+        }
 
-      if (idx >= 0) {
-        return split[idx].strip();
+        if (idx >= 0) {
+          return split[idx].strip();
+        }
       }
     }
 

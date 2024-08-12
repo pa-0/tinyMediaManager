@@ -124,7 +124,7 @@ public class TvShowTest extends BasicTvShowTest {
     // various real world examples
     assertEqual("S:2024", detectEpisode("The.Daily.Show.2024.04.23.Stephanie.Kelton.1080p.HEVC.x265"));
     assertEqual("S:4 E:11", detectEpisode("TV French\\Unite 9\\Season 04\\S04E11 - Episode 84.mkv"));
-    assertEqual("S:-1 E:1", detectEpisode("[DB]Haven't You Heard I'm Sakamoto_-_01_(Dual Audio_10bit_BD1080p_x265).mkv")); // Anime
+    assertEqual("S:1 E:1", detectEpisode("[DB]Haven't You Heard I'm Sakamoto_-_01_(Dual Audio_10bit_BD1080p_x265).mkv")); // Anime
     assertEqual("S:3 E:50", detectEpisode("[HorribleSubs] Shingeki no Kyojin S3 - 50 [1080p].mkv"));
     assertEqual("S:5 E:22", detectEpisode("Quincy.S05E22.Gefaehrlicher.Krankentransport.GERMAN.FS.dTV.X264-SQUiZZiEs\\s-quincy-s0522.mkv"));
     assertEqual("S:-1", detectEpisode("Specials\\Bye.Bye.Big.Bang.Theory.Das.Special.GERMAN.1080p.HDTV.x264-VoDTv.mkv"));
@@ -166,7 +166,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:2 E:9", detectEpisode("440 - 2x09 - .avi"));
     assertEqual("S:1 E:2", detectEpisode("\\Good L G (1 - 13)\\[CBM]_Good_L_G!_-_02_-_The_Battle_Begins_[720p]_[4A34853E].mkv")); // Anime
     assertEqual("S:3 E:1", detectEpisode("s8-vierfrauen-s03e01-repack.avi"));
-    assertEqual("S:-1 E:3", detectEpisode("tvp-wildesskandinavien-e03-720p.mkv"));
+    assertEqual("S:1 E:3", detectEpisode("tvp-wildesskandinavien-e03-720p.mkv"));
     assertEqual("S:4 E:13", detectEpisode("s800The Mentalist_S04E13_Die goldene Feder.avi"));
     assertEqual("S:1 E:1", detectEpisode("AwesomeTvShow.S01E01-480p.mkv"));
     assertEqual("S:7 E:9 E:10", detectEpisode("stvs7ep9-10.avi"));
@@ -208,13 +208,15 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1", detectEpisode("Touch 01(DVD) - (112ceb61) Central Anime"));
     assertEqual("S:1 E:2", detectEpisode("Cross Game 02 - Central Anime (1280x720) [BF23052D].mp4"));
     assertEqual("S:1 E:135", detectEpisode("[Taka]_Naruto_Shippuuden_135_[480p][9073B8C2]"));
+    assertEqual("S:2 E:4", detectEpisode("Season 2/[Erai-raws] Shy 2nd Season - 04 [1080p][Multiple Subtitle][79770C75].mkv"));
+    assertEqual("S:13 E:2", detectEpisode("Season 13/[Erai-raws] Yami Shibai 13 - 02 [1080p][Multiple Subtitle][D7E29CA3].mkv"));
     // APPEND (no hash!)
     assertEqual("S:2 E:14", detectEpisode("Saki/Season 2/[HorribleSubs] Saki Episode of Side A - 14 [720p]"));
     assertEqual("S:2 E:1", detectEpisode("[DeadFish] Toaru Kagaku no Railgun S - S2 - 01 [720p][AAC].mp4"));
     assertEqual("S:0 E:1", detectEpisode("[DeadFish] Jinrui wa Suitai Shimashita - Special 01 [BD][720p][AAC].mp4"));
     // should be Season 1 as per Anime definition - unfortunately this clashes with our -1 approach
-    assertEqual("S:-1 E:1", detectEpisode("[a.f.k.] Lucky Star - 01.avi"));
-    assertEqual("S:-1 E:4", detectEpisode("Air Master - 04 [HQA&N!].avi"));
+    assertEqual("S:1 E:1", detectEpisode("[a.f.k.] Lucky Star - 01.avi"));
+    assertEqual("S:1 E:4", detectEpisode("Air Master - 04 [HQA&N!].avi"));
     assertEqual("S:1 E:1", detectEpisode("[ANE] Yosuga no Sora - Ep01v2 [BDRip 1080p x264 FLAC]"));
 
     // special case - show with only number like "24"
@@ -233,13 +235,13 @@ public class TvShowTest extends BasicTvShowTest {
 
     // ************************************************************************
     // 1-3 chars, if they are the ONLY numbers in file
-    assertEqual("S:-1 E:2", detectEpisode("2.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("2 name.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("name 2.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("2.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("2 name.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("name 2.mkv"));
 
-    assertEqual("S:-1 E:2", detectEpisode("02.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("02 name.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("name 02.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("02.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("02 name.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("name 02.mkv"));
 
     assertEqual("S:1 E:2", detectEpisode("102.mkv"));
     assertEqual("S:1 E:2", detectEpisode("102 name.mkv"));
@@ -247,15 +249,15 @@ public class TvShowTest extends BasicTvShowTest {
 
     assertEqual("S:1 E:2", detectEpisode("season 1\\nam.e.2.mkv"));
     assertEqual("S:1 E:2", detectEpisode("season 1/nam.e.2.mkv"));
-    assertEqual("S:-1 E:1", detectEpisode("Wisher.2021.E01.V2.WEB-DL.4k.H265.DDP.AAC-HDCTV.mp4"));
+    assertEqual("S:1 E:1", detectEpisode("Wisher.2021.E01.V2.WEB-DL.4k.H265.DDP.AAC-HDCTV.mp4"));
 
-    assertEqual("S:-1 E:1", detectEpisode("[01].ext")); // just optionals!
-    assertEqual("S:-1 E:2", detectEpisode("[01] 02.ext")); // ignore optionals
+    assertEqual("S:1 E:1", detectEpisode("[01].ext")); // just optionals!
+    assertEqual("S:1 E:2", detectEpisode("[01] 02.ext")); // ignore optionals
 
     // TODO: currently we take the LAST number and treat it as episode
     // NO multi matching for just numbers!!
-    assertEqual("S:-1 E:6", detectEpisode("2 3 6.mkv"));
-    assertEqual("S:-1 E:4", detectEpisode("02 03 04 name.mkv"));
+    assertEqual("S:1 E:6", detectEpisode("2 3 6.mkv"));
+    assertEqual("S:1 E:4", detectEpisode("02 03 04 name.mkv"));
     // except for 3 char ones ;)
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("101 102 103.mkv"));
     assertEqual("S:1 E:3", detectEpisode("1 12 103 25 7.mkv")); // start with highest number
@@ -275,9 +277,12 @@ public class TvShowTest extends BasicTvShowTest {
     // Even if there is no "season", Kodi will just assume all episodes are "Season 1" when using EP##.
     assertEqual("S:1 E:2", detectEpisode("name.ep02.ext"));
     assertEqual("S:1 E:2", detectEpisode("name.ep_02.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.part.II.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.pt.II.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.pt_II.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.part.II.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.pt.II.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.pt_II.ext"));
+    assertEqual("S:1 E:1", detectEpisode("EP01.avi"));
+    assertEqual("S:3 E:1", detectEpisode("season 3/EP01.avi"));
+    assertEqual("S:3 E:3", detectEpisode("season 3 EP01 EP02 EP03/EP03.avi"));
 
     // multi episode
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01.s01e02.ext"));
@@ -296,7 +301,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("name.s01e01e02e03.ext"));
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("name.s01e01-02-03.ext"));
     assertEqual("S:1 E:1 E:2", detectEpisode("name.1x01x02.ext"));
-    assertEqual("S:1 E:1", detectEpisode("name.ep01_02.ext"));
+    assertEqual("S:1 E:1 E:2", detectEpisode("name.ep01_02.ext"));
 
     // multi episode mixed; weird, but valid :p - we won't detect that now because the
     // regexp would cause too much false positives

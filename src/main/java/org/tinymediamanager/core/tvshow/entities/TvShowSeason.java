@@ -425,6 +425,27 @@ public class TvShowSeason extends MediaEntity implements Comparable<TvShowSeason
     return episodes;
   }
 
+  /**
+   * Gets the dummy episode count
+   *
+   * @return the dummy episode count
+   */
+  public int getDummyEpisodeCount() {
+    int count = 0;
+
+    for (TvShowEpisode episode : getEpisodesForDisplay()) {
+      if (episode.isDummy()) {
+        if (!TvShowHelpers.shouldAddDummyEpisode(episode)) {
+          continue;
+        }
+
+        count++;
+      }
+    }
+
+    return count;
+  }
+
   public long getVideoFilesize() {
     long filesize = 0;
     for (TvShowEpisode episode : episodes) {

@@ -759,6 +759,7 @@ public class TvShowUpdateDatasourceTask extends TmmThreadPool {
         }
       }
       allFiles.clear();
+      Collections.sort(mfs);
 
       if (getMediaFiles(mfs, MediaFileType.VIDEO).isEmpty()) {
         LOGGER.info("no video file found in directory {}", showDir);

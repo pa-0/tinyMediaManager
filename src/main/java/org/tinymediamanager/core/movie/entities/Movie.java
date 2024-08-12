@@ -2972,7 +2972,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
         return getMovieSet();
 
       case TRAILER:
-        return getMediaFiles(MediaFileType.TRAILER);
+        return getTrailer();
 
       case ACTORS:
         return getActors();

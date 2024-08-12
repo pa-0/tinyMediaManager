@@ -9,4 +9,6 @@ public interface ITmmTreeTableSortingStrategy {
   void columnClicked(int column, boolean shift, boolean control);
 
   SortDirection getSortDirection(int column);
+
+  void fromString(String stringEncoded);
 }

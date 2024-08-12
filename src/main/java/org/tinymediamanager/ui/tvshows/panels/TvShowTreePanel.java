@@ -219,8 +219,8 @@ public class TvShowTreePanel extends TmmListPanel {
     tree.getColumnModel().getColumn(0).setCellRenderer(new TvShowTreeCellRenderer());
     tree.addPropertyChangeListener("filterChanged", evt -> updateFilterIndicator());
     tree.setName("tvshows.tvshowTree");
-    TmmUILayoutStore.getInstance().install(tree);
     TmmTreeTableComparatorChooser.install(tree);
+    TmmUILayoutStore.getInstance().install(tree);
 
     tree.addFilter(searchField);
     JScrollPane scrollPane = new JScrollPane();

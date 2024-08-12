@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
@@ -773,6 +774,28 @@ public class TmmTreeTable extends TmmTable {
         startUpdateSortAndFilterTimer();
       }
     }
+  }
+
+  public ITmmTreeTableSortingStrategy getSortStrategy() {
+    Comparator<?> comparator = ((TmmTreeModel<?>) getTreeTableModel().getTreeModel()).getDataProvider().getTreeComparator();
+    if (comparator instanceof ITmmTreeTableSortingStrategy sortStrategy) {
+      return sortStrategy;
+    }
+    return null;
+  }
+
+  public void setSortStrategy(String stringEncoded) {
+    ITmmTreeTableSortingStrategy sortingStrategy = getSortStrategy();
+
+    if (sortingStrategy == null) {
+      return;
+    }
+
+    sortingStrategy.fromString(stringEncoded);
+
+    updateFiltering();
+    // make sure the header also gets redrawn (this may not happen if the structure does not change)
+    getTableHeader().repaint();
   }
 
   private static class TmmTreeTableKeyAdapter extends KeyAdapter {

@@ -40,6 +40,7 @@ abstract class AbstractCheckComboBoxTvShowUIFilter<E> extends AbstractTvShowUIFi
   @Override
   protected JComponent createFilterComponent() {
     checkComboBox = new TmmCheckComboBox<>();
+    checkComboBox.setSingleLineEditor();
     return checkComboBox;
   }
 

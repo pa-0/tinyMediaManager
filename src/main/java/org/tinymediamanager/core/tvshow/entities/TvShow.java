@@ -2432,7 +2432,7 @@ public class TvShow extends MediaEntity implements IMediaInformation {
         return getTags();
 
       case TRAILER:
-        return getMediaFiles(MediaFileType.TRAILER);
+        return getTrailer();
 
       case ACTORS:
         return getActors();

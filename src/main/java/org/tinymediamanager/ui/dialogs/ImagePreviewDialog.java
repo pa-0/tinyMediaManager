@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -162,29 +163,31 @@ public class ImagePreviewDialog extends TmmDialog {
 
     @Override
     protected void processAction(ActionEvent e) {
-      // open save to dialog
-      Path file;
-      try {
-        String filename = "";
-        if (StringUtils.isNotBlank(imagePath)) {
-          filename = FilenameUtils.getBaseName(imagePath);
-        }
-        else if (StringUtils.isNotBlank(imageUrl)) {
-          filename = FilenameUtils.getBaseName(imageUrl);
-        }
-        file = TmmUIHelper.saveFile(TmmResourceBundle.getString("image.savetodisk"), "", filename,
-            new FileNameExtensionFilter("Image files", ".jpg", ".png", ".webp"));
-        if (file != null) {
-          try (FileOutputStream os = new FileOutputStream(file.toFile())) {
-            IOUtils.write(originalImageBytes, os);
+      SwingUtilities.invokeLater(() -> {
+        try {
+          // open save to dialog
+          String filename = "";
+          if (StringUtils.isNotBlank(imagePath)) {
+            filename = FilenameUtils.getBaseName(imagePath);
+          }
+          else if (StringUtils.isNotBlank(imageUrl)) {
+            filename = FilenameUtils.getBaseName(imageUrl);
+          }
+
+          Path file = TmmUIHelper.saveFile(TmmResourceBundle.getString("image.savetodisk"), "", filename,
+              new FileNameExtensionFilter("Image files", ".jpg", ".png", ".webp"));
+          if (file != null) {
+            try (FileOutputStream os = new FileOutputStream(file.toFile())) {
+              IOUtils.write(originalImageBytes, os);
+            }
           }
         }
-      }
-      catch (Exception ex) {
-        LOGGER.error("Could not save image file: {}", ex.getMessage());
-        MessageManager.instance
-            .pushMessage(new Message(Message.MessageLevel.ERROR, "", "message.erroropenfile", new String[] { ":", ex.getLocalizedMessage() }));
-      }
+        catch (Exception ex) {
+          LOGGER.error("Could not save image file: {}", ex.getMessage());
+          MessageManager.instance
+              .pushMessage(new Message(Message.MessageLevel.ERROR, "", "message.erroropenfile", new String[] { ":", ex.getLocalizedMessage() }));
+        }
+      });
     }
   }
 }

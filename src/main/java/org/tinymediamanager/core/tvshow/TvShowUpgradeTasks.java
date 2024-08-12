@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.UpgradeTasks;
 import org.tinymediamanager.core.MediaFileType;
+import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.core.entities.MediaEntity;
 import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
@@ -166,6 +167,28 @@ public class TvShowUpgradeTasks extends UpgradeTasks {
         }
       }
       module.setDbVersion(5004);
+    }
+
+    // fix seasons having the wrong poster (due to wrong regex; fix b85a46b470c09e9ea9edb5f602d1b48684eada08)
+    if (module.getDbVersion() < 5005) {
+      LOGGER.info("performing upgrade to ver: {}", 5005);
+      for (TvShow tvShow : tvShowList.getTvShows()) {
+        for (TvShowSeason season : tvShow.getSeasons()) {
+          for (int i = season.getMediaFiles().size() - 1; i >= 0; i--) {
+            MediaFile mf = season.getMediaFiles().get(i);
+            if (mf.isGraphic()) {
+              String rel = Utils.relPath(tvShow.getPath(), mf.getPath());
+              int nr = TvShowHelpers.detectSeasonFromFileAndFolder(mf.getFilename(), rel);
+              if (nr != season.getSeason()) {
+                LOGGER.debug("{}: Removing {} from season {}, because it was season {}", tvShow.getTitle(), mf.getType(), season.getSeason(), nr);
+                season.removeFromMediaFiles(mf);
+                registerForSaving(season);
+              }
+            }
+          }
+        }
+      }
+      module.setDbVersion(5005);
     }
 
     saveAll();

@@ -494,11 +494,9 @@ public class MovieFilterDialog extends TmmDialog {
   }
 
   @Override
-  public void pack() {
-    super.pack();
-
-    // avoid shrinking the dialog below the preferred size
-    setMinimumSize(getPreferredSize());
+  public void setVisible(boolean visible) {
+    super.setVisible(visible);
+    pack();
   }
 
   @Override
