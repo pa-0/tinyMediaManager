@@ -701,7 +701,7 @@ public class TvShowRenamerTest extends BasicTvShowTest {
     assertThat(season2Dir).exists();
 
     // season 1 & 2 artwork in season folder and show folder
-    Path artwork = season1Dir.resolve("season01.jpg");
+    Path artwork = season1Dir.resolve("season01-poster.jpg");
     assertThat(artwork).exists();
     artwork = season1Dir.resolve("season01-banner.jpg");
     assertThat(artwork).exists();
@@ -715,7 +715,7 @@ public class TvShowRenamerTest extends BasicTvShowTest {
     artwork = showDir.resolve("season01-thumb.jpg");
     assertThat(artwork).exists();
 
-    artwork = season2Dir.resolve("season02.jpg");
+    artwork = season2Dir.resolve("season02-poster.jpg");
     assertThat(artwork).exists();
     artwork = season2Dir.resolve("season02-banner.jpg");
     assertThat(artwork).exists();

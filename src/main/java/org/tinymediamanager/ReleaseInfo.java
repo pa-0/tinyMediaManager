@@ -15,10 +15,12 @@
  */
 package org.tinymediamanager;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,7 +31,7 @@ import java.util.jar.Manifest;
 
 /**
  * The Class ReleaseInfo.
- * 
+ *
  * @author Manuel Laggner
  */
 public class ReleaseInfo {
@@ -39,18 +41,18 @@ public class ReleaseInfo {
   private static String buildDate;
 
   static {
-    try (FileInputStream fileInputStream = new FileInputStream("version")) { // NOSONAR
+    try (InputStream inputStream = Files.newInputStream(Paths.get("version"))) { // NOSONAR
       Properties releaseInfoProp = new Properties();
-      releaseInfoProp.load(fileInputStream);
+      releaseInfoProp.load(inputStream);
       version = releaseInfoProp.getProperty("version");
       humanVersion = releaseInfoProp.getProperty("human.version");
       build = releaseInfoProp.getProperty("build");
       buildDate = releaseInfoProp.getProperty("date");
     }
     catch (IOException e) {
-      try (FileInputStream fileInputStream = new FileInputStream("target/classes/eclipse.properties")) {
+      try (InputStream inputStream = Files.newInputStream(Paths.get("target/classes/eclipse.properties"))) {
         Properties releaseInfoProp = new Properties();
-        releaseInfoProp.load(fileInputStream);
+        releaseInfoProp.load(inputStream);
         version = releaseInfoProp.getProperty("version");
         humanVersion = releaseInfoProp.getProperty("human.version");
         build = "git";
@@ -72,7 +74,7 @@ public class ReleaseInfo {
 
   /**
    * Gets the version.
-   * 
+   *
    * @return the version
    */
   public static String getVersion() {
@@ -93,7 +95,7 @@ public class ReleaseInfo {
 
   /**
    * Gets the builds the.
-   * 
+   *
    * @return the builds the
    */
   public static String getBuild() {
@@ -102,7 +104,7 @@ public class ReleaseInfo {
 
   /**
    * human readable version with tier (like 5.0-NIGHTLY)
-   * 
+   *
    * @return
    */
   public static String getHumanVersion() {
@@ -111,7 +113,7 @@ public class ReleaseInfo {
 
   /**
    * Gets the builds the date.
-   * 
+   *
    * @return the builds the date
    */
   public static String getBuildDate() {
@@ -136,7 +138,7 @@ public class ReleaseInfo {
 
   /**
    * are we nightly?
-   * 
+   *
    * @return true/false if nightly dev build
    */
   public static boolean isNightly() {
@@ -145,7 +147,7 @@ public class ReleaseInfo {
 
   /**
    * are we pre-release?
-   * 
+   *
    * @return true/false if nightly dev build
    */
   public static boolean isPreRelease() {
@@ -154,7 +156,7 @@ public class ReleaseInfo {
 
   /**
    * are we a GIT version?
-   * 
+   *
    * @return true/false if GIT build
    */
   public static boolean isGitBuild() {
@@ -163,7 +165,7 @@ public class ReleaseInfo {
 
   /**
    * are we on the release version?
-   * 
+   *
    * @return true/false if release build
    */
   public static boolean isReleaseBuild() {
@@ -173,7 +175,7 @@ public class ReleaseInfo {
   /**
    * gets the REAL version string out of the JAR file's manifest<br>
    * eg: 2.4 (r992)
-   * 
+   *
    * @return version string
    */
   public static String getRealVersion() {
@@ -199,7 +201,7 @@ public class ReleaseInfo {
   /**
    * gets the REAL build date string out of the JAR file's manifest<br>
    * eg: 20130924-1832
-   * 
+   *
    * @return version string
    */
   public static String getRealBuildDate() {
@@ -214,13 +216,12 @@ public class ReleaseInfo {
    * gets manifest from JAR containing 'class'<br>
    * If found as 'file://' try to get from execution root<br>
    * returns <i>null</i> if not found.
-   * 
+   *
    * @param c
    *          the class file
    * @return value of manifest entry
    */
-  @SuppressWarnings("rawtypes")
-  public static Manifest getManifest(Class c) {
+  public static Manifest getManifest(Class<?> c) {
     Manifest mf = null;
     try {
       String classname = "/" + c.getName().replaceAll("\\.", "/") + ".class";
@@ -237,7 +238,7 @@ public class ReleaseInfo {
         String basepath = jarURL.getPath().substring(0, jarURL.getPath().indexOf(classname));
 
         // assume there is already some generated manifest on filesystem
-        new Manifest(new FileInputStream(basepath + "/META-INF/MANIFEST.MF"));
+        mf = new Manifest(Files.newInputStream(Paths.get(basepath, "/META-INF/MANIFEST.MF")));
       }
     }
     catch (Exception e) {
@@ -248,9 +249,8 @@ public class ReleaseInfo {
   }
 
   /**
-   * 
    * gets specified manifest entry from JAR containing 'class'
-   * 
+   *
    * @param c
    *          the class file
    * @param entry

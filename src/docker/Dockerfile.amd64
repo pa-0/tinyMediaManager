@@ -1,5 +1,5 @@
 # Building application container
-FROM tinymediamanager/base-amd64:20240124150717
+FROM tinymediamanager/base-amd64:20240812174251
 
 ENV APP=tinyMediaManager
 ENV ALLOW_DIRECT_VNC=true
@@ -9,7 +9,7 @@ ENV LC_TIME=C.UTF-8
 
 # libmediainfo
 ARG LIBZEN=https://mediaarea.net/download/binary/libzen0/0.4.41/libzen0v5_0.4.41-1_amd64.Debian_11.deb
-ARG LIBMEDIAINFO=https://mediaarea.net/download/binary/libmediainfo0/24.01/libmediainfo0v5_24.01-1_amd64.Debian_11.deb
+ARG LIBMEDIAINFO=https://mediaarea.net/download/binary/libmediainfo0/24.05/libmediainfo0v5_24.05-1_amd64.Debian_11.deb
 
 RUN \
     wget -q ${LIBZEN} && \

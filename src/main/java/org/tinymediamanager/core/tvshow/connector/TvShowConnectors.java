@@ -43,16 +43,52 @@ public enum TvShowConnectors {
   }
 
   /**
-   * checks, if current NFO file is a valid XML<br>
-   * (by casting to all known XML formats)
+   * checks, if current NFO file is a valid TV show NFO<br>
+   * (by casting to all known NFO formats)
    *
    * @param nfo
    *          the path to the NFO
    * @return true/false
    */
-  public static boolean isValidNFO(Path nfo) {
+  public static boolean isValidTvShowNFO(Path nfo) {
     try {
       TvShowNfoParser tvShowNfoParser = TvShowNfoParser.parseNfo(nfo);
+      return tvShowNfoParser.isValidNfo();
+    }
+    catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * checks, if current NFO file is a valid season NFO<br>
+   * (by casting to all known NFO formats)
+   *
+   * @param nfo
+   *          the path to the NFO
+   * @return true/false
+   */
+  public static boolean isValidTvShowSeasonNFO(Path nfo) {
+    try {
+      TvShowSeasonNfoParser tvShowNfoParser = TvShowSeasonNfoParser.parseNfo(nfo);
+      return tvShowNfoParser.isValidNfo();
+    }
+    catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * checks, if current NFO file is a valid episode NFO<br>
+   * (by casting to all known NFO formats)
+   *
+   * @param nfo
+   *          the path to the NFO
+   * @return true/false
+   */
+  public static boolean isValidTvShowEpisodeNFO(Path nfo) {
+    try {
+      TvShowEpisodeNfoParser tvShowNfoParser = TvShowEpisodeNfoParser.parseNfo(nfo);
       return tvShowNfoParser.isValidNfo();
     }
     catch (Exception e) {

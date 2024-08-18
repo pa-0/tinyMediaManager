@@ -60,7 +60,7 @@ public class TvShowTrailerDownloadTask extends TmmTask {
 
     // store the trailer settings at the start of this task (to do not suffer from changes while the task is running)
     trailernames.addAll(TvShowModuleManager.getInstance().getSettings().getTrailerFilenames());
-    desiredSource = TvShowModuleManager.getInstance().getSettings().getTrailerSource();
+    desiredSource = TrailerSources.YOUTUBE;
     desiredQuality = TvShowModuleManager.getInstance().getSettings().getTrailerQuality();
   }
 
@@ -112,7 +112,7 @@ public class TvShowTrailerDownloadTask extends TmmTask {
 
         Matcher matcher = Utils.YOUTUBE_PATTERN.matcher(url);
         if (matcher.matches()) {
-          task = new YTDownloadTask(trailer, desiredQuality) {
+          task = new YTDownloadTask(trailer, desiredQuality, TvShowModuleManager.getInstance().getSettings().isUseYtDlp()) {
             @Override
             protected Path getDestinationWoExtension() {
               return getDestination();

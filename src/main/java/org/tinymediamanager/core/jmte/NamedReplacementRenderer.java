@@ -55,10 +55,12 @@ public class NamedReplacementRenderer implements NamedRenderer {
 
     String result = object.toString();
 
-    List<String[]> csvContents = CACHE.get(filename.trim());
+    filename = filename.strip();
+
+    List<String[]> csvContents = CACHE.get(filename);
     if (csvContents == null) {
       // try to load the csv with the replacements
-      Path csv = Paths.get(Globals.DATA_FOLDER, filename.trim());
+      Path csv = Paths.get(Globals.DATA_FOLDER, filename);
       if (Files.exists(csv)) {
         // try to parse the csv
         List<String[]> tokens = new ArrayList<>();
@@ -69,7 +71,7 @@ public class NamedReplacementRenderer implements NamedRenderer {
               tokens.add(new String[] { record.get(0), record.get(1) });
             }
           }
-          CACHE.put(filename.trim(), tokens);
+          CACHE.put(filename, tokens);
           csvContents = tokens;
         }
         catch (Exception e) {

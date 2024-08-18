@@ -18,23 +18,18 @@ package org.tinymediamanager.ui.tvshows.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import org.tinymediamanager.core.TmmResourceBundle;
-import org.tinymediamanager.core.entities.MediaRating;
-import org.tinymediamanager.core.threading.TmmTask;
-import org.tinymediamanager.core.threading.TmmTaskHandle;
 import org.tinymediamanager.core.threading.TmmTaskManager;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
-import org.tinymediamanager.scraper.MediaMetadata;
-import org.tinymediamanager.scraper.entities.MediaType;
+import org.tinymediamanager.core.tvshow.tasks.TvShowFetchRatingsTask;
 import org.tinymediamanager.scraper.rating.RatingProvider;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
@@ -75,51 +70,7 @@ public class TvShowFetchRatingsAction extends TmmAction {
     List<RatingProvider.RatingSource> sources = dialog.getSelectedRatingSources();
 
     if (!sources.isEmpty()) {
-      TmmTaskManager.getInstance()
-          .addUnnamedTask(new TmmTask(TmmResourceBundle.getString("tvshow.fetchratings"), tvShows.size() + episodes.size(),
-              TmmTaskHandle.TaskType.BACKGROUND_TASK) {
-
-            @Override
-            protected void doInBackground() {
-              int i = 0;
-
-              // TV shows
-              for (TvShow tvShow : tvShows) {
-                Map<String, Object> ids = new HashMap<>(tvShow.getIds());
-                ids.put(MediaMetadata.TVSHOW_IDS, tvShow.getIds());
-                List<MediaRating> ratings = RatingProvider.getRatings(ids, sources, MediaType.TV_SHOW);
-                ratings.forEach(tvShow::setRating);
-                if (!ratings.isEmpty()) {
-                  tvShow.saveToDb();
-                  tvShow.writeNFO();
-                }
-
-                publishState(++i);
-                if (cancel) {
-                  break;
-                }
-              }
-
-              // episodes
-              for (TvShowEpisode episode : episodes) {
-                Map<String, Object> ids = new HashMap<>(episode.getIds());
-                ids.put(MediaMetadata.TVSHOW_IDS, episode.getTvShow().getIds());
-                ids.put(MediaMetadata.SEASON_NR, episode.getSeason());
-                ids.put(MediaMetadata.EPISODE_NR, episode.getEpisode());
-                List<MediaRating> ratings = RatingProvider.getRatings(ids, sources, MediaType.TV_EPISODE);
-                ratings.forEach(episode::setRating);
-                if (!ratings.isEmpty()) {
-                  episode.saveToDb();
-                  episode.writeNFO();
-                }
-
-                publishState(++i);
-                if (cancel) {
-                  break;
-                }
-              }
-            }
-          });
+      TmmTaskManager.getInstance().addUnnamedTask(new TvShowFetchRatingsTask(tvShows, episodes, sources));
     }
   }
 }

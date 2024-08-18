@@ -16,9 +16,9 @@
 package org.tinymediamanager.core;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,13 +39,16 @@ import org.tinymediamanager.core.entities.MediaEntity;
 import org.tinymediamanager.core.jmte.HtmlEncoder;
 import org.tinymediamanager.core.jmte.JSONEncoder;
 import org.tinymediamanager.core.jmte.NamedArrayRenderer;
+import org.tinymediamanager.core.jmte.NamedArrayUniqueRenderer;
 import org.tinymediamanager.core.jmte.NamedBitrateRenderer;
 import org.tinymediamanager.core.jmte.NamedDateRenderer;
 import org.tinymediamanager.core.jmte.NamedFilesizeRenderer;
 import org.tinymediamanager.core.jmte.NamedFirstCharacterRenderer;
+import org.tinymediamanager.core.jmte.NamedFramerateRenderer;
 import org.tinymediamanager.core.jmte.NamedLowerCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedNumberRenderer;
 import org.tinymediamanager.core.jmte.NamedReplacementRenderer;
+import org.tinymediamanager.core.jmte.NamedSplitRenderer;
 import org.tinymediamanager.core.jmte.NamedTitleCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedUpperCaseRenderer;
 import org.tinymediamanager.core.jmte.RegexpProcessor;
@@ -90,7 +93,7 @@ public abstract class MediaEntityExporter {
 
     // load settings from template
     properties = new Properties();
-    try (FileInputStream fis = new FileInputStream(configFile.toFile()); BufferedInputStream bis = new BufferedInputStream(fis)) {
+    try (InputStream is = Files.newInputStream(configFile); BufferedInputStream bis = new BufferedInputStream(is)) {
       properties.load(bis);
     }
 
@@ -132,16 +135,19 @@ public abstract class MediaEntityExporter {
   }
 
   protected void registerDefaultRenderers() {
-    engine.registerNamedRenderer(new NamedDateRenderer());
-    engine.registerNamedRenderer(new NamedNumberRenderer());
-    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
-    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
-    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
-    engine.registerNamedRenderer(new NamedFirstCharacterRenderer());
-    engine.registerNamedRenderer(new NamedFilesizeRenderer());
-    engine.registerNamedRenderer(new NamedBitrateRenderer());
-    engine.registerNamedRenderer(new NamedReplacementRenderer());
     engine.registerNamedRenderer(new NamedArrayRenderer());
+    engine.registerNamedRenderer(new NamedArrayUniqueRenderer());
+    engine.registerNamedRenderer(new NamedBitrateRenderer());
+    engine.registerNamedRenderer(new NamedDateRenderer());
+    engine.registerNamedRenderer(new NamedFilesizeRenderer());
+    engine.registerNamedRenderer(new NamedFirstCharacterRenderer());
+    engine.registerNamedRenderer(new NamedFramerateRenderer());
+    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
+    engine.registerNamedRenderer(new NamedNumberRenderer());
+    engine.registerNamedRenderer(new NamedReplacementRenderer());
+    engine.registerNamedRenderer(new NamedSplitRenderer());
+    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
+    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
 
     // NEEDS TO BE THE LAST !
     engine.registerNamedRenderer(new ChainedNamedRenderer(engine.getAllNamedRenderers()));
@@ -158,7 +164,7 @@ public abstract class MediaEntityExporter {
 
   /**
    * Find templates for the given type.
-   * 
+   *
    * @param type
    *          the template type
    * @return the list of all found template types
@@ -212,7 +218,7 @@ public abstract class MediaEntityExporter {
 
           // load settings from template
           Properties properties = new Properties();
-          try (FileInputStream fis = new FileInputStream(config.toFile()); BufferedInputStream bis = new BufferedInputStream(fis)) {
+          try (InputStream is = Files.newInputStream(config); BufferedInputStream bis = new BufferedInputStream(is)) {
             properties.load(bis);
           }
           catch (Exception e) {
@@ -294,8 +300,8 @@ public abstract class MediaEntityExporter {
         String value = "";
         try {
           String[] d = detail.split("=");
-          key = d[0].trim();
-          value = d[1].trim();
+          key = d[0].strip();
+          value = d[1].strip();
         }
         catch (Exception ignored) {
           // ignored

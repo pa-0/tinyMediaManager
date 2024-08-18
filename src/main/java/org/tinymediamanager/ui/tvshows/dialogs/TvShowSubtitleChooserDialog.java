@@ -48,7 +48,6 @@ import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.tasks.DownloadTask;
 import org.tinymediamanager.core.tasks.SubtitleDownloadTask;
-import org.tinymediamanager.core.threading.TmmTaskManager;
 import org.tinymediamanager.core.tvshow.TvShowList;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
@@ -404,18 +403,35 @@ public class TvShowSubtitleChooserDialog extends TmmDialog {
         row = table.convertRowIndexToModel(row);
         TvShowSubtitleChooserModel model = subtitleEventList.get(row);
 
-        if (StringUtils.isNotBlank(model.getDownloadUrl())) {
-          MediaLanguages language = model.getLanguage();
-          // the right language tag from the renamer settings
-          String lang = LanguageStyle.getLanguageCodeForStyle(language.name(),
-              TvShowModuleManager.getInstance().getSettings().getSubtitleLanguageStyle());
-          if (StringUtils.isBlank(lang)) {
-            lang = language.name();
-          }
+        try {
+          if (StringUtils.isNotBlank(model.getDownloadUrl())) {
+            MediaLanguages language = model.getLanguage();
+            // the right language tag from the renamer settings
+            String lang = LanguageStyle.getLanguageCodeForStyle(language.name(),
+                TvShowModuleManager.getInstance().getSettings().getSubtitleLanguageStyle());
+            if (StringUtils.isBlank(lang)) {
+              lang = language.name();
+            }
 
-          String filename = FilenameUtils.getBaseName(fileToScrape.getFilename()) + "." + lang;
-          DownloadTask task = new SubtitleDownloadTask(model.getDownloadUrl(), episodeToScrape.getPathNIO().resolve(filename), episodeToScrape);
-          TmmTaskManager.getInstance().addDownloadTask(task);
+            String filename = FilenameUtils.getBaseName(fileToScrape.getFilename()) + "." + lang;
+            DownloadTask task = new SubtitleDownloadTask(model.getDownloadUrl(), episodeToScrape.getPathNIO().resolve(filename), episodeToScrape);
+
+            // blocking
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            lblProgressAction.setVisible(true);
+            lblProgressAction.setText(TmmResourceBundle.getString("subtitle.downloading"));
+
+            task.run();
+
+            lblProgressAction.setText(TmmResourceBundle.getString("subtitle.downloaded") + " - " + model.getReleaseName());
+          }
+        }
+        catch (Exception ex) {
+          lblProgressAction.setVisible(true);
+          lblProgressAction.setText(TmmResourceBundle.getString("message.scrape.subtitlefaileddownload") + " - " + ex.getLocalizedMessage());
+        }
+        finally {
+          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
       }
     }

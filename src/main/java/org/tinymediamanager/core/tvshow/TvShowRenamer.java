@@ -60,12 +60,15 @@ import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaFileSubtitle;
 import org.tinymediamanager.core.jmte.JmteUtils;
 import org.tinymediamanager.core.jmte.NamedArrayRenderer;
+import org.tinymediamanager.core.jmte.NamedArrayUniqueRenderer;
 import org.tinymediamanager.core.jmte.NamedBitrateRenderer;
 import org.tinymediamanager.core.jmte.NamedDateRenderer;
 import org.tinymediamanager.core.jmte.NamedFilesizeRenderer;
+import org.tinymediamanager.core.jmte.NamedFramerateRenderer;
 import org.tinymediamanager.core.jmte.NamedLowerCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedNumberRenderer;
 import org.tinymediamanager.core.jmte.NamedReplacementRenderer;
+import org.tinymediamanager.core.jmte.NamedSplitRenderer;
 import org.tinymediamanager.core.jmte.NamedTitleCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedUpperCaseRenderer;
 import org.tinymediamanager.core.jmte.RegexpProcessor;
@@ -180,6 +183,7 @@ public class TvShowRenamer {
     tokenMap.put("aspectRatio2", "episode.mediaInfoAspectRatio2AsString");
     tokenMap.put("videoBitDepth", "episode.mediaInfoVideoBitDepth");
     tokenMap.put("videoBitRate", "episode.mediaInfoVideoBitrate;bitrate");
+    tokenMap.put("framerate", "episode.mediaInfoFrameRate;framerate");
 
     tokenMap.put("audioCodec", "episode.mediaInfoAudioCodec");
     tokenMap.put("audioCodecList", "episode.mediaInfoAudioCodecList");
@@ -456,11 +460,6 @@ public class TvShowRenamer {
    */
   public static List<MediaFile> generateFilename(TvShow tvShow, MediaFile original) {
     List<MediaFile> neededMediaFiles = new ArrayList<>();
-
-    boolean spaceSubstitution = TvShowModuleManager.getInstance().getSettings().isRenamerFilenameSpaceSubstitution();
-    String spaceReplacement = TvShowModuleManager.getInstance().getSettings().getRenamerFilenameSpaceReplacement();
-    String cleanedShowTitle = cleanupDestination(tvShow.getTitle(), spaceSubstitution, spaceReplacement);
-
     List<? extends IFileNaming> filenamings = null;
 
     switch (original.getType()) {
@@ -521,7 +520,7 @@ public class TvShowRenamer {
 
     if (filenamings != null) {
       for (IFileNaming name : filenamings) {
-        String newFilename = name.getFilename(cleanedShowTitle, getMediaFileExtension(original));
+        String newFilename = name.getFilename(tvShow.getFoldername(), getMediaFileExtension(original));
 
         if (StringUtils.isNotBlank(newFilename)) {
           MediaFile newMediaFile = new MediaFile(original);
@@ -1595,16 +1594,19 @@ public class TvShowRenamer {
   public static Engine createEngine() {
     Engine engine = Engine.createEngine();
     engine.registerRenderer(Number.class, new ZeroNumberRenderer());
-    engine.registerNamedRenderer(new NamedDateRenderer());
-    engine.registerNamedRenderer(new NamedNumberRenderer());
-    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
-    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
-    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
-    engine.registerNamedRenderer(new TvShowNamedFirstCharacterRenderer());
     engine.registerNamedRenderer(new NamedArrayRenderer());
-    engine.registerNamedRenderer(new NamedFilesizeRenderer());
+    engine.registerNamedRenderer(new NamedArrayUniqueRenderer());
     engine.registerNamedRenderer(new NamedBitrateRenderer());
+    engine.registerNamedRenderer(new NamedDateRenderer());
+    engine.registerNamedRenderer(new NamedFilesizeRenderer());
+    engine.registerNamedRenderer(new NamedFramerateRenderer());
+    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
+    engine.registerNamedRenderer(new NamedNumberRenderer());
     engine.registerNamedRenderer(new NamedReplacementRenderer());
+    engine.registerNamedRenderer(new NamedSplitRenderer());
+    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
+    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
+    engine.registerNamedRenderer(new TvShowNamedFirstCharacterRenderer());
     engine.registerNamedRenderer(new ChainedNamedRenderer(engine.getAllNamedRenderers()));
 
     engine.registerAnnotationProcessor(new RegexpProcessor());
@@ -1722,7 +1724,7 @@ public class TvShowRenamer {
 
         loopNumbers += episodePart;
       }
-      loopNumbers = loopNumbers.trim();
+      loopNumbers = loopNumbers.strip();
 
       // foreach episode, replace and append pattern:
       StringBuilder episodeParts = new StringBuilder();
@@ -1749,7 +1751,7 @@ public class TvShowRenamer {
         }
       }
 
-      loopTitles = loopTitles.trim();
+      loopTitles = loopTitles.strip();
 
       // foreach episode, replace and append pattern:
       if (StringUtils.isNotBlank(loopTitles)) {
@@ -1785,7 +1787,7 @@ public class TvShowRenamer {
         }
       }
 
-      loopAired = loopAired.trim();
+      loopAired = loopAired.strip();
 
       // foreach episode, replace and append pattern:
       if (StringUtils.isNotBlank(loopAired)) {
@@ -1875,10 +1877,13 @@ public class TvShowRenamer {
     destination = destination.replace(": ", " - "); // nicer
     destination = destination.replace(":", "-"); // nicer
 
-    // trim out unnecessary whitespaces
-    destination = destination.replaceAll(" +", " ").trim();
+    // replace new lines
+    destination = destination.replaceAll("\r?\n", " ");
 
-    return destination.trim();
+    // trim out unnecessary whitespaces
+    destination = destination.replaceAll(" +", " ");
+
+    return destination.strip();
   }
 
   /**
@@ -2146,7 +2151,7 @@ public class TvShowRenamer {
       else {
         token = fulltoken;
       }
-      String tok = TOKEN_MAP.get(token.trim());
+      String tok = TOKEN_MAP.get(token.strip());
       if (tok == null) {
         err += "  " + matcher.group(); // complete token with ${}
       }

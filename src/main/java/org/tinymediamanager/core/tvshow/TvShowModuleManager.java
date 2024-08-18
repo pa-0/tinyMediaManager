@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -384,47 +385,48 @@ public final class TvShowModuleManager implements ITmmModule {
     }
 
     try {
-      Map<MediaEntity, Long> pending = new HashMap<>(pendingChanges);
-
       long now = System.currentTimeMillis();
 
-      for (Map.Entry<MediaEntity, Long> entry : pending.entrySet()) {
+      // filter on commit delay, and put into ordered TreeMap
+      Map<UUID, MediaEntity> mapToSave = new TreeMap<>();
+      for (Map.Entry<MediaEntity, Long> entry : pendingChanges.entrySet()) {
         if (force || entry.getValue() < (now - COMMIT_DELAY)) {
-          try {
-            if (entry.getKey() instanceof TvShow tvShow) {
-              // store TV show
-              // only diffs
-              String oldValue = tvShowMap.get(tvShow.getDbId());
-              String newValue = tvShowObjectWriter.writeValueAsString(tvShow);
-              if (!StringUtils.equals(oldValue, newValue)) {
-                tvShowMap.put(tvShow.getDbId(), newValue);
-              }
-            }
-            else if (entry.getKey() instanceof TvShowSeason season) {
-              // store season
-              // only diffs
-              String oldValue = seasonMap.get(season.getDbId());
-              String newValue = seasonObjectWriter.writeValueAsString(season);
-              if (!StringUtils.equals(oldValue, newValue)) {
-                seasonMap.put(season.getDbId(), newValue);
-              }
-            }
-            else if (entry.getKey() instanceof TvShowEpisode episode) {
-              // store episode
-              // only diffs
-              String oldValue = episodeMap.get(episode.getDbId());
-              String newValue = episodeObjectWriter.writeValueAsString(episode);
-              if (!StringUtils.equals(oldValue, newValue)) {
-                episodeMap.put(episode.getDbId(), newValue);
-              }
+          mapToSave.put(entry.getKey().getDbId(), entry.getKey());
+        }
+      }
+
+      for (Map.Entry<UUID, MediaEntity> entry : mapToSave.entrySet()) {
+        try {
+          if (entry.getValue() instanceof TvShow tvShow) {
+            // only diffs
+            String oldValue = tvShowMap.get(tvShow.getDbId());
+            String newValue = tvShowObjectWriter.writeValueAsString(tvShow);
+            if (!StringUtils.equals(oldValue, newValue)) {
+              tvShowMap.put(tvShow.getDbId(), newValue);
             }
           }
-          catch (Exception e) {
-            LOGGER.warn("could not store '{}' - '{}'", entry.getKey().getClass().getName(), e.getMessage());
+          else if (entry.getValue() instanceof TvShowSeason season) {
+            // only diffs
+            String oldValue = seasonMap.get(season.getDbId());
+            String newValue = seasonObjectWriter.writeValueAsString(season);
+            if (!StringUtils.equals(oldValue, newValue)) {
+              seasonMap.put(season.getDbId(), newValue);
+            }
           }
-          finally {
-            pendingChanges.remove(entry.getKey());
+          else if (entry.getValue() instanceof TvShowEpisode episode) {
+            // only diffs
+            String oldValue = episodeMap.get(episode.getDbId());
+            String newValue = episodeObjectWriter.writeValueAsString(episode);
+            if (!StringUtils.equals(oldValue, newValue)) {
+              episodeMap.put(episode.getDbId(), newValue);
+            }
           }
+        }
+        catch (Exception e) {
+          LOGGER.warn("could not store '{}' - '{}'", entry.getKey().getClass().getName(), e.getMessage());
+        }
+        finally {
+          pendingChanges.remove(entry.getValue());
         }
       }
     }
@@ -443,16 +445,19 @@ public final class TvShowModuleManager implements ITmmModule {
    * gets the JSON out of the DB from specified tvShow
    * 
    * @param tvShow
+   *          the {@link TvShow} to dump
+   * @param withChilds
+   *          should we also dump all children?
    * @return JSON string
    */
-  public String getTvShowJsonFromDB(TvShow tvshow, boolean withChilds) {
+  public String getTvShowJsonFromDB(TvShow tvShow, boolean withChilds) {
     try {
       ObjectMapper mapper = new ObjectMapper();
-      ObjectNode showNode = mapper.readValue(tvShowMap.get(tvshow.getDbId()), ObjectNode.class);
+      ObjectNode showNode = mapper.readValue(tvShowMap.get(tvShow.getDbId()), ObjectNode.class);
 
       if (withChilds) {
         ArrayNode seasons = JsonNodeFactory.instance.arrayNode();
-        for (TvShowSeason se : tvshow.getSeasons()) {
+        for (TvShowSeason se : tvShow.getSeasons()) {
           ObjectNode seasonNode = mapper.readValue(seasonMap.get(se.getDbId()), ObjectNode.class);
 
           ArrayNode episodes = JsonNodeFactory.instance.arrayNode();
@@ -478,21 +483,21 @@ public final class TvShowModuleManager implements ITmmModule {
   /**
    * dumps a whole TV show to logfile
    * 
-   * @param tvshow
+   * @param tvShow
    *          the TV show to dump the data for
    */
-  public void dump(TvShow tvshow, boolean withChilds) {
-    String d = getTvShowJsonFromDB(tvshow, withChilds);
+  public void dump(TvShow tvShow, boolean withChilds) {
+    String d = getTvShowJsonFromDB(tvShow, withChilds);
     if (!d.isEmpty()) {
-      LOGGER.info("Dumping TvShow: {}\n{}", tvshow.getDbId(), d);
+      LOGGER.info("Dumping TvShow: {}\n{}", tvShow.getDbId(), d);
     }
   }
 
   /**
    * dumps a whole season to logfile
    * 
-   * @param tvshow
-   *          the TV show to dump the data for
+   * @param season
+   *          the TV show season to dump the data for
    */
   public void dump(TvShowSeason season, boolean withChilds) {
     try {
@@ -517,16 +522,16 @@ public final class TvShowModuleManager implements ITmmModule {
   /**
    * dumps a single episode to logfile
    * 
-   * @param tvshow
-   *          the TV show to dump the data for
+   * @param episode
+   *          the TV show episode to dump the data for
    */
-  public void dump(TvShowEpisode ep) {
+  public void dump(TvShowEpisode episode) {
     try {
       ObjectMapper mapper = new ObjectMapper();
-      if (episodeMap.get(ep.getDbId()) != null) {
-        ObjectNode epNode = mapper.readValue(episodeMap.get(ep.getDbId()), ObjectNode.class);
+      if (episodeMap.get(episode.getDbId()) != null) {
+        ObjectNode epNode = mapper.readValue(episodeMap.get(episode.getDbId()), ObjectNode.class);
         String s = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(epNode);
-        LOGGER.info("Dumping TvShowEpisode: {}\n{}", ep.getDbId(), s);
+        LOGGER.info("Dumping TvShowEpisode: {}\n{}", episode.getDbId(), s);
       }
       else {
         // dummy?

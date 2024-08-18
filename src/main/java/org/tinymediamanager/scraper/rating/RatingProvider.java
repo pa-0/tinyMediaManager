@@ -112,8 +112,8 @@ public class RatingProvider {
     return null;
   }
 
-  public static List<MediaRating> getRatingsFromMdbList(Map<String, Object> ids) {
-    return new MdbListRating().getRatings(ids);
+  public static List<MediaRating> getRatingsFromMdbList(Map<String, Object> ids, MediaType mediaType) {
+    return new MdbListRating().getRatings(mediaType, ids);
   }
 
   /**
@@ -173,7 +173,7 @@ public class RatingProvider {
     // MdbList
     if (ListUtils.containsAny(missingRatings, RatingSource.METACRITIC, RatingSource.ROTTEN_TOMATOES_AVG_RATING,
         RatingSource.ROTTEN_TOMATOES_AVG_RATING, RatingSource.LETTERBOXD, RatingSource.MAL, RatingSource.ROGER_EBERT)) {
-      List<MediaRating> ratingsFromMdblist = new MdbListRating().getRatings(ids);
+      List<MediaRating> ratingsFromMdblist = new MdbListRating().getRatings(mediaType, ids);
       for (MediaRating rating : ratingsFromMdblist) {
         RatingSource source = parseRatingSource(rating.getId());
         if (missingRatings.contains(source) && !ratings.contains(rating)) {

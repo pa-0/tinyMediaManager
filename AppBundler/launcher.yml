@@ -9,7 +9,6 @@ jvmOpts:
   - '-Xmx512m'
   - '-Xss512k'
   - '-XX:+IgnoreUnrecognizedVMOptions'
-  - '-XX:+UseG1GC'
   - '-XX:+UseStringDeduplication'
   - '-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine'
   - '-Djava.net.preferIPv4Stack=true'

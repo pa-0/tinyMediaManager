@@ -239,9 +239,15 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
 
     if (!newNfos.isEmpty()) {
       for (TvShowEpisode episode : episodes) {
-        // remove orphaned files
+        // remove orphaned NFO files (tmm style)
         List<MediaFile> existingNfos = episode.getMediaFiles(MediaFileType.NFO);
         for (MediaFile nfo : existingNfos) {
+          if (!TvShowConnectors.isValidTvShowEpisodeNFO(nfo.getFileAsPath())) {
+            // keep non tmm NFO files
+            newNfos.add(nfo);
+            continue;
+          }
+
           if (!newNfos.contains(nfo)) {
             try {
               Utils.deleteFileWithBackup(nfo.getFileAsPath(), episode.getTvShow().getDataSource());
@@ -734,7 +740,12 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
    */
   protected void addOriginalFilename(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
     Element originalFilename = document.createElement("original_filename");
-    originalFilename.setTextContent(episode.getMainFile().getFilename());
+    if (StringUtils.isBlank(episode.getOriginalFilename())) {
+      originalFilename.setTextContent(episode.getMainFile().getFilename());
+    }
+    else {
+      originalFilename.setTextContent(episode.getOriginalFilename());
+    }
     root.appendChild(originalFilename);
   }
 
@@ -862,7 +873,7 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
    * @param person
    *          the {@link Person} to get the ids from
    */
-  private void addPersonIdsAsAttributes(Element element, Person person) {
+  protected void addPersonIdsAsAttributes(Element element, Person person) {
     // TMDB id
     int tmdbId = person.getIdAsInt(MediaMetadata.TMDB);
     if (tmdbId > 0) {
@@ -890,7 +901,7 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
    * @param person
    *          the {@link Person} to get the ids from
    */
-  private void addPersonIdsAsChildren(Element element, Person person) {
+  protected void addPersonIdsAsChildren(Element element, Person person) {
     // TMDB id
     int tmdbId = person.getIdAsInt(MediaMetadata.TMDB);
     if (tmdbId > 0) {

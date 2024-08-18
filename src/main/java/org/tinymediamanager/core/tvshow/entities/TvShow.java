@@ -418,7 +418,7 @@ public class TvShow extends MediaEntity implements IMediaInformation {
       if (StringUtils.isBlank(ratingSource)) {
         continue;
       }
-      
+
       mediaRating = ratings.get(ratingSource);
       if (mediaRating != null) {
         break;
@@ -953,6 +953,7 @@ public class TvShow extends MediaEntity implements IMediaInformation {
     if (!seasons.contains(season)) {
       int seasonCount = seasons.size();
       seasons.add(season);
+      seasons.sort(TvShowSeason::compareTo);
 
       firePropertyChange(ADDED_SEASON, null, season);
       firePropertyChange(SEASON_COUNT, seasonCount, seasons.size());
@@ -1908,7 +1909,7 @@ public class TvShow extends MediaEntity implements IMediaInformation {
     // set preferred trailer
     if (TvShowModuleManager.getInstance().getSettings().isUseTrailerPreference()) {
       TrailerQuality desiredQuality = TvShowModuleManager.getInstance().getSettings().getTrailerQuality();
-      TrailerSources desiredSource = TvShowModuleManager.getInstance().getSettings().getTrailerSource();
+      TrailerSources desiredSource = TrailerSources.YOUTUBE;
 
       // search for quality and provider
       for (MediaTrailer trailer : trailers) {
@@ -2018,6 +2019,24 @@ public class TvShow extends MediaEntity implements IMediaInformation {
     List<MediaFile> mediaFiles = new ArrayList<>();
     for (TvShowEpisode episode : this.episodes) {
       for (MediaFile mf : episode.getMediaFiles()) {
+        if (!mediaFiles.contains(mf)) {
+          mediaFiles.add(mf);
+        }
+      }
+    }
+    return mediaFiles;
+  }
+
+  /**
+   * Gets the media files of all seasons.<br>
+   * (without the TV show MFs like poster/banner/...)
+   *
+   * @return the media files
+   */
+  public List<MediaFile> getSeasonMediaFiles() {
+    List<MediaFile> mediaFiles = new ArrayList<>();
+    for (TvShowSeason season : this.seasons) {
+      for (MediaFile mf : season.getMediaFiles()) {
         if (!mediaFiles.contains(mf)) {
           mediaFiles.add(mf);
         }
@@ -2431,7 +2450,7 @@ public class TvShow extends MediaEntity implements IMediaInformation {
         return getTags();
 
       case TRAILER:
-        return getMediaFiles(MediaFileType.TRAILER);
+        return getTrailer();
 
       case ACTORS:
         return getActors();

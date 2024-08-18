@@ -356,7 +356,7 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
       Element val = DOMUtils.getElementByTagName(rating, "value");
       if (val == null) {
         // no value tag? must be old rating element...
-        value = NumberUtils.toFloat(rating.getTextContent().trim());
+        value = NumberUtils.toFloat(rating.getTextContent().strip());
 
         String votes = getInfoFromScraperFunctionOrBase("votes", details, subDetails);
         if (StringUtils.isNotBlank(votes)) {
@@ -369,7 +369,7 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
         }
       }
       else {
-        value = NumberUtils.toFloat(val.getTextContent().trim());
+        value = NumberUtils.toFloat(val.getTextContent().strip());
         rat.setVotes(DOMUtils.getElementIntValue(rating, "votes"));
       }
       rat.setRating(value);
@@ -464,7 +464,7 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
     for (int i = 0; i < nl.getLength(); i++) {
       Element el = (Element) nl.item(i);
       Person cm = new Person(Person.Type.DIRECTOR);
-      cm.setName(StringUtils.trim(el.getTextContent()));
+      cm.setName(StringUtils.strip(el.getTextContent()));
       String pic = DOMUtils.getElementValue(el, "thumb");
       if (StringUtils.isNotBlank(pic)) {
         cm.setThumbUrl(pic.startsWith("http") ? pic : baseImageUrl + pic);
@@ -477,7 +477,7 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
     for (int i = 0; i < nl.getLength(); i++) {
       Element el = (Element) nl.item(i);
       Person cm = new Person(Person.Type.WRITER);
-      cm.setName(StringUtils.trim(el.getTextContent()));
+      cm.setName(StringUtils.strip(el.getTextContent()));
       String pic = DOMUtils.getElementValue(el, "thumb");
       if (StringUtils.isNotBlank(pic)) {
         cm.setThumbUrl(pic.startsWith("http") ? pic : baseImageUrl + pic);
@@ -489,7 +489,7 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
     nl = details.getElementsByTagName("genre");
     for (int i = 0; i < nl.getLength(); i++) {
       Element el = (Element) nl.item(i);
-      String g = StringUtils.trim(el.getTextContent());
+      String g = StringUtils.strip(el.getTextContent());
       if (g != null && !g.isEmpty()) {
         MediaGenres genre = MediaGenres.getGenre(g);
         if (genre != null) {
@@ -534,9 +534,9 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
       Element e = (Element) els.item(i);
       String image = e.getTextContent();
       if (image != null)
-        image = image.trim();
+        image = image.strip();
       if (baseUrl != null) {
-        baseUrl = baseUrl.trim();
+        baseUrl = baseUrl.strip();
         image = baseUrl + image;
       }
       processMediaArt(md, type, label, image);
@@ -546,9 +546,9 @@ public abstract class AbstractKodiMetadataProvider implements IKodiMetadataProvi
   private void processMediaArt(MediaMetadata md, MediaArtworkType type, String label, Element e, String baseUrl) {
     String image = e.getTextContent();
     if (image != null)
-      image = image.trim();
+      image = image.strip();
     if (baseUrl != null) {
-      baseUrl = baseUrl.trim();
+      baseUrl = baseUrl.strip();
       image = baseUrl + image;
     }
 

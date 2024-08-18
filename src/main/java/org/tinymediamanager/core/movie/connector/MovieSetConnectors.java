@@ -15,6 +15,8 @@
  */
 package org.tinymediamanager.core.movie.connector;
 
+import java.nio.file.Path;
+
 /**
  * The Enum MovieSetConnectors.
  * 
@@ -32,5 +34,23 @@ public enum MovieSetConnectors {
   @Override
   public String toString() {
     return this.title;
+  }
+
+  /**
+   * checks, if current NFO file is a valid NFO<br>
+   * (by casting to all known NFO formats)
+   *
+   * @param nfo
+   *          the path to the NFO
+   * @return true/false
+   */
+  public static boolean isValidNFO(Path nfo) {
+    try {
+      MovieSetNfoParser movieSetNfoParser = MovieSetNfoParser.parseNfo(nfo);
+      return movieSetNfoParser.isValidNfo();
+    }
+    catch (Exception e) {
+      return false;
+    }
   }
 }

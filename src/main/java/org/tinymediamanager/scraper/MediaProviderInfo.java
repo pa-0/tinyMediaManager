@@ -182,6 +182,6 @@ public class MediaProviderInfo {
       return "";
     }
 
-    return apiKey.trim();
+    return apiKey.strip();
   }
 }

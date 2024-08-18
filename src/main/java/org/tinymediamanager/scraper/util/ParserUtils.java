@@ -254,9 +254,9 @@ public class ParserUtils {
       ret[0] = fname;
     }
     else {
-      ret[0] = name.toString().trim();
+      ret[0] = name.toString().strip();
     }
-    ret[1] = year.trim();
+    ret[1] = year.strip();
     LOGGER.trace("Movie title should be: \"{}\", from {}", ret[0], ret[1]);
 
     return ret;
@@ -494,7 +494,7 @@ public class ParserUtils {
     List<String> result = new ArrayList<>();
 
     for (String string : source.split("[;,\\/|]")) {
-      string = string.trim();
+      string = string.strip();
       if (StringUtils.isNotBlank(string)) {
         result.add(string);
       }
@@ -515,7 +515,7 @@ public class ParserUtils {
     List<String> result = new ArrayList<>();
 
     for (String string : source.split("\\p{Punct}")) {
-      string = string.trim();
+      string = string.strip();
       if (StringUtils.isNotBlank(string)) {
         result.add(string);
       }
@@ -530,7 +530,7 @@ public class ParserUtils {
     public String clean = "";
 
     ParserInfo(String name, List<String> badWords) {
-      this.name = name.trim();
+      this.name = name.strip();
       String[] ty = detectCleanTitleAndYear(this.name, badWords);
       this.clean = ty[0];
       this.year = ty[1];

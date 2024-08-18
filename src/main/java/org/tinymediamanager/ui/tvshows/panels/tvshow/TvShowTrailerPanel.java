@@ -86,7 +86,7 @@ public class TvShowTrailerPanel extends TrailerPanel {
         return "";
       }
 
-      // IMD trailer ID
+      // IMDB trailer ID
       ImdbTvShowTrailerProvider tp = new ImdbTvShowTrailerProvider();
       url = tp.getUrlForId(trailer);
       if (url.isEmpty()) {

@@ -419,24 +419,34 @@ public class MovieSubtitleChooserDialog extends TmmDialog {
         row = table.convertRowIndexToModel(row);
         MovieSubtitleChooserModel model = subtitleEventList.get(row);
 
-        if (StringUtils.isNotBlank(model.getDownloadUrl())) {
-          // the right language tag from the renamer settings
-          String lang = LanguageStyle.getLanguageCodeForStyle(model.getLanguage().name(),
-              MovieModuleManager.getInstance().getSettings().getSubtitleLanguageStyle());
-          if (StringUtils.isBlank(lang)) {
-            lang = model.getLanguage().name();
-          }
-          String filename = FilenameUtils.getBaseName(fileToScrape.getFilename()) + "." + lang;
-          DownloadTask task = new SubtitleDownloadTask(model.getDownloadUrl(), movieToScrape.getPathNIO().resolve(filename), movieToScrape);
-          try {
-            task.run();
+        try {
+          if (StringUtils.isNotBlank(model.getDownloadUrl())) {
+            // the right language tag from the renamer settings
+            String lang = LanguageStyle.getLanguageCodeForStyle(model.getLanguage().name(),
+                MovieModuleManager.getInstance().getSettings().getSubtitleLanguageStyle());
+            if (StringUtils.isBlank(lang)) {
+              lang = model.getLanguage().name();
+            }
+            String filename = FilenameUtils.getBaseName(fileToScrape.getFilename()) + "." + lang;
+
+            DownloadTask task = new SubtitleDownloadTask(model.getDownloadUrl(), movieToScrape.getPathNIO().resolve(filename), movieToScrape);
+
+            // blocking
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             lblProgressAction.setVisible(true);
+            lblProgressAction.setText(TmmResourceBundle.getString("subtitle.downloading"));
+
+            task.run();
+
             lblProgressAction.setText(TmmResourceBundle.getString("subtitle.downloaded") + " - " + model.getReleaseName());
           }
-          catch (Exception ex) {
-            lblProgressAction.setVisible(true);
-            lblProgressAction.setText(TmmResourceBundle.getString("message.scrape.subtitlefaileddownload") + " - " + ex.getLocalizedMessage());
-          }
+        }
+        catch (Exception ex) {
+          lblProgressAction.setVisible(true);
+          lblProgressAction.setText(TmmResourceBundle.getString("message.scrape.subtitlefaileddownload") + " - " + ex.getLocalizedMessage());
+        }
+        finally {
+          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
       }
     }

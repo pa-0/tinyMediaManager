@@ -19,6 +19,7 @@ import static org.tinymediamanager.core.Constants.MEDIA_FILES;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -54,11 +55,11 @@ public class MovieArtworkPanel extends JPanel {
       if ("selectedMovie".equals(property) || MEDIA_FILES.equals(property)) {
         synchronized (mediaFiles) {
           mediaFiles.clear();
-          for (MediaFile mediafile : selectionModel.getSelectedMovie().getMediaFiles()) {
-            if (mediafile.isGraphic()) {
-              mediaFiles.add(mediafile);
-            }
-          }
+
+          mediaFiles.addAll(selectionModel.getSelectedMovie().getMediaFiles().stream().filter(MediaFile::isGraphic).toList());
+          // sort them
+          mediaFiles.sort(Comparator.comparing(MediaFile::getType));
+
           imagePanel.rebuildPanel();
         }
       }

@@ -16,9 +16,9 @@
 package org.tinymediamanager.ui.tvshows.actions;
 
 import java.awt.event.ActionEvent;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.threading.TmmTaskManager;
@@ -26,6 +26,7 @@ import org.tinymediamanager.core.threading.TmmThreadPool;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.tasks.TvShowUpdateDatasourceTask;
 import org.tinymediamanager.ui.IconManager;
+import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.actions.TmmAction;
 import org.tinymediamanager.ui.tvshows.TvShowUIModule;
 
@@ -44,17 +45,13 @@ public class TvShowUpdateAction extends TmmAction {
   @Override
   protected void processAction(ActionEvent e) {
     List<TvShow> selectedTvShows = TvShowUIModule.getInstance().getSelectionModel().getSelectedTvShowsRecursive();
-    List<Path> tvShowFolders = new ArrayList<>();
 
     if (selectedTvShows.isEmpty()) {
+      JOptionPane.showMessageDialog(MainWindow.getInstance(), TmmResourceBundle.getString("tmm.nothingselected"));
       return;
     }
 
-    for (TvShow tvShow : selectedTvShows) {
-      tvShowFolders.add(tvShow.getPathNIO());
-    }
-
-    TmmThreadPool task = new TvShowUpdateDatasourceTask(tvShowFolders);
+    TmmThreadPool task = new TvShowUpdateDatasourceTask(selectedTvShows);
     TmmTaskManager.getInstance().addMainTask(task);
   }
 }

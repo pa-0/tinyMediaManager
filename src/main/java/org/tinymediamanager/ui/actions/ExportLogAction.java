@@ -20,7 +20,6 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,7 +111,7 @@ public class ExportLogAction extends TmmAction {
       // attach logs
       List<Path> logs = Utils.listFiles(Paths.get(Globals.LOG_FOLDER));
       for (Path logFile : logs) {
-        try (FileInputStream in = new FileInputStream(logFile.toFile())) {
+        try (InputStream in = Files.newInputStream(logFile)) {
           zipParameters.setFileNameInZip("logs/" + logFile.getFileName());
 
           zos.putNextEntry(zipParameters);
@@ -130,7 +129,7 @@ public class ExportLogAction extends TmmAction {
       });
       if (data != null) {
         for (File dataFile : data) {
-          try (FileInputStream in = new FileInputStream(dataFile)) {
+          try (InputStream in = Files.newInputStream(dataFile.toPath())) {
             zipParameters.setFileNameInZip("data/" + dataFile.getName());
 
             zos.putNextEntry(zipParameters);

@@ -824,7 +824,7 @@ public class TmdbMovieMetadataProvider extends TmdbMetadataProvider implements I
 
     // production companies
     for (BaseCompany company : ListUtils.nullSafe(movie.production_companies)) {
-      md.addProductionCompany(company.name.trim());
+      md.addProductionCompany(company.name.strip());
     }
 
     // releases & certification

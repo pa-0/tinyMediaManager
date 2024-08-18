@@ -388,30 +388,19 @@ public class TmmUIHelper {
       // try all different starters
       boolean started = false;
       try {
-        exec(new String[] { "xdg-open", abs });
+        exec(new String[] { "gio", "open", abs });
         started = true;
       }
       catch (IOException ignored) {
-        // nothing to do here
+        // no exception handling needed
       }
 
       if (!started) {
         try {
-          exec(new String[] { "kde-open", abs });
-          started = true;
+          exec(new String[] { "xdg-open", abs });
         }
         catch (IOException ignored) {
-          // nothing to do here
-        }
-      }
-
-      if (!started) {
-        try {
-          exec(new String[] { "gnome-open", abs });
-          started = true;
-        }
-        catch (IOException ignored) {
-          // nothing to do here
+          // no exception handling needed
         }
       }
 
@@ -476,7 +465,7 @@ public class TmmUIHelper {
       // try all different starters
       boolean started = false;
       try {
-        exec(new String[] { "gnome-open", url });
+        exec(new String[] { "gio", "open", url });
         started = true;
       }
       catch (IOException ignored) {
@@ -485,28 +474,7 @@ public class TmmUIHelper {
 
       if (!started) {
         try {
-          exec(new String[] { "kde-open", url });
-          started = true;
-        }
-        catch (IOException ignored) {
-          // no exception handling needed
-        }
-      }
-
-      if (!started) {
-        try {
-          exec(new String[] { "kde-open5", url });
-          started = true;
-        }
-        catch (IOException ignored) {
-          // no exception handling needed
-        }
-      }
-
-      if (!started) {
-        try {
           exec(new String[] { "xdg-open", url });
-          started = true;
         }
         catch (IOException ignored) {
           // no exception handling needed

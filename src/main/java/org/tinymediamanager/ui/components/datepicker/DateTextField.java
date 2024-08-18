@@ -149,7 +149,7 @@ class DateTextField extends JFormattedTextField implements CaretListener, FocusL
    */
   @Override
   public void caretUpdate(CaretEvent event) {
-    String text = getText().trim();
+    String text = getText().strip();
     String emptyMask = maskPattern.replace('#', ' ');
 
     if (text.length() == 0 || text.equals(emptyMask)) {

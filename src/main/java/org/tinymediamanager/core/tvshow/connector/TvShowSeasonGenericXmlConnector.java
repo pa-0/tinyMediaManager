@@ -183,9 +183,15 @@ public abstract class TvShowSeasonGenericXmlConnector implements ITvShowSeasonCo
     }
 
     if (!newNfos.isEmpty()) {
-      // remove orphaned files
+      // remove orphaned NFO files (tmm style)
       List<MediaFile> existingNfos = tvShowSeason.getMediaFiles(MediaFileType.NFO);
       for (MediaFile nfo : existingNfos) {
+        if (!TvShowConnectors.isValidTvShowSeasonNFO(nfo.getFileAsPath())) {
+          // keep non tmm NFO files
+          newNfos.add(nfo);
+          continue;
+        }
+
         if (!newNfos.contains(nfo)) {
           try {
             Utils.deleteFileWithBackup(nfo.getFileAsPath(), tvShowSeason.getTvShow().getDataSource());

@@ -248,7 +248,7 @@ public class TmmTreeTableCellRenderer extends DefaultTableCellRenderer {
     Object value = lastRenderedValueRef.get();
     if (rendata != null && value != null) {
       String toolT = rendata.getTooltipText(value);
-      if (toolT != null && (toolT = toolT.trim()).length() > 0) {
+      if (toolT != null && (toolT = toolT.strip()).length() > 0) {
         return toolT;
       }
     }

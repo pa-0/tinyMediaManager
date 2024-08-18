@@ -51,6 +51,7 @@ import org.tinymediamanager.scraper.MediaSearchResult;
 import org.tinymediamanager.scraper.TrailerSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.entities.MediaArtwork;
 import org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType;
+import org.tinymediamanager.scraper.entities.MediaEpisodeGroup;
 import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.NothingFoundException;
@@ -208,21 +209,23 @@ public class TvShowScrapeTask extends TmmThreadPool {
                 }
               }
 
-              // deactivated for now, since this can mess up the epsiode groups when scraping with different scrapers
-              // try {
-              // episodeList = ((ITvShowMetadataProvider) mediaMetadataScraper.getMediaProvider()).getEpisodeList(options);
-              //
-              // List<MediaEpisodeGroup> episodeGroups = new ArrayList<>(md.getEpisodeGroups());
-              // Collections.sort(episodeGroups);
-              // tvShow.setEpisodeGroup(TvShowHelpers.findBestMatchingEpisodeGroup(tvShow, episodeGroups, episodeList));
-              // }
-              // catch (Exception e) {
-              // LOGGER.debug("could not fetch episode list - '{}'", e.getMessage());
-              // tvShow.setEpisodeGroup(MediaEpisodeGroup.DEFAULT_AIRED);
-              // }
-              // finally {
-              // tvShow.setEpisodeGroups(md.getEpisodeGroups());
-              // }
+              // if there is obviously no episode group set, take the best one from the scraper
+              if (tvShow.getEpisodeGroup() == MediaEpisodeGroup.DEFAULT_AIRED) {
+                try {
+                  episodeList = ((ITvShowMetadataProvider) mediaMetadataScraper.getMediaProvider()).getEpisodeList(options);
+
+                  List<MediaEpisodeGroup> episodeGroups = new ArrayList<>(md.getEpisodeGroups());
+                  Collections.sort(episodeGroups);
+                  tvShow.setEpisodeGroup(TvShowHelpers.findBestMatchingEpisodeGroup(tvShow, episodeGroups, episodeList));
+                }
+                catch (Exception e) {
+                  LOGGER.debug("could not fetch episode list - '{}'", e.getMessage());
+                  tvShow.setEpisodeGroup(MediaEpisodeGroup.DEFAULT_AIRED);
+                }
+                finally {
+                  tvShow.setEpisodeGroups(md.getEpisodeGroups());
+                }
+              }
 
               tvShow.setMetadata(md, tvShowScrapeParams.tvShowScraperMetadataConfig, tvShowScrapeParams.overwriteExistingItems);
               tvShow.setLastScraperId(tvShowScrapeParams.scrapeOptions.getMetadataScraper().getId());
@@ -314,6 +317,7 @@ public class TvShowScrapeTask extends TmmThreadPool {
               List<TvShowEpisode> episodesToScrape = tvShow.getEpisodesToScrape();
               // scrape episodes
               TvShowEpisodeSearchAndScrapeOptions options1 = new TvShowEpisodeSearchAndScrapeOptions();
+              options1.loadDefaults();
               options1.setDataFromOtherOptions(options);
 
               for (TvShowEpisode episode : episodesToScrape) {

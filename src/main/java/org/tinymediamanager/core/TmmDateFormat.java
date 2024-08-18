@@ -241,7 +241,7 @@ public class TmmDateFormat {
       return null;
     }
 
-    localeStr = localeStr.trim();
+    localeStr = localeStr.strip();
     int p = localeStr.indexOf('.');
     if (p > 0)
       localeStr = localeStr.substring(0, p);
@@ -348,7 +348,7 @@ public class TmmDateFormat {
 
   private static DateFormat formatFromString(String format) {
     try {
-      return new SimpleDateFormat(format.trim());
+      return new SimpleDateFormat(format.strip());
     }
     catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("unrecognized format string '" + format + "'");

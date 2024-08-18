@@ -122,8 +122,9 @@ public class TvShowTest extends BasicTvShowTest {
 
     // ************************************************************************
     // various real world examples
+    assertEqual("S:2024", detectEpisode("The.Daily.Show.2024.04.23.Stephanie.Kelton.1080p.HEVC.x265"));
     assertEqual("S:4 E:11", detectEpisode("TV French\\Unite 9\\Season 04\\S04E11 - Episode 84.mkv"));
-    assertEqual("S:-1 E:1", detectEpisode("[DB]Haven't You Heard I'm Sakamoto_-_01_(Dual Audio_10bit_BD1080p_x265).mkv"));
+    assertEqual("S:1 E:1", detectEpisode("[DB]Haven't You Heard I'm Sakamoto_-_01_(Dual Audio_10bit_BD1080p_x265).mkv")); // Anime
     assertEqual("S:3 E:50", detectEpisode("[HorribleSubs] Shingeki no Kyojin S3 - 50 [1080p].mkv"));
     assertEqual("S:5 E:22", detectEpisode("Quincy.S05E22.Gefaehrlicher.Krankentransport.GERMAN.FS.dTV.X264-SQUiZZiEs\\s-quincy-s0522.mkv"));
     assertEqual("S:-1", detectEpisode("Specials\\Bye.Bye.Big.Bang.Theory.Das.Special.GERMAN.1080p.HDTV.x264-VoDTv.mkv"));
@@ -160,12 +161,12 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:25", detectEpisode("Cowboy Bebop - S01E25 - The Real Folk Blues Part II.mkv")); // roman mixed with normal
     assertEqual("S:1 E:3", detectEpisode("The.Odd.Couple.2015.S01E03.720p.HDTV"));
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("Stargate Universe (01x01_01x02_01x03) - Air (1)(2)(3)"));
-    assertEqual("S:-1 E:11", detectEpisode("Episode.11.Ocean.Deep.BluRay.720p.x264-x264Crew.mkv"));
+    assertEqual("S:1 E:11", detectEpisode("Episode.11.Ocean.Deep.BluRay.720p.x264-x264Crew.mkv"));
     assertEqual("S:1 E:1", detectEpisode("tvs-castle-dl-ituneshd-xvid-101.avi"));
     assertEqual("S:2 E:9", detectEpisode("440 - 2x09 - .avi"));
-    assertEqual("S:-1 E:2", detectEpisode("\\Good L G (1 - 13)\\[CBM]_Good_L_G!_-_02_-_The_Battle_Begins_[720p]_[4A34853E].mkv"));
+    assertEqual("S:1 E:2", detectEpisode("\\Good L G (1 - 13)\\[CBM]_Good_L_G!_-_02_-_The_Battle_Begins_[720p]_[4A34853E].mkv")); // Anime
     assertEqual("S:3 E:1", detectEpisode("s8-vierfrauen-s03e01-repack.avi"));
-    assertEqual("S:-1 E:3", detectEpisode("tvp-wildesskandinavien-e03-720p.mkv"));
+    assertEqual("S:1 E:3", detectEpisode("tvp-wildesskandinavien-e03-720p.mkv"));
     assertEqual("S:4 E:13", detectEpisode("s800The Mentalist_S04E13_Die goldene Feder.avi"));
     assertEqual("S:1 E:1", detectEpisode("AwesomeTvShow.S01E01-480p.mkv"));
     assertEqual("S:7 E:9 E:10", detectEpisode("stvs7ep9-10.avi"));
@@ -190,6 +191,34 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:4 E:204", detectEpisode("4x204.avi"));
     assertEqual("S:1 E:13 E:14 E:15", detectEpisode("Peter Pan S01E13_1x14_1x15 - El Hookato.ts"));
 
+    // ANIME - https://kodi.wiki/view/Anime
+    // PREPEND
+    assertEqual("S:0 E:1", detectEpisode("[SHiN-gx] Fight Ippatsu! Juuden-chan!! - Special 1 [720x480 AR h.264 FLAC][v2][FF09021F].mkv"));
+    assertEqual("S:0 E:1", detectEpisode("[gleam] Kurenai OVA - 01 [OAD][0e73f000].mkv"));
+    assertEqual("S:0 E:1", detectEpisode("[Jarzka] Saki Picture Drama 1 [480p 10bit DVD FLAC] [BA3CE364]"));
+    assertEqual("S:1 E:1", detectEpisode("Saki/Season 1/Saki [Jarzka]/[Jarzka] Saki 01 - Encounter [480p 10bit DVD FLAC] [9EED32CB]"));
+    assertEqual("S:3 E:1", detectEpisode("Saki/Season 3/[Underwater-FFF] Saki Zenkoku-hen - The Nationals - 01 (720p) [AF65724D]"));
+    assertEqual("S:2 E:5", detectEpisode("[CoalGuys] K-ON!! S2 - 05 [4B19B10F]"));
+    assertEqual("S:1 E:1", detectEpisode("[avatar-nyanko] Koikoi 7 - 01 (DVD) [5E95FA4A]"));
+    assertEqual("S:1 E:1", detectEpisode("[gg]_Chuunibyou_Demo_Koi_ga_Shitai!_-_01_[5B6EFD1F]"));
+    assertEqual("S:1 E:1", detectEpisode("[Eclipse] Akane-iro ni Somaru Saka - 01 (1024x576 h264) [39920E63].mkv"));
+    assertEqual("S:1 E:1", detectEpisode("[gg]_Bakemonogatari_-_01_[CC0CF5D2].mkv "));
+    assertEqual("S:1 E:3", detectEpisode("[Doki]_Asobi_ni_Iku_yo!_-_03v2_(1280x720_h264_AAC)_[B5B9C6F3].mkv"));
+    assertEqual("S:1 E:2", detectEpisode("[Coalgirls]_Yuru_Yuri_02_(1280x720_Blu-Ray_FLAC)_[43E5A6B4]"));
+    assertEqual("S:1 E:1", detectEpisode("Touch 01(DVD) - (112ceb61) Central Anime"));
+    assertEqual("S:1 E:2", detectEpisode("Cross Game 02 - Central Anime (1280x720) [BF23052D].mp4"));
+    assertEqual("S:1 E:135", detectEpisode("[Taka]_Naruto_Shippuuden_135_[480p][9073B8C2]"));
+    assertEqual("S:2 E:4", detectEpisode("Season 2/[Erai-raws] Shy 2nd Season - 04 [1080p][Multiple Subtitle][79770C75].mkv"));
+    assertEqual("S:13 E:2", detectEpisode("Season 13/[Erai-raws] Yami Shibai 13 - 02 [1080p][Multiple Subtitle][D7E29CA3].mkv"));
+    // APPEND (no hash!)
+    assertEqual("S:2 E:14", detectEpisode("Saki/Season 2/[HorribleSubs] Saki Episode of Side A - 14 [720p]"));
+    assertEqual("S:2 E:1", detectEpisode("[DeadFish] Toaru Kagaku no Railgun S - S2 - 01 [720p][AAC].mp4"));
+    assertEqual("S:0 E:1", detectEpisode("[DeadFish] Jinrui wa Suitai Shimashita - Special 01 [BD][720p][AAC].mp4"));
+    // should be Season 1 as per Anime definition - unfortunately this clashes with our -1 approach
+    assertEqual("S:1 E:1", detectEpisode("[a.f.k.] Lucky Star - 01.avi"));
+    assertEqual("S:1 E:4", detectEpisode("Air Master - 04 [HQA&N!].avi"));
+    assertEqual("S:1 E:1", detectEpisode("[ANE] Yosuga no Sora - Ep01v2 [BDRip 1080p x264 FLAC]"));
+
     // special case - show with only number like "24"
     assertEqual("S:1 E:1", detectEpisode("24 S01E01 1080p BluRay.mkv", "24"));
     assertEqual("S:1 E:24", detectEpisode("24 S01E24 1080p BluRay.mkv", "24"));
@@ -206,13 +235,13 @@ public class TvShowTest extends BasicTvShowTest {
 
     // ************************************************************************
     // 1-3 chars, if they are the ONLY numbers in file
-    assertEqual("S:-1 E:2", detectEpisode("2.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("2 name.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("name 2.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("2.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("2 name.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("name 2.mkv"));
 
-    assertEqual("S:-1 E:2", detectEpisode("02.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("02 name.mkv"));
-    assertEqual("S:-1 E:2", detectEpisode("name 02.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("02.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("02 name.mkv"));
+    assertEqual("S:1 E:2", detectEpisode("name 02.mkv"));
 
     assertEqual("S:1 E:2", detectEpisode("102.mkv"));
     assertEqual("S:1 E:2", detectEpisode("102 name.mkv"));
@@ -220,15 +249,15 @@ public class TvShowTest extends BasicTvShowTest {
 
     assertEqual("S:1 E:2", detectEpisode("season 1\\nam.e.2.mkv"));
     assertEqual("S:1 E:2", detectEpisode("season 1/nam.e.2.mkv"));
-    assertEqual("S:-1 E:1", detectEpisode("Wisher.2021.E01.V2.WEB-DL.4k.H265.DDP.AAC-HDCTV.mp4"));
+    assertEqual("S:1 E:1", detectEpisode("Wisher.2021.E01.V2.WEB-DL.4k.H265.DDP.AAC-HDCTV.mp4"));
 
-    assertEqual("S:-1 E:1", detectEpisode("[01].ext")); // just optionals!
-    assertEqual("S:-1 E:2", detectEpisode("[01] 02.ext")); // ignore optionals
+    assertEqual("S:1 E:1", detectEpisode("[01].ext")); // just optionals!
+    assertEqual("S:1 E:2", detectEpisode("[01] 02.ext")); // ignore optionals
 
     // TODO: currently we take the LAST number and treat it as episode
     // NO multi matching for just numbers!!
-    assertEqual("S:-1 E:6", detectEpisode("2 3 6.mkv"));
-    assertEqual("S:-1 E:4", detectEpisode("02 03 04 name.mkv"));
+    assertEqual("S:1 E:6", detectEpisode("2 3 6.mkv"));
+    assertEqual("S:1 E:4", detectEpisode("02 03 04 name.mkv"));
     // except for 3 char ones ;)
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("101 102 103.mkv"));
     assertEqual("S:1 E:3", detectEpisode("1 12 103 25 7.mkv")); // start with highest number
@@ -245,11 +274,15 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:2", detectEpisode("name.102.ext"));
 
     // without season
-    assertEqual("S:-1 E:2", detectEpisode("name.ep02.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.ep_02.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.part.II.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.pt.II.ext"));
-    assertEqual("S:-1 E:2", detectEpisode("name.pt_II.ext"));
+    // Even if there is no "season", Kodi will just assume all episodes are "Season 1" when using EP##.
+    assertEqual("S:1 E:2", detectEpisode("name.ep02.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.ep_02.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.part.II.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.pt.II.ext"));
+    assertEqual("S:1 E:2", detectEpisode("name.pt_II.ext"));
+    assertEqual("S:1 E:1", detectEpisode("EP01.avi"));
+    assertEqual("S:3 E:1", detectEpisode("season 3/EP01.avi"));
+    assertEqual("S:3 E:3", detectEpisode("season 3 EP01 EP02 EP03/EP03.avi"));
 
     // multi episode
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01.s01e02.ext"));
@@ -260,7 +293,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1 E:2", detectEpisode("name.1x01_1x02.ext")); // works but shouldn't ;) _1 is detected as e1
     assertEqual("S:2 E:11 E:12 E:13", detectEpisode("name.2x11_2x12_2x13.ext")); // worst case: _2 is always being detected as e2
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01 1x02.ext"));
-    assertEqual("S:-1 E:1 E:2", detectEpisode("name.ep01.ep02.ext"));
+    assertEqual("S:1 E:1 E:2", detectEpisode("name.ep01.ep02.ext"));
     assertEqual("S:1 E:2 E:4 E:345", detectEpisode("name.s01e02e04ep345.ext")); // non consecutive episodes
 
     // multi episode short
@@ -268,7 +301,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("name.s01e01e02e03.ext"));
     assertEqual("S:1 E:1 E:2 E:3", detectEpisode("name.s01e01-02-03.ext"));
     assertEqual("S:1 E:1 E:2", detectEpisode("name.1x01x02.ext"));
-    assertEqual("S:-1 E:1", detectEpisode("name.ep01_02.ext"));
+    assertEqual("S:1 E:1 E:2", detectEpisode("name.ep01_02.ext"));
 
     // multi episode mixed; weird, but valid :p - we won't detect that now because the
     // regexp would cause too much false positives
@@ -280,9 +313,9 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1 Split", detectEpisode("name.s01e01.a.ext"));
     assertEqual("S:1 E:1 Split", detectEpisode("name.1x01.part1.ext"));
     assertEqual("S:1 E:1 Split", detectEpisode("name.1x01.pt1.ext"));
-    assertEqual("S:-1 E:1", detectEpisode("name.ep01.1.ext")); // do not detect that one
+    assertEqual("S:1 E:1", detectEpisode("name.ep01.1.ext")); // do not detect that one
     assertEqual("S:1 E:1", detectEpisode("name.101.1.ext"));
-    assertEqual("S:-1 E:1 Split", detectEpisode("name.ep01a_01.discb.ext"));
+    assertEqual("S:1 E:1 Split", detectEpisode("name.ep01a_01.discb.ext"));
     assertEqual("S:1 E:1 Split", detectEpisode("name.s01e01.1.s01e01.2.of.2.ext"));
     assertEqual("S:1 E:1", detectEpisode("name.1x01.1x01.2.ext")); // do not detect that one
   }
@@ -318,8 +351,8 @@ public class TvShowTest extends BasicTvShowTest {
     if (result.stackingMarkerFound) {
       sb.append(" Split");
     }
-    System.out.println(padRight(sb.toString().trim(), 40) + name);
-    return sb.toString().trim();
+    System.out.println(padRight(sb.toString().strip(), 40) + name);
+    return sb.toString().strip();
   }
 
   private String padRight(String s, int n) {

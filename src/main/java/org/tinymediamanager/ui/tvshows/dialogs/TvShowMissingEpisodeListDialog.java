@@ -16,8 +16,6 @@
 
 package org.tinymediamanager.ui.tvshows.dialogs;
 
-import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.AIRED;
-
 import java.awt.BorderLayout;
 import java.awt.FontMetrics;
 import java.util.Comparator;
@@ -295,7 +293,7 @@ public class TvShowMissingEpisodeListDialog extends TmmDialog {
           container.tvShowTitle = tvshow.getTitle();
           container.episodeTitle = mediaEpisode.getTitle();
 
-          MediaEpisodeNumber episodeNumber = mediaEpisode.getEpisodeNumber(AIRED);
+          MediaEpisodeNumber episodeNumber = mediaEpisode.getEpisodeNumber(tvshow.getEpisodeGroup());
           if (episodeNumber != null) {
             container.season = episodeNumber.season();
             container.episode = episodeNumber.episode();
@@ -318,9 +316,18 @@ public class TvShowMissingEpisodeListDialog extends TmmDialog {
               }
             }
 
+            // compare on active episode group
             if (scrapedEpisode.getEpisode() == container.episode && scrapedEpisode.getSeason() == container.season) {
               entryFound = true;
               break;
+            }
+
+            // also compare IDs
+            for (var entry : scrapedEpisode.getIds().entrySet()) {
+              if (entry.getValue().equals(mediaEpisode.getId(entry.getKey()))) {
+                entryFound = true;
+                break;
+              }
             }
           }
 

@@ -455,18 +455,18 @@ public class UniversalTvShowMetadataProvider implements ITvShowMetadataProvider 
         List<String> scrapers = new ArrayList<>(fallbackScrapers);
         scrapers.remove(entry.getValue());
         scrapers.add(0, entry.getValue());
-        assignValue(scrapers, md, metadataMap, entry.getKey());
+        assignTvShowValue(scrapers, md, metadataMap, entry.getKey());
       }
     }
 
     // the episode group needs to be the same source as the episode/season numbers
     String episodeGroupProviderId = providerInfo.getConfig().getValue("episodes");
     if (StringUtils.isNotBlank(episodeGroupProviderId)) {
-      assignValue(Collections.singletonList(episodeGroupProviderId), md, metadataMap, "episodeGroups");
+      assignTvShowValue(Collections.singletonList(episodeGroupProviderId), md, metadataMap, "episodeGroups");
     }
   }
 
-  private void assignValue(List<String> scrapers, MediaMetadata md, Map<String, MediaMetadata> metadataMap, String field) {
+  private void assignTvShowValue(List<String> scrapers, MediaMetadata md, Map<String, MediaMetadata> metadataMap, String field) {
     // all specified fields should be filled from the desired scraper
     for (String scraper : scrapers) {
       MediaMetadata mediaMetadata = metadataMap.get(scraper);
@@ -555,33 +555,57 @@ public class UniversalTvShowMetadataProvider implements ITvShowMetadataProvider 
       }
     }
 
-    // assign the requested metadata (no fallback here since S/E assignments could differ)
+    // assign the requested metadata
+    List<String> fallbackScrapers = Arrays.asList(new Gson().fromJson(providerInfo.getConfig().getValue(FALLBACK_SCRAPERS), String[].class));
+
+    // assign the requested metadata (fallback is now possible, since the matching has been rewritten to ID matching)
     for (Map.Entry<String, String> entry : providerInfo.getConfig().getConfigKeyValuePairs().entrySet()) {
       if (entry.getKey().startsWith("episode") && !UNDEFINED.equals(entry.getValue())) {
-        MediaMetadata mediaMetadata = metadataMap.get(entry.getValue());
 
-        if (mediaMetadata == null) {
-          continue;
-        }
-
-        // "common" data from the same scraper
         if ("episodes".equals(entry.getKey())) {
+          // pure episode data needs to be from the main scraper
+          MediaMetadata mediaMetadata = metadataMap.get(entry.getValue());
+
+          if (mediaMetadata == null) {
+            continue;
+          }
+
           md.setEpisodeNumbers(mediaMetadata.getEpisodeNumbers());
           md.setReleaseDate(mediaMetadata.getReleaseDate());
         }
         else {
-          String episodeField = Introspector.decapitalize(entry.getKey().replace("episode", ""));
-          // all specified fields should be filled from the desired scraper
-          try {
-            PropertyDescriptor propertyDescriptor = new PropertyDescriptor(episodeField, MediaMetadata.class);
-            Method getter = propertyDescriptor.getReadMethod();
-            Method setter = propertyDescriptor.getWriteMethod();
+          // others can be done with fallback
+          List<String> scrapers = new ArrayList<>(fallbackScrapers);
+          scrapers.remove(entry.getValue());
+          scrapers.add(0, entry.getValue());
+          assignEpisodeValue(scrapers, md, metadataMap, entry.getKey());
+        }
+      }
+    }
+  }
 
-            setter.invoke(md, getter.invoke(mediaMetadata));
+  private void assignEpisodeValue(List<String> scrapers, MediaMetadata md, Map<String, MediaMetadata> metadataMap, String field) {
+    // all specified fields should be filled from the desired scraper
+    for (String scraper : scrapers) {
+      MediaMetadata mediaMetadata = metadataMap.get(scraper);
+      if (mediaMetadata != null) {
+        try {
+          String episodeField = Introspector.decapitalize(field.replace("episode", ""));
+
+          PropertyDescriptor propertyDescriptor = new PropertyDescriptor(episodeField, MediaMetadata.class);
+          Method getter = propertyDescriptor.getReadMethod();
+          Method setter = propertyDescriptor.getWriteMethod();
+
+          Object value = getter.invoke(mediaMetadata);
+
+          if (isValueFilled(value)) {
+            setter.invoke(md, value);
+            return;
           }
-          catch (Exception e) {
-            LOGGER.warn("Problem assigning {} - {}", episodeField, e.getMessage());
-          }
+
+        }
+        catch (Exception e) {
+          LOGGER.warn("Problem assigning {} - {}", scraper, e.getMessage());
         }
       }
     }

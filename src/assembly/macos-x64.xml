@@ -10,6 +10,18 @@
             <!-- copy BASE folder from former assembly -->
             <directory>${project.build.directory}/${project.artifactId}-${project.version}-base</directory>
             <outputDirectory>tinyMediaManager.app/Contents/Resources/Java</outputDirectory>
+            <excludes>
+                <exclude>lib/flatlaf.jar</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <!-- copy flatlaf with extracted dylib -->
+            <directory>${project.build.directory}/flatlaf</directory>
+            <outputDirectory>tinyMediaManager.app/Contents/Resources/Java/lib</outputDirectory>
+            <includes>
+                <include>flatlaf-no-natives.jar</include>
+                <include>flatlaf-macos*x86_64*.dylib</include>
+            </includes>
         </fileSet>
         <fileSet>
             <!-- copy TEMPLATE folder from former assembly -->

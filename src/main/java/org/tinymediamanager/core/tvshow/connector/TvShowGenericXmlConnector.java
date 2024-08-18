@@ -219,9 +219,15 @@ public abstract class TvShowGenericXmlConnector implements ITvShowConnector {
     }
 
     if (!newNfos.isEmpty()) {
-      // remove orphaned files
+      // remove orphaned NFO files (tmm style)
       List<MediaFile> existingNfos = tvShow.getMediaFiles(MediaFileType.NFO);
       for (MediaFile nfo : existingNfos) {
+        if (!TvShowConnectors.isValidTvShowNFO(nfo.getFileAsPath())) {
+          // keep non tmm NFO files
+          newNfos.add(nfo);
+          continue;
+        }
+
         if (!newNfos.contains(nfo)) {
           try {
             Utils.deleteFileWithBackup(nfo.getFileAsPath(), tvShow.getDataSource());
@@ -1032,7 +1038,7 @@ public abstract class TvShowGenericXmlConnector implements ITvShowConnector {
    * @param person
    *          the {@link Person} to get the ids from
    */
-  private void addPersonIdsAsChildren(Element element, Person person) {
+  protected void addPersonIdsAsChildren(Element element, Person person) {
     // TMDB id
     int tmdbId = person.getIdAsInt(MediaMetadata.TMDB);
     if (tmdbId > 0) {

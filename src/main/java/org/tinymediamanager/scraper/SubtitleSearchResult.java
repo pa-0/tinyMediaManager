@@ -15,11 +15,11 @@
  */
 package org.tinymediamanager.scraper;
 
-import java.util.function.Supplier;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.tinymediamanager.core.ThrowingSupplier;
+import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.util.StrgUtils;
 
 /**
@@ -29,16 +29,16 @@ import org.tinymediamanager.scraper.util.StrgUtils;
  * @since 2.0
  */
 public class SubtitleSearchResult implements Comparable<SubtitleSearchResult> {
-  private String           providerId;
-  private String           id          = "";
-  private String           title       = "";
-  private String           releaseName = "";
-  private int              stackCount  = 0;
-  private float            score       = 0f;
-  private float            rating      = 0f;
+  private String                                    providerId;
+  private String                                    id          = "";
+  private String                                    title       = "";
+  private String                                    releaseName = "";
+  private int                                       stackCount  = 0;
+  private float                                     score       = 0f;
+  private float                                     rating      = 0f;
 
-  private String           url         = null;
-  private Supplier<String> urlSupplier = null;
+  private String                                    url         = null;
+  private ThrowingSupplier<String, ScrapeException> urlSupplier = null;
 
   public SubtitleSearchResult(String providerId) {
     this.providerId = providerId;
@@ -161,7 +161,7 @@ public class SubtitleSearchResult implements Comparable<SubtitleSearchResult> {
    * 
    * @return the url
    */
-  public String getUrl() {
+  public String getUrl() throws ScrapeException {
     if (url != null) {
       return url;
     }
@@ -181,7 +181,7 @@ public class SubtitleSearchResult implements Comparable<SubtitleSearchResult> {
    * @param url
    *          the url
    */
-  public void setUrl(Supplier<String> url) {
+  public void setUrl(ThrowingSupplier<String, ScrapeException> url) {
     this.urlSupplier = url;
   }
 

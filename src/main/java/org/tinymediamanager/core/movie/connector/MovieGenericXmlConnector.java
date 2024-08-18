@@ -211,9 +211,15 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
     }
 
     if (!newNfos.isEmpty()) {
-      // remove orphaned files
+      // remove orphaned NFO files (tmm style)
       List<MediaFile> existingNfos = movie.getMediaFiles(MediaFileType.NFO);
       for (MediaFile nfo : existingNfos) {
+        if (!MovieConnectors.isValidNFO(nfo.getFileAsPath())) {
+          // keep non tmm NFO files
+          newNfos.add(nfo);
+          continue;
+        }
+
         if (!newNfos.contains(nfo)) {
           try {
             Utils.deleteFileWithBackup(nfo.getFileAsPath(), movie.getDataSource());
@@ -760,7 +766,7 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
     List<String> translatedLanguages = new ArrayList<>();
     for (String langu : ParserUtils.split(movie.getSpokenLanguages())) {
       String translated = LanguageUtils.getLocalizedLanguageNameFromLocalizedString(MovieModuleManager.getInstance().getSettings().getNfoLanguage(),
-          langu.trim());
+          langu.strip());
       translatedLanguages.add(translated);
     }
 
@@ -846,7 +852,12 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
    */
   protected void addOriginalFilename() {
     Element originalFileName = document.createElement("original_filename");
-    originalFileName.setTextContent(movie.getOriginalFilename());
+    if (StringUtils.isBlank(movie.getOriginalFilename())) {
+      originalFileName.setTextContent(movie.getMainFile().getFilename());
+    }
+    else {
+      originalFileName.setTextContent(movie.getOriginalFilename());
+    }
     root.appendChild(originalFileName);
   }
 
@@ -932,7 +943,7 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
    * @param person
    *          the {@link Person} to get the ids from
    */
-  private void addPersonIdsAsAttributes(Element element, Person person) {
+  protected void addPersonIdsAsAttributes(Element element, Person person) {
     // TMDB id
     int tmdbId = person.getIdAsInt(MediaMetadata.TMDB);
     if (tmdbId > 0) {
@@ -960,7 +971,7 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
    * @param person
    *          the {@link Person} to get the ids from
    */
-  private void addPersonIdsAsChildren(Element element, Person person) {
+  protected void addPersonIdsAsChildren(Element element, Person person) {
     // TMDB id
     int tmdbId = person.getIdAsInt(MediaMetadata.TMDB);
     if (tmdbId > 0) {

@@ -19,8 +19,9 @@ package org.tinymediamanager.ui.actions;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -60,7 +61,8 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
  * @author Manuel Laggner
  */
 public class ExportAnalysisDataAction extends TmmAction {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ExportAnalysisDataAction.class);
+  private static final long   serialVersionUID = 1L;
+  private static final Logger LOGGER           = LoggerFactory.getLogger(ExportAnalysisDataAction.class);
 
   public ExportAnalysisDataAction() {
     putValue(NAME, TmmResourceBundle.getString("tmm.exportanalysisdata"));
@@ -103,7 +105,7 @@ public class ExportAnalysisDataAction extends TmmAction {
       // attach logs
       List<Path> logs = Utils.listFiles(Paths.get(Globals.LOG_FOLDER));
       for (Path logFile : logs) {
-        try (FileInputStream in = new FileInputStream(logFile.toFile())) {
+        try (InputStream in = Files.newInputStream(logFile)) {
           zipParameters.setFileNameInZip("logs/" + logFile.getFileName());
 
           zos.putNextEntry(zipParameters);
@@ -121,7 +123,7 @@ public class ExportAnalysisDataAction extends TmmAction {
       });
       if (data != null) {
         for (File dataFile : data) {
-          try (FileInputStream in = new FileInputStream(dataFile)) {
+          try (InputStream in = Files.newInputStream(dataFile.toPath())) {
             zipParameters.setFileNameInZip("data/" + dataFile.getName());
 
             zos.putNextEntry(zipParameters);
@@ -136,7 +138,7 @@ public class ExportAnalysisDataAction extends TmmAction {
 
       // attach extra files
       for (Path extraFile : extraFiles) {
-        try (FileInputStream in = new FileInputStream(extraFile.toFile())) {
+        try (InputStream in = Files.newInputStream(extraFile)) {
           zipParameters.setFileNameInZip(extraFile.getFileName().toString());
 
           zos.putNextEntry(zipParameters);
@@ -188,6 +190,7 @@ public class ExportAnalysisDataAction extends TmmAction {
       for (TvShow show : TvShowModuleManager.getInstance().getTvShowList().getTvShows()) {
         Path datasource = Paths.get(show.getDataSource());
         List<MediaFile> mfs = show.getMediaFiles();
+        mfs.addAll(show.getSeasonMediaFiles());
         mfs.addAll(show.getEpisodesMediaFiles());
         for (MediaFile mf : mfs) {
           String rel = Utils.relPath(datasource, mf.getFileAsPath());

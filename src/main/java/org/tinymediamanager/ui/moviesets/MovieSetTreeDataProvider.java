@@ -28,7 +28,7 @@ import org.tinymediamanager.core.movie.entities.MovieSet;
 import org.tinymediamanager.ui.components.table.TmmTableFormat;
 import org.tinymediamanager.ui.components.tree.TmmTreeDataProvider;
 import org.tinymediamanager.ui.components.tree.TmmTreeNode;
-import org.tinymediamanager.ui.components.treetable.ITmmTreeTableSortingStrategy;
+import org.tinymediamanager.ui.components.treetable.AbstractTmmTreeTableNodeComparator;
 import org.tinymediamanager.ui.components.treetable.TmmTreeTableFormat;
 
 /**
@@ -300,11 +300,8 @@ public class MovieSetTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
   /*
    * helper classes
    */
-  class MovieSetTreeNodeComparator implements Comparator<TmmTreeNode>, ITmmTreeTableSortingStrategy {
+  class MovieSetTreeNodeComparator extends AbstractTmmTreeTableNodeComparator {
     private final Comparator stringComparator;
-
-    private SortDirection    sortDirection;
-    private int              sortColumn;
 
     private Comparator       sortComparator;
 
@@ -362,6 +359,12 @@ public class MovieSetTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
       }
       sortColumn = column;
 
+      sortComparator = getSortComparator();
+    }
+
+    @Override
+    public void fromString(String stringEncoded) {
+      super.fromString(stringEncoded);
       sortComparator = getSortComparator();
     }
 

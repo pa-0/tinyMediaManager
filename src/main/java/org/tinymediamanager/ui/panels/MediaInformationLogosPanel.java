@@ -15,8 +15,10 @@
  */
 package org.tinymediamanager.ui.panels;
 
+import java.awt.FlowLayout;
 import java.util.Locale;
 
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,14 +28,13 @@ import org.tinymediamanager.core.IMediaInformation;
 import org.tinymediamanager.core.MediaFileHelper;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.core.entities.MediaSource;
+import org.tinymediamanager.ui.WrapLayout;
 import org.tinymediamanager.ui.images.AspectRatioIcon;
 import org.tinymediamanager.ui.images.AudioChannelsIcon;
 import org.tinymediamanager.ui.images.GenericAudioCodecIcon;
 import org.tinymediamanager.ui.images.GenericVideoCodecIcon;
 import org.tinymediamanager.ui.images.MediaInfoIcon;
 import org.tinymediamanager.ui.images.VideoFormatIcon;
-
-import net.miginfocom.swing.MigLayout;
 
 /**
  * The class MediaInformationLogosPanel is used to display all media info related logos
@@ -55,35 +56,22 @@ public class MediaInformationLogosPanel extends JPanel {
   private final JLabel      lblHfr;
 
   public MediaInformationLogosPanel() {
-    setLayout(new MigLayout("hidemode 3", "[][][][][][10lp][][][10lp][][]", "[]"));
+    setLayout(new WrapLayout(FlowLayout.LEFT));
 
     lblVideoFormat = new JLabel();
-    add(lblVideoFormat, "cell 0 0, bottom");
     lblAspectRatio = new JLabel();
-    add(lblAspectRatio, "cell 1 0, bottom");
     lblVideoCodec = new JLabel();
-    add(lblVideoCodec, "cell 2 0, bottom");
     lblVideo3d = new JLabel();
-    add(lblVideo3d, "cell 3 0, bottom");
     lblVideoHdr1 = new JLabel();
-    add(lblVideoHdr1, "cell 4 0, bottom");
     lblVideoHdr2 = new JLabel();
-    add(lblVideoHdr2, "cell 4 0, bottom");
     lblVideoHdr3 = new JLabel();
-    add(lblVideoHdr1, "cell 4 0, bottom");
 
     lblAudioChannels = new JLabel();
-    add(lblAudioChannels, "cell 6 0, bottom");
     lblAudioCodec = new JLabel();
-    add(lblAudioCodec, "cell 7 0, bottom");
     lblAudioCodec2 = new JLabel();
-    add(lblAudioCodec2, "cell 7 0, bottom");
 
     lblSource = new JLabel();
-    add(lblSource, "cell 9 0, bottom");
-
     lblHfr = new JLabel();
-    add(lblHfr, "cell 10 0, bottom");
 
     // listen to UI changes to re-set the icons
   }
@@ -103,6 +91,8 @@ public class MediaInformationLogosPanel extends JPanel {
   }
 
   private void updateIcons() {
+    removeAll();
+
     setIcon(lblVideoFormat, getVideoFormatIcon());
     setIcon(lblAspectRatio, getAspectRatioIcon());
     setIcon(lblVideoCodec, getVideoCodecIcon(0));
@@ -110,21 +100,37 @@ public class MediaInformationLogosPanel extends JPanel {
     setIcon(lblVideoHdr1, getVideoHdrIcon(0));
     setIcon(lblVideoHdr2, getVideoHdrIcon(1));
     setIcon(lblVideoHdr3, getVideoHdrIcon(2));
+
+    int videoComponentCount = getComponentCount();
+    if (videoComponentCount > 0) {
+      add(Box.createHorizontalStrut(15));
+    }
+
     setIcon(lblAudioCodec, getAudioCodecIcon(0));
     setIcon(lblAudioCodec2, getAudioCodecIcon(1));
     setIcon(lblAudioChannels, getAudioChannelsIcon());
+
+    int audioComponentCount = getComponentCount() - videoComponentCount;
+    if (audioComponentCount > 0) {
+      add(Box.createHorizontalStrut(15));
+    }
+
     setIcon(lblSource, getSourceIcon());
     setIcon(lblHfr, getHfrIcon());
   }
 
   private void setIcon(JLabel label, Icon icon) {
     label.setIcon(icon);
+
     if (icon != null) {
-      label.setVisible(true);
+      add(label);
     }
-    else {
-      label.setVisible(false);
-    }
+    // if (icon != null) {
+    // label.setVisible(true);
+    // }
+    // else {
+    // label.setVisible(false);
+    // }
   }
 
   /**

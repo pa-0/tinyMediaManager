@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.scraper.MediaMetadata;
+import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.scraper.exceptions.HttpException;
 import org.tinymediamanager.scraper.exceptions.NothingFoundException;
 import org.tinymediamanager.scraper.rating.entities.MdbListRatingEntity;
@@ -47,7 +48,7 @@ class MdbListRating {
     controller = new MdbListController();
   }
 
-  public List<MediaRating> getRatings(Map<String, Object> ids) {
+  public List<MediaRating> getRatings(MediaType mediaType, Map<String, Object> ids) {
     MdbListRatingEntity ratingEntity;
     List<MediaRating> mediaRatingList = new ArrayList<>();
 
@@ -59,25 +60,30 @@ class MdbListRating {
       return mediaRatingList;
     }
 
+    // MDBList does only has show ratings
+    if (mediaType == MediaType.TV_EPISODE) {
+      return mediaRatingList;
+    }
+
     for (Map.Entry<String, Object> entry : ids.entrySet()) {
       // Fetch the ratings with the first found ID
       try {
         Response<MdbListRatingEntity> response;
         switch (entry.getKey()) {
           case MediaMetadata.IMDB:
-            response = controller.getRatingsByImdbId(apiKey, entry.getValue().toString());
+            response = controller.getRatingsByImdbId(apiKey, entry.getValue().toString(), mediaType);
             break;
 
           case MediaMetadata.TRAKT_TV:
-            response = controller.getRatingsByTraktId(apiKey, entry.getValue().toString());
+            response = controller.getRatingsByTraktId(apiKey, entry.getValue().toString(), mediaType);
             break;
 
           case MediaMetadata.TMDB:
-            response = controller.getRatingsByTmdbId(apiKey, entry.getValue().toString());
+            response = controller.getRatingsByTmdbId(apiKey, entry.getValue().toString(), mediaType);
             break;
 
           case MediaMetadata.TVDB:
-            response = controller.getRatingsByTvdbId(apiKey, entry.getValue().toString());
+            response = controller.getRatingsByTvdbId(apiKey, entry.getValue().toString(), mediaType);
             break;
 
           default:

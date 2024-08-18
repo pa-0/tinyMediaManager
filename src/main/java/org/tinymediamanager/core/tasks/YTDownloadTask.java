@@ -50,6 +50,7 @@ import org.tinymediamanager.core.entities.MediaTrailer;
 import org.tinymediamanager.core.threading.TmmTask;
 import org.tinymediamanager.scraper.http.StreamingUrl;
 import org.tinymediamanager.scraper.http.Url;
+import org.tinymediamanager.thirdparty.YtDlp;
 import org.tinymediamanager.thirdparty.yt.YTDownloader;
 
 import com.github.kiulian.downloader.downloader.request.RequestVideoInfo;
@@ -75,6 +76,7 @@ public abstract class YTDownloadTask extends TmmTask {
 
   private final MediaTrailer   mediaTrailer;
   private final TrailerQuality desiredQuality;
+  private final boolean        useYtDlp;
 
   private VideoInfo            video;
 
@@ -85,10 +87,11 @@ public abstract class YTDownloadTask extends TmmTask {
   private long                 bytesDonePrevious = 0;
   private double               speed             = 0;
 
-  protected YTDownloadTask(MediaTrailer mediaTrailer, TrailerQuality desiredQuality) {
+  protected YTDownloadTask(MediaTrailer mediaTrailer, TrailerQuality desiredQuality, boolean useYtDlp) {
     super(TmmResourceBundle.getString("trailer.download") + " - " + mediaTrailer.getName(), 100, TaskType.BACKGROUND_TASK);
     this.mediaTrailer = mediaTrailer;
     this.desiredQuality = desiredQuality;
+    this.useYtDlp = useYtDlp;
 
     setTaskDescription(mediaTrailer.getName());
   }
@@ -123,6 +126,11 @@ public abstract class YTDownloadTask extends TmmTask {
 
       if (StringUtils.isBlank(id)) {
         LOGGER.debug("Could not download trailer: no id {}", mediaTrailer);
+        return;
+      }
+
+      if (useYtDlp && YtDlp.isAvailable()) {
+        downloadWithYtDlp(mediaTrailer);
         return;
       }
 
@@ -170,6 +178,44 @@ public abstract class YTDownloadTask extends TmmTask {
       setState(TaskState.FAILED);
       LOGGER.error("download of Trailer {} failed", mediaTrailer.getUrl());
       LOGGER.debug("trailer download - '{}'", e.getMessage());
+    }
+  }
+
+  private void downloadWithYtDlp(MediaTrailer mediaTrailer) {
+    MediaEntity mediaEntity = getMediaEntityToAdd();
+
+    try {
+      // delete any existing trailer files
+      for (MediaFile trailerMediaFile : mediaEntity.getMediaFiles(MediaFileType.TRAILER)) {
+        Utils.deleteFileSafely(trailerMediaFile.getFile());
+      }
+
+      Path trailerBasename = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName());
+
+      int width = 0;
+
+      try {
+        VideoQuality videoQuality = getVideoQuality(mediaTrailer.getQuality());
+        width = Integer.parseInt(videoQuality.name().toLowerCase().replace("hd", "").replace("p", ""));
+      }
+      catch (Exception ignored) {
+      }
+
+      YtDlp.downloadTrailer(mediaTrailer.getUrl(), width, trailerBasename);
+
+      // add new trailer
+      Path trailerFilename = Paths.get(trailerBasename + ".mp4");
+      if (Files.exists(trailerFilename)) {
+        MediaFile mf = new MediaFile(trailerFilename, MediaFileType.TRAILER);
+        mf.gatherMediaInformation();
+        mediaEntity.removeFromMediaFiles(mf); // remove old (possibly same) file
+        mediaEntity.addToMediaFiles(mf); // add file, but maybe with other MI values
+        mediaEntity.saveToDb();
+      }
+
+    }
+    catch (Exception e) {
+      LOGGER.error("Could not download trailer using yt-dlp - '{}'", e.getMessage());
     }
   }
 
@@ -265,8 +311,7 @@ public abstract class YTDownloadTask extends TmmTask {
     VideoQuality bestQuality = null;
 
     for (Format format : video.formats()) {
-      if (format instanceof VideoWithAudioFormat) {
-        VideoWithAudioFormat audioVideoFormat = (VideoWithAudioFormat) format;
+      if (format instanceof VideoWithAudioFormat audioVideoFormat) {
         if (bestQuality == null) {
           // just take it
           bestQuality = audioVideoFormat.videoQuality();
@@ -278,8 +323,7 @@ public abstract class YTDownloadTask extends TmmTask {
           videoStreamInBestQuality = format;
         }
       }
-      else if (format instanceof VideoFormat) {
-        VideoFormat audioVideoFormat = (VideoFormat) format;
+      else if (format instanceof VideoFormat audioVideoFormat) {
         if (bestQuality == null) {
           // just take it
           bestQuality = audioVideoFormat.videoQuality();
@@ -370,9 +414,12 @@ public abstract class YTDownloadTask extends TmmTask {
     Path tempFile = download(audioVideoFormat);
 
     if (tempFile != null) {
-      Path trailer = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName() + ".mp4");
       // delete any existing trailer files
-      Utils.deleteFileSafely(trailer);
+      for (MediaFile trailerMediaFile : mediaEntity.getMediaFiles(MediaFileType.TRAILER)) {
+        Utils.deleteFileSafely(trailerMediaFile.getFile());
+      }
+
+      Path trailer = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName() + ".mp4");
 
       // create parent if needed
       if (!Files.exists(trailer.getParent())) {

@@ -110,6 +110,7 @@ import org.tinymediamanager.ui.dialogs.ImageChooserDialog;
 import org.tinymediamanager.ui.dialogs.TmmDialog;
 import org.tinymediamanager.ui.movies.MovieChooserModel;
 import org.tinymediamanager.ui.renderer.BorderTableCellRenderer;
+import org.tinymediamanager.ui.renderer.IntegerTableCellRenderer;
 import org.tinymediamanager.ui.renderer.RightAlignTableCellRenderer;
 
 import ca.odell.glazedlists.BasicEventList;
@@ -873,6 +874,7 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
     private SearchResultTableFormat() {
       Comparator<MovieChooserModel> searchResultComparator = new SearchResultTitleComparator();
       Comparator<String> stringComparator = new StringComparator();
+      Comparator<Integer> integerComparator = new IntegerComparator();
 
       FontMetrics fontMetrics = getFontMetrics();
 
@@ -888,11 +890,12 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
       /*
        * year
        */
-      col = new Column(TmmResourceBundle.getString("metatag.year"), "year", MovieChooserModel::getYear, String.class);
-      col.setColumnComparator(stringComparator);
+      col = new Column(TmmResourceBundle.getString("metatag.year"), "year", MovieChooserModel::getYear, Integer.class);
+      col.setColumnComparator(integerComparator);
+      col.setCellRenderer(new IntegerTableCellRenderer());
       col.setColumnResizeable(false);
-      col.setMinWidth((int) (fontMetrics.stringWidth("2000") * 1.2f));
-      col.setMaxWidth((int) (fontMetrics.stringWidth("2000") * 1.4f));
+      col.setMinWidth(fontMetrics.stringWidth("2000") + getCellPadding());
+      col.setMaxWidth(fontMetrics.stringWidth("2000") + getCellPadding());
       addColumn(col);
 
       /*
@@ -902,8 +905,8 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
       col.setColumnComparator(stringComparator);
       col.setColumnResizeable(false);
       col.setCellRenderer(new RightAlignTableCellRenderer());
-      col.setMinWidth((int) (fontMetrics.stringWidth("tt7830912") * 1.1f));
-      col.setMaxWidth((int) (fontMetrics.stringWidth("tt7830912") * 1.3f));
+      col.setMinWidth(fontMetrics.stringWidth("tt7830912") + getCellPadding());
+      col.setMaxWidth(fontMetrics.stringWidth("tt7830912") + getCellPadding());
       addColumn(col);
     }
   }
@@ -974,9 +977,7 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
   public static class SearchResultRenderer extends BorderTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      if (value instanceof MovieChooserModel) {
-        MovieChooserModel result = (MovieChooserModel) value;
-
+      if (value instanceof MovieChooserModel result) {
         String text = result.getTitle();
 
         if (result.isDuplicate()) {

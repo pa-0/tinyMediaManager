@@ -30,7 +30,8 @@ public enum CertificationStyle {
   MEDIUM_FULL, // Germany: FSK 16
   LARGE, // DE:FSK 16 / DE:FSK16 / DE:16 / DE:ab 16
   LARGE_FULL, // Germany:FSK 16 / Germany:FSK16 / Germany:16 / Germany:ab 16
-  TECHNICAL; // DE_FSK16
+  TECHNICAL, // DE_FSK16
+  TECHNICAL2; // DE-FSK16
 
   /**
    * format the certification based on the given style
@@ -70,6 +71,9 @@ public enum CertificationStyle {
 
       case TECHNICAL:
         return cert.name();
+
+      case TECHNICAL2:
+        return cert.name().replace("_", "-");
 
       default:
         return "";

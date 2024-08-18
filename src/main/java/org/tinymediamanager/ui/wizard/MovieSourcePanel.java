@@ -15,7 +15,6 @@
  */
 package org.tinymediamanager.ui.wizard;
 
-import java.awt.Cursor;
 import java.awt.Font;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +36,8 @@ import org.tinymediamanager.core.TmmProperties;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieSettings;
+import org.tinymediamanager.core.movie.tasks.MovieRemoveDatasourceTask;
+import org.tinymediamanager.core.threading.TmmTaskManager;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.TmmUIHelper;
@@ -109,9 +110,11 @@ class MovieSourcePanel extends JPanel {
               TmmResourceBundle.getString("Settings.datasource.remove"), JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, choices,
               TmmResourceBundle.getString("Button.abort"));
           if (decision == JOptionPane.YES_OPTION) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            MovieModuleManager.getInstance().getSettings().removeMovieDataSources(path);
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            // to avoid interfering with active running tasks, we remove the data source as soon as all running main tasks are finished
+            if (TmmTaskManager.getInstance().isMainTaskRunning()) {
+              JOptionPane.showMessageDialog(this, TmmResourceBundle.getString("Settings.datasource.remove.hint"));
+            }
+            TmmTaskManager.getInstance().addMainTask(new MovieRemoveDatasourceTask(path));
           }
         }
       });

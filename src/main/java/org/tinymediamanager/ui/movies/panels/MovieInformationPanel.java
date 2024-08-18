@@ -26,10 +26,8 @@ import static org.tinymediamanager.core.Constants.THUMB;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -415,7 +413,7 @@ public class MovieInformationPanel extends InformationPanel {
 
       {
         panelLogos = new MediaInformationLogosPanel();
-        panelRight.add(panelLogos, "cell 0 4,wmin 0");
+        panelRight.add(panelLogos, "cell 0 4,growx");
       }
 
       {

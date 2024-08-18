@@ -381,7 +381,7 @@ public class TvShowInformationPanel extends InformationPanel {
       }
       {
         panelLogos = new MediaInformationLogosPanel();
-        panelRight.add(panelLogos, "cell 0 4,wmin 0");
+        panelRight.add(panelLogos, "cell 0 4,growx");
       }
       {
         panelRight.add(new JSeparator(), "cell 0 5,growx");

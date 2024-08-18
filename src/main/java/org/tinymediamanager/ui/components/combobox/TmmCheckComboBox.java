@@ -110,9 +110,13 @@ public class TmmCheckComboBox<E> extends JComboBox<TmmCheckComboBoxItem<E>> {
    */
   protected void init() {
     setEditable(true);
-    setEditor(new CheckBoxEditor());
+    setEditor(new DefaultCheckBoxEditor());
     setRenderer();
     addActionListener(this);
+  }
+
+  public void setSingleLineEditor() {
+    setEditor(new SingleLineCheckBoxEditor());
   }
 
   public void enableFilter(BiPredicate<E, String> userFilter) {
@@ -445,10 +449,10 @@ public class TmmCheckComboBox<E> extends JComboBox<TmmCheckComboBoxItem<E>> {
     }
   }
 
-  protected class CheckBoxEditor extends JPanel implements ComboBoxEditor {
+  protected class DefaultCheckBoxEditor extends JPanel implements ComboBoxEditor {
     private Dimension cachedLayoutSize;
 
-    public CheckBoxEditor() {
+    public DefaultCheckBoxEditor() {
       super();
 
       setLayout(new WrapLayout(FlowLayout.LEFT, 5, 2));
@@ -548,6 +552,47 @@ public class TmmCheckComboBox<E> extends JComboBox<TmmCheckComboBoxItem<E>> {
         }
       });
       add(button);
+    }
+  }
+
+  protected class SingleLineCheckBoxEditor extends DefaultCheckBoxEditor {
+    public SingleLineCheckBoxEditor() {
+      super();
+
+      setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
+      setOpaque(false);
+      setBorder(BorderFactory.createEmptyBorder(-2, -5, 2, 0)); // to avoid space of the first/last item
+    }
+
+    @Override
+    public void setItem(Object anObject) {
+      removeAll();
+
+      List<E> objs = getSelectedItems();
+      if (objs.isEmpty()) {
+        add(new JLabel(TmmResourceBundle.getString("ComboBox.select")));
+      }
+      else {
+        int widthAvailable = getWidth() - getFontMetrics(getFont()).stringWidth(" ... ");
+        int usedWidth = 0;
+
+        for (E obj : objs) {
+          JComponent editorItem = getEditorItem(obj);
+
+          if (usedWidth + editorItem.getMinimumSize().width < widthAvailable) {
+            add(editorItem);
+            usedWidth += editorItem.getMinimumSize().width;
+          }
+          else {
+            add(new JLabel("..."));
+            break;
+          }
+        }
+      }
+
+      // force the JComboBox to re-calculate the size
+      firePropertyChange("border", true, false);
+      revalidate();
     }
   }
 }

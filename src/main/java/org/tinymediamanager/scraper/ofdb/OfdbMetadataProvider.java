@@ -64,6 +64,6 @@ abstract class OfdbMetadataProvider implements IMediaProvider {
     // q = q.replaceAll("(?i)( a | the | der | die | das |\\(\\d+\\))", " ");
     q = q.replaceAll("[^A-Za-z0-9äöüÄÖÜ ]", " ");
     q = q.replace("  ", "");
-    return q.trim();
+    return q.strip();
   }
 }

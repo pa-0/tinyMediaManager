@@ -24,12 +24,9 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import org.tinymediamanager.core.TmmResourceBundle;
-import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.movie.entities.Movie;
-import org.tinymediamanager.core.threading.TmmTask;
-import org.tinymediamanager.core.threading.TmmTaskHandle;
+import org.tinymediamanager.core.movie.tasks.MovieFetchRatingsTask;
 import org.tinymediamanager.core.threading.TmmTaskManager;
-import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.scraper.rating.RatingProvider;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
@@ -66,29 +63,7 @@ public class MovieFetchRatingsAction extends TmmAction {
     List<RatingProvider.RatingSource> sources = dialog.getSelectedRatingSources();
 
     if (!sources.isEmpty()) {
-      TmmTaskManager.getInstance()
-          .addUnnamedTask(
-              new TmmTask(TmmResourceBundle.getString("movie.fetchratings"), selectedMovies.size(), TmmTaskHandle.TaskType.BACKGROUND_TASK) {
-
-                @Override
-                protected void doInBackground() {
-                  int i = 0;
-
-                  for (Movie movie : selectedMovies) {
-                    List<MediaRating> ratings = RatingProvider.getRatings(movie.getIds(), sources, MediaType.MOVIE);
-                    ratings.forEach(movie::setRating);
-                    if (!ratings.isEmpty()) {
-                      movie.saveToDb();
-                      movie.writeNFO();
-                    }
-
-                    publishState(++i);
-                    if (cancel) {
-                      break;
-                    }
-                  }
-                }
-              });
+      TmmTaskManager.getInstance().addUnnamedTask(new MovieFetchRatingsTask(selectedMovies, sources));
     }
   }
 }

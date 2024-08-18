@@ -573,10 +573,10 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
 
     // scrape networks before all other production companies
     for (Network network : ListUtils.nullSafe(complete.networks)) {
-      md.addProductionCompany(network.name.trim());
+      md.addProductionCompany(network.name.strip());
     }
     for (BaseCompany company : ListUtils.nullSafe(complete.production_companies)) {
-      md.addProductionCompany(company.name.trim());
+      md.addProductionCompany(company.name.strip());
     }
     md.setStatus(complete.status);
 

@@ -186,6 +186,11 @@ public class MainMenuPanel extends JPanel {
     tmmFolder.setToolTipText(TmmResourceBundle.getString("tmm.gotoinstalldir.desc"));
     tmmFolder.addActionListener(arg0 -> openFolder(Paths.get(System.getProperty("user.dir"))));
 
+    JMenuItem contentFolder = new JMenuItem(TmmResourceBundle.getString("tmm.gotocontentdir"));
+    menu.add(contentFolder);
+    contentFolder.setToolTipText(TmmResourceBundle.getString("tmm.gotocontentdir.desc"));
+    contentFolder.addActionListener(arg0 -> openFolder(Paths.get(Globals.CONTENT_FOLDER)));
+
     JMenuItem dataFolder = new JMenuItem(TmmResourceBundle.getString("tmm.gotodatadir"));
     menu.add(dataFolder);
     dataFolder.setToolTipText(TmmResourceBundle.getString("tmm.gotodatadir.desc"));

@@ -979,7 +979,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
     }
 
     // create MovieSet
-    if (config.contains(MovieScraperMetadataConfig.COLLECTION) && (overwriteExistingItems || getIdAsInt(MediaMetadata.TMDB_SET) == 0)) {
+    if (config.contains(MovieScraperMetadataConfig.COLLECTION) && (overwriteExistingItems || getMovieSet() == null)) {
       int col = 0;
       try {
         col = (int) metadata.getId(MediaMetadata.TMDB_SET);
@@ -1059,7 +1059,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
     // set preferred trailer
     if (MovieModuleManager.getInstance().getSettings().isUseTrailerPreference()) {
       TrailerQuality desiredQuality = MovieModuleManager.getInstance().getSettings().getTrailerQuality();
-      TrailerSources desiredSource = MovieModuleManager.getInstance().getSettings().getTrailerSource();
+      TrailerSources desiredSource = TrailerSources.YOUTUBE;
 
       // search for quality and provider
       for (MediaTrailer trailer : trailers) {
@@ -1797,7 +1797,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
       List<String> translatedLanguages = new ArrayList<>();
       for (String langu : ParserUtils.split(getSpokenLanguages())) {
         String translated = LanguageUtils
-            .getLocalizedLanguageNameFromLocalizedString(Utils.getLocaleFromLanguage(Settings.getInstance().getLanguage()), langu.trim());
+            .getLocalizedLanguageNameFromLocalizedString(Utils.getLocaleFromLanguage(Settings.getInstance().getLanguage()), langu.strip());
         translatedLanguages.add(translated);
       }
 
@@ -2972,7 +2972,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
         return getMovieSet();
 
       case TRAILER:
-        return getMediaFiles(MediaFileType.TRAILER);
+        return getTrailer();
 
       case ACTORS:
         return getActors();

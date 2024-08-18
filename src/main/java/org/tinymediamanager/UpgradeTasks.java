@@ -21,29 +21,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.core.entities.MediaEntity;
-import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaRating;
-import org.tinymediamanager.core.movie.MovieList;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieScraperMetadataConfig;
-import org.tinymediamanager.core.movie.entities.Movie;
-import org.tinymediamanager.core.tvshow.TvShowHelpers;
-import org.tinymediamanager.core.tvshow.TvShowList;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.TvShowScraperMetadataConfig;
-import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
-import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.entities.MediaEpisodeGroup;
 import org.tinymediamanager.scraper.entities.MediaEpisodeNumber;
@@ -56,14 +48,36 @@ import org.tinymediamanager.ui.TmmUILayoutStore;
  *
  * @author Manuel Laggner / Myron Boyle
  */
-public class UpgradeTasks {
+public abstract class UpgradeTasks {
   private static final Logger LOGGER = LoggerFactory.getLogger(UpgradeTasks.class);
 
   private static String       oldVersion;
 
-  private UpgradeTasks() {
-    throw new IllegalAccessError();
+  protected Set<MediaEntity>  entitiesToSave;
+
+  protected UpgradeTasks() {
+    entitiesToSave = new HashSet<>();
   }
+
+  /**
+   * perform all DB related upgrades
+   */
+  public abstract void performDbUpgrades();
+
+  /**
+   * register the {@link MediaEntity} for being saved
+   * 
+   * @param mediaEntity
+   *          the {@link MediaEntity} to be saved
+   */
+  protected void registerForSaving(MediaEntity mediaEntity) {
+    entitiesToSave.add(mediaEntity);
+  }
+
+  /**
+   * Save all registered {@link MediaEntity}
+   */
+  protected abstract void saveAll();
 
   public static void setOldVersion() {
     oldVersion = Settings.getInstance().getVersion();
@@ -110,190 +124,12 @@ public class UpgradeTasks {
   }
 
   /**
-   * Each DB version can only be executed once!<br>
-   * Do not make changes to existing versions, use a new number!
-   */
-  public static void performDbUpgradesForMovies() {
-    MovieModuleManager module = MovieModuleManager.getInstance();
-    MovieList movieList = module.getMovieList();
-    if (module.getDbVersion() == 0) {
-      module.setDbVersion(5000);
-    }
-    LOGGER.info("Current movie DB version: {}", module.getDbVersion());
-
-    if (module.getDbVersion() < 5001) {
-      LOGGER.info("performing upgrade to ver: {}", 5001);
-      for (Movie movie : movieList.getMovies()) {
-        // migrate logo to clearlogo
-        for (MediaFile mf : movie.getMediaFiles(MediaFileType.LOGO)) {
-          // remove
-          movie.removeFromMediaFiles(mf);
-          // change type
-          mf.setType(MediaFileType.CLEARLOGO);
-          // and add ad the end
-          movie.addToMediaFiles(mf);
-        }
-
-        String logoUrl = movie.getArtworkUrl(MediaFileType.LOGO);
-        if (StringUtils.isNotBlank(logoUrl)) {
-          movie.removeArtworkUrl(MediaFileType.LOGO);
-          String clearlogoUrl = movie.getArtworkUrl(MediaFileType.CLEARLOGO);
-          if (StringUtils.isBlank(clearlogoUrl)) {
-            movie.setArtworkUrl(logoUrl, MediaFileType.CLEARLOGO);
-          }
-        }
-        movie.saveToDb();
-      }
-      module.setDbVersion(5001);
-    }
-
-    // fix ratings
-    if (module.getDbVersion() < 5002) {
-      LOGGER.info("performing upgrade to ver: {}", 5002);
-      for (Movie movie : movieList.getMovies()) {
-        if (fixRatings(movie)) {
-          movie.saveToDb();
-        }
-      }
-      module.setDbVersion(5002);
-    }
-  }
-
-  /**
-   * Each DB version can only be executed once!<br>
-   * Do not make changes to existing versions, use a new number!
-   */
-  public static void performDbUpgradesForShows() {
-    TvShowModuleManager module = TvShowModuleManager.getInstance();
-    TvShowList tvShowList = module.getTvShowList();
-    if (module.getDbVersion() == 0) {
-      module.setDbVersion(5000);
-    }
-    LOGGER.info("Current tvshow DB version: {}", module.getDbVersion());
-
-    if (module.getDbVersion() < 5001) {
-      LOGGER.info("performing upgrade to ver: {}", 5001);
-      for (TvShow tvShow : tvShowList.getTvShows()) {
-        // migrate logo to clearlogo
-        for (MediaFile mf : tvShow.getMediaFiles(MediaFileType.LOGO)) {
-          // remove
-          tvShow.removeFromMediaFiles(mf);
-          // change type
-          mf.setType(MediaFileType.CLEARLOGO);
-          // and add ad the end
-          tvShow.addToMediaFiles(mf);
-        }
-
-        String logoUrl = tvShow.getArtworkUrl(MediaFileType.LOGO);
-        if (StringUtils.isNotBlank(logoUrl)) {
-          tvShow.removeArtworkUrl(MediaFileType.LOGO);
-          String clearlogoUrl = tvShow.getArtworkUrl(MediaFileType.CLEARLOGO);
-          if (StringUtils.isBlank(clearlogoUrl)) {
-            tvShow.setArtworkUrl(logoUrl, MediaFileType.CLEARLOGO);
-          }
-        }
-
-        // migrate season artwork to the seasons
-        List<MediaFile> seasonMediaFiles = tvShow.getMediaFiles(MediaFileType.SEASON_POSTER, MediaFileType.SEASON_BANNER, MediaFileType.SEASON_THUMB,
-            MediaFileType.SEASON_FANART);
-        for (MediaFile mf : seasonMediaFiles) {
-          if (mf.getFilesize() != 0) {
-            String foldername = tvShow.getPathNIO().relativize(mf.getFileAsPath().getParent()).toString();
-            int season = TvShowHelpers.detectSeasonFromFileAndFolder(mf.getFilename(), foldername);
-            if (season != Integer.MIN_VALUE) {
-              TvShowSeason tvShowSeason = tvShow.getOrCreateSeason(season);
-              tvShowSeason.addToMediaFiles(mf);
-            }
-          }
-          tvShow.removeFromMediaFiles(mf);
-        }
-
-        // link TV shows and seasons once again
-        for (TvShowSeason season : tvShow.getSeasons()) {
-          season.setTvShow(tvShow);
-        }
-        // save episodes (they are migrated while loading from database)
-        for (TvShowEpisode episode : tvShow.getEpisodes()) {
-          episode.saveToDb();
-        }
-        tvShow.saveToDb();
-      }
-      module.setDbVersion(5001);
-    }
-
-    // migrating EpisodeGroups from V4 / nightly V5
-    if (module.getDbVersion() < 5002) {
-      LOGGER.info("performing upgrade to ver: {}", 5002);
-      for (TvShow tvShow : tvShowList.getTvShows()) {
-        if (tvShow.getEpisodeGroup() == null || (tvShow.getEpisodeGroup() != null && tvShow.getEpisodeGroup().getEpisodeGroupType() == null)) {
-          // v4 empty / old v5 - cannot read
-          tvShow.setEpisodeGroup(MediaEpisodeGroup.DEFAULT_AIRED);
-        }
-        tvShow.getEpisodes().forEach(TvShowEpisode::saveToDb); // re-save
-        tvShow.saveToDb();
-      } // end foreach show
-
-      module.setDbVersion(5002);
-    }
-
-    // migrate folder.ext in TV shows to seasons
-    if (module.getDbVersion() < 5003) {
-      for (TvShow tvShow : tvShowList.getTvShows()) {
-        List<MediaFile> toRemove = new ArrayList<>();
-
-        for (MediaFile mf : tvShow.getMediaFiles(MediaFileType.POSTER)) {
-          if (!mf.getPath().equals(tvShow.getPath())) {
-            // probably season poster
-            mf.setType(MediaFileType.SEASON_POSTER);
-
-            String foldername = tvShow.getPathNIO().relativize(mf.getFileAsPath().getParent()).toString();
-            int season = TvShowHelpers.detectSeasonFromFileAndFolder(mf.getFilename(), foldername);
-            if (season != Integer.MIN_VALUE) {
-              TvShowSeason tvShowSeason = tvShow.getOrCreateSeason(season);
-              tvShowSeason.addToMediaFiles(mf);
-              toRemove.add(mf);
-            }
-          }
-        } // end foreach mediafile
-
-        if (!toRemove.isEmpty()) {
-          toRemove.forEach(tvShow::removeFromMediaFiles);
-          tvShow.saveToDb();
-        }
-      } // end foreach show
-      module.setDbVersion(5003);
-    }
-
-    // fix ratings
-    if (module.getDbVersion() < 5004) {
-      LOGGER.info("performing upgrade to ver: {}", 5004);
-      for (TvShow tvShow : tvShowList.getTvShows()) {
-        for (TvShowEpisode episode : tvShow.getEpisodes()) {
-          if (fixRatings(episode)) {
-            episode.saveToDb();
-          }
-        }
-        if (fixRatings(tvShow)) {
-          tvShow.saveToDb();
-        }
-      }
-      module.setDbVersion(5004);
-    }
-
-    // if (module.getDbVersion() < 50xx) {
-    // LOGGER.info("performing upgrade to ver: {}", 50xx);
-    //
-    // module.setDbVersion(50xx);
-    // }
-  }
-
-  /**
    * Fix some known rating problems min/max values
    * 
    * @param me
    * @return true, if something detected (call save)
    */
-  private static boolean fixRatings(MediaEntity me) {
+  protected static boolean fixRatings(MediaEntity me) {
     boolean changed = false;
     for (MediaRating rat : me.getRatings().values()) {
       if (rat.getMaxValue() == 10 && rat.getRating() > 10f) {

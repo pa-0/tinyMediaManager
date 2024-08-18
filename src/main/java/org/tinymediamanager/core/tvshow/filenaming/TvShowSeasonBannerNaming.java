@@ -70,8 +70,12 @@ public enum TvShowSeasonBannerNaming implements ITvShowSeasonFileNaming {
         // no season folder name in the templates found - fall back to the show base filename style
         return SEASON_BANNER.getFilename(tvShowSeason, extension);
       }
+      String filename = String.format("season%02d-banner.%s", tvShowSeason.getSeason(), extension);
+      if (tvShowSeason.getSeason() == 0 && TvShowModuleManager.getInstance().getSettings().isSpecialSeason()) {
+        filename = "season-specials-banner." + extension;
+      }
 
-      return seasonFoldername + File.separator + String.format("season%02d-banner.%s", tvShowSeason.getSeason(), extension);
+      return seasonFoldername + File.separator + filename;
     }
   }
 }

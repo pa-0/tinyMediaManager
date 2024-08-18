@@ -18,13 +18,17 @@ package org.tinymediamanager.scraper.http;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.Socket;
 import java.nio.file.Paths;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +88,7 @@ public class TmmHttpClient {
     // accept untrusted/self signed SSL certs
     if (Boolean.parseBoolean(System.getProperty("tmm.trustallcerts", "false"))) {
       try {
-        final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+        final TrustManager[] trustAllCerts = new TrustManager[] { new X509ExtendedTrustManager() {
           @Override
           public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
@@ -97,6 +101,26 @@ public class TmmHttpClient {
 
           @Override
           public void checkClientTrusted(final X509Certificate[] chain, final String authType) { // NOSONAR
+            // not needed
+          }
+
+          @Override
+          public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+            // not needed
+          }
+
+          @Override
+          public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+            // not needed
+          }
+
+          @Override
+          public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+            // not needed
+          }
+
+          @Override
+          public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
             // not needed
           }
         } };

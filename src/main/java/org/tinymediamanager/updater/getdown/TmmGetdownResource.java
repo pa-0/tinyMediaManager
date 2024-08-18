@@ -53,7 +53,7 @@ public class TmmGetdownResource extends Resource {
     // check if there is a .md5 file containing the digest (useful for resources, where the main file gets deleted after extracting)
     File file = new File(_local.getParent(), _local.getName() + ".sha256");
     if (file.exists()) {
-      return FileUtils.readFileToString(file, UTF_8).trim();
+      return FileUtils.readFileToString(file, UTF_8).strip();
     }
 
     return super.computeDigest(version, md, obs);

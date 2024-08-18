@@ -30,7 +30,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.DateTime;
 import org.tinymediamanager.core.MediaAiredStatus;
 import org.tinymediamanager.core.entities.MediaGenres;
 import org.tinymediamanager.core.entities.MediaRating;
@@ -879,18 +878,6 @@ public class MediaMetadata {
   public void setReleaseDate(Date releaseDate) {
     if (releaseDate != null) {
       this.releaseDate = releaseDate;
-    }
-  }
-
-  /**
-   * Set the release date
-   *
-   * @param releaseDate
-   *          the release date to be set
-   */
-  public void setReleaseDate(DateTime releaseDate) {
-    if (releaseDate != null) {
-      setReleaseDate(releaseDate.toDate());
     }
   }
 

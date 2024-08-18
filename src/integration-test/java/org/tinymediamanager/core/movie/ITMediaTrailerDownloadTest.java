@@ -101,7 +101,7 @@ public class ITMediaTrailerDownloadTest extends BasicITest {
       t.setUrl("https://www.youtube.com/watch?v=zNCz4mQzfEI");
       m.addToTrailer(Collections.singletonList(t));
 
-      YTDownloadTask task = new YTDownloadTask(t, TrailerQuality.HD_720) {
+      YTDownloadTask task = new YTDownloadTask(t, TrailerQuality.HD_720, false) {
         @Override
         protected Path getDestinationWoExtension() {
           return m.getPathNIO().resolve(m.getTrailerFilename(MovieTrailerNaming.FILENAME_TRAILER));

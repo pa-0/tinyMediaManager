@@ -15,8 +15,16 @@
  */
 package org.tinymediamanager.cli;
 
+import static org.tinymediamanager.TinyMediaManager.shutdown;
+import static org.tinymediamanager.TinyMediaManager.shutdownLogger;
+
+import java.awt.GraphicsEnvironment;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tinymediamanager.core.Settings;
+import org.tinymediamanager.core.http.TmmHttpServer;
+import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.updater.UpdateCheck;
 import org.tinymediamanager.updater.UpdaterTask;
 
@@ -59,6 +67,9 @@ public class TinyMediaManagerCLI implements Runnable {
 
   @CommandLine.Option(names = { "--update" }, description = "Download the latest updates for tinyMediaManager")
   boolean                     update;
+
+  @CommandLine.Option(names = { "--start-api" }, description = "Start the API server and keep tinyMediaManager running")
+  boolean                     startApi;
 
   public static boolean checkArgs(String... args) {
     CommandLine cmd = new CommandLine(TinyMediaManagerCLI.class);
@@ -112,6 +123,42 @@ public class TinyMediaManagerCLI implements Runnable {
         if (updaterTask.isDownloadSuccessful()) {
           LOGGER.info("Update downloaded successful - restart to apply");
         }
+      }
+    }
+
+    if (startApi) {
+      // init http server
+      if (Settings.getInstance().isEnableHttpServer()) {
+        // register the shutdown handler
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+          LOGGER.info("received shutdown signal");
+
+          // save window layout
+          if (!GraphicsEnvironment.isHeadless()) {
+            MainWindow.getInstance().saveWindowLayout();
+          }
+
+          shutdown();
+          shutdownLogger();
+        }));
+
+        try {
+          // no need for start, because after creation the server is automatically started
+          TmmHttpServer.getInstance();
+
+          // endless loop - blocks here
+          Thread.sleep(Long.MAX_VALUE);
+        }
+        catch (InterruptedException e) {
+          // just finish
+          System.out.println("stop");
+        }
+        catch (Exception e) {
+          LOGGER.error("could not start webserver: {}", e.getMessage());
+        }
+      }
+      else {
+        LOGGER.error("HTTP API is not enabled in the settings!");
       }
     }
   }

@@ -15,9 +15,10 @@
  */
 package org.tinymediamanager.core.tasks;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
@@ -36,7 +37,7 @@ import org.tinymediamanager.core.entities.MediaFile;
 
 /**
  * This class handles the download and additional unpacking of a subtitle
- * 
+ *
  * @author Manuel Laggner
  */
 public class SubtitleDownloadTask extends DownloadTask {
@@ -104,10 +105,10 @@ public class SubtitleDownloadTask extends DownloadTask {
       MediaFile mf = null;
 
       // try to decompress
-      try (FileInputStream fis = new FileInputStream(tempFile.toFile()); ZipInputStream is = new ZipInputStream(fis)) {
+      try (InputStream is = Files.newInputStream(tempFile); ZipInputStream zis = new ZipInputStream(is)) {
 
         // get the zipped file list entry
-        ZipEntry ze = is.getNextEntry();
+        ZipEntry ze = zis.getNextEntry();
 
         // we prefer well known subtitle file formats, but also remember .txt files
         SubtitleEntry firstSubtitle = null;
@@ -118,14 +119,14 @@ public class SubtitleDownloadTask extends DownloadTask {
 
           // check is that is a valid file type
           if (Settings.getInstance().getSubtitleFileType().contains("." + extension) || "idx".equals(extension)) {
-            firstSubtitle = new SubtitleEntry(extension, is.readAllBytes());
+            firstSubtitle = new SubtitleEntry(extension, zis.readAllBytes());
           }
 
           if (firstTxt == null && "txt".equals(extension)) {
-            firstTxt = new SubtitleEntry(extension, is.readAllBytes());
+            firstTxt = new SubtitleEntry(extension, zis.readAllBytes());
           }
 
-          ze = is.getNextEntry();
+          ze = zis.getNextEntry();
         }
 
         if (firstSubtitle != null) {
@@ -135,7 +136,7 @@ public class SubtitleDownloadTask extends DownloadTask {
           mf = copySubtitleFile(firstTxt);
         }
 
-        is.closeEntry();
+        zis.closeEntry();
       }
       catch (Exception e) {
         LOGGER.debug("could not extract subtitle: {}", e.getMessage());

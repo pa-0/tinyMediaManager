@@ -16,6 +16,10 @@
 package org.tinymediamanager.ui.tvshows.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.threading.TmmTask;
@@ -62,23 +66,28 @@ public class TvShowKodiRefreshNfoAction extends TmmAction {
             KodiRPC kodiRPC = KodiRPC.getInstance();
             int i = 0;
 
+            // cache of all processed DbIds (better than whole objects)
+            List<UUID> processed = new ArrayList<UUID>(selectedObjects.getEpisodesRecursive().size());
+
             // update show + all EPs
             for (TvShow tvShow : selectedObjects.getTvShows()) {
               kodiRPC.refreshFromNfo(tvShow);
-
+              processed.addAll(tvShow.getEpisodes().stream().map(ep -> ep.getDbId()).collect(Collectors.toList()));
               publishState(++i);
               if (cancel) {
                 return;
               }
             }
 
-            // update single EP only
+            // update single EP only, but not if we already had it via show...
             for (TvShowEpisode episode : selectedObjects.getEpisodesRecursive()) {
-              kodiRPC.refreshFromNfo(episode);
+              if (!processed.contains(episode.getDbId())) {
+                kodiRPC.refreshFromNfo(episode);
 
-              publishState(++i);
-              if (cancel) {
-                return;
+                publishState(++i);
+                if (cancel) {
+                  return;
+                }
               }
             }
 

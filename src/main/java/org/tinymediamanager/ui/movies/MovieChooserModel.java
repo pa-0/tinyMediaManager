@@ -82,7 +82,7 @@ public class MovieChooserModel extends AbstractModelObject {
   private String                        title            = "";
   private String                        originalTitle    = "";
   private String                        overview         = "";
-  private String                        year             = "";
+  private int                           year             = 0;
   private String                        id               = "";
   private String                        combinedName     = "";
   private String                        posterUrl        = "";
@@ -102,9 +102,7 @@ public class MovieChooserModel extends AbstractModelObject {
     score = result.getScore();
     setTitle(result.getTitle());
     setOriginalTitle(result.getOriginalTitle());
-    if (result.getYear() != 0) {
-      setYear(Integer.toString(result.getYear()));
-    }
+    setYear(result.getYear());
 
     Object obj = result.getId();
     if (obj != null) {
@@ -188,19 +186,19 @@ public class MovieChooserModel extends AbstractModelObject {
     firePropertyChange("posterUrl", oldValue, newValue);
   }
 
-  public String getYear() {
+  public int getYear() {
     return year;
   }
 
-  public void setYear(String year) {
-    String oldValue = this.year;
+  public void setYear(int year) {
+    int oldValue = this.year;
     this.year = year;
     firePropertyChange("year", oldValue, this.year);
   }
 
   public void setCombinedName() {
     String oldValue = this.combinedName;
-    if (StringUtils.isNotBlank(getYear())) {
+    if (getYear() > 0) {
       this.combinedName = getTitle() + " (" + getYear() + ")";
     }
     else {
@@ -331,10 +329,11 @@ public class MovieChooserModel extends AbstractModelObject {
       if (movieToScrape == movie) {
         continue;
       }
-
-      Object id = movie.getId(result.getProviderId());
-      if (id != null && id.toString().equals(result.getId())) {
-        return true;
+      for (var entry : result.getIds().entrySet()) {
+        Object id = movie.getId(entry.getKey());
+        if (id != null && id.toString().equals(entry.getValue())) {
+          return true;
+        }
       }
     }
     return false;

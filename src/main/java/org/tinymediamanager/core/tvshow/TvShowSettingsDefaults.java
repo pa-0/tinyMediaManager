@@ -174,6 +174,7 @@ public class TvShowSettingsDefaults {
     tvShowSettings.setTvShowConnector(TvShowConnectors.KODI);
     tvShowSettings.setCertificationStyle(CertificationStyle.LARGE);
     tvShowSettings.setNfoWriteEpisodeguide(false);
+    tvShowSettings.setNfoWriteNewEpisodeguideStyle(true);
 
     tvShowSettings.firePropertyChange("preset", false, true);
   }
@@ -364,7 +365,7 @@ public class TvShowSettingsDefaults {
     tvShowSettings.episodeThumbFilenames.add(TvShowEpisodeThumbNaming.FILENAME);
 
     // other settings
-    tvShowSettings.setTvShowConnector(TvShowConnectors.KODI);
+    tvShowSettings.setTvShowConnector(TvShowConnectors.JELLYFIN);
     tvShowSettings.setCertificationStyle(CertificationStyle.SHORT);
 
     tvShowSettings.firePropertyChange("preset", false, true);
@@ -433,6 +434,72 @@ public class TvShowSettingsDefaults {
     // other settings
     tvShowSettings.setTvShowConnector(TvShowConnectors.EMBY);
     tvShowSettings.setCertificationStyle(CertificationStyle.SHORT);
+
+    tvShowSettings.firePropertyChange("preset", false, true);
+  }
+
+  /**
+   * MediaPIG defaults
+   */
+  public static void setDefaultSettingsForMediaPig() {
+    TvShowSettings tvShowSettings = TvShowSettings.getInstance();
+
+    tvShowSettings.nfoFilenames.clear();
+    tvShowSettings.nfoFilenames.add(TvShowNfoNaming.TV_SHOW);
+
+    tvShowSettings.posterFilenames.clear();
+    tvShowSettings.posterFilenames.add(TvShowPosterNaming.POSTER);
+
+    tvShowSettings.fanartFilenames.clear();
+    tvShowSettings.fanartFilenames.add(TvShowFanartNaming.FANART);
+
+    tvShowSettings.extraFanartFilenames.clear();
+    tvShowSettings.extraFanartFilenames.add(TvShowExtraFanartNaming.FOLDER_EXTRAFANART);
+
+    tvShowSettings.bannerFilenames.clear();
+    tvShowSettings.bannerFilenames.add(TvShowBannerNaming.BANNER);
+
+    tvShowSettings.discartFilenames.clear();
+    tvShowSettings.discartFilenames.add(TvShowDiscartNaming.DISCART);
+
+    tvShowSettings.clearartFilenames.clear();
+    tvShowSettings.clearartFilenames.add(TvShowClearartNaming.CLEARART);
+
+    tvShowSettings.clearlogoFilenames.clear();
+    tvShowSettings.clearlogoFilenames.add(TvShowClearlogoNaming.CLEARLOGO);
+
+    tvShowSettings.characterartFilenames.clear();
+    tvShowSettings.characterartFilenames.add(TvShowCharacterartNaming.CHARACTERART);
+
+    tvShowSettings.thumbFilenames.clear();
+    tvShowSettings.thumbFilenames.add(TvShowThumbNaming.THUMB);
+
+    tvShowSettings.keyartFilenames.clear();
+    tvShowSettings.keyartFilenames.add(TvShowKeyartNaming.KEYART);
+
+    tvShowSettings.seasonPosterFilenames.clear();
+    tvShowSettings.seasonPosterFilenames.add(TvShowSeasonPosterNaming.SEASON_POSTER);
+
+    tvShowSettings.seasonFanartFilenames.clear();
+    tvShowSettings.seasonFanartFilenames.add(TvShowSeasonFanartNaming.SEASON_FANART);
+
+    tvShowSettings.seasonBannerFilenames.clear();
+    tvShowSettings.seasonBannerFilenames.add(TvShowSeasonBannerNaming.SEASON_BANNER);
+
+    tvShowSettings.seasonThumbFilenames.clear();
+    tvShowSettings.seasonThumbFilenames.add(TvShowSeasonThumbNaming.SEASON_THUMB);
+
+    tvShowSettings.episodeNfoFilenames.clear();
+    tvShowSettings.episodeNfoFilenames.add(TvShowEpisodeNfoNaming.FILENAME);
+
+    tvShowSettings.episodeThumbFilenames.clear();
+    tvShowSettings.episodeThumbFilenames.add(TvShowEpisodeThumbNaming.FILENAME_THUMB);
+
+    // other settings
+    tvShowSettings.setTvShowConnector(TvShowConnectors.KODI);
+    tvShowSettings.setCertificationStyle(CertificationStyle.LARGE);
+    tvShowSettings.setNfoWriteEpisodeguide(true);
+    tvShowSettings.setNfoWriteNewEpisodeguideStyle(true);
 
     tvShowSettings.firePropertyChange("preset", false, true);
   }

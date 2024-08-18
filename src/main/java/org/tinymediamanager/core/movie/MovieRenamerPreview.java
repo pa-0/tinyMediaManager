@@ -74,7 +74,7 @@ public class MovieRenamerPreview {
     else {
       String oldVideoBasename = movieClone.getVideoBasenameWithoutStacking();
       String newVideoBasename = "";
-      if (MovieModuleManager.getInstance().getSettings().getRenamerFilename().trim().isEmpty()) {
+      if (MovieModuleManager.getInstance().getSettings().getRenamerFilename().strip().isEmpty()) {
         // we are NOT renaming any files, so we keep the same name on renaming ;)
         newVideoBasename = movieClone.getVideoBasenameWithoutStacking();
       }

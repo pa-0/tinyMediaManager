@@ -96,7 +96,8 @@ public class TmmOsUtils {
     sb.append("Icon=");
     sb.append(path);
     sb.append("/tmm.png\n");
-    sb.append("Categories=AudioVideo;Video;Database;Java;");
+    sb.append("Categories=AudioVideo;Video;Database;Java;\n");
+    sb.append("StartupWMClass=org-tinymediamanager-TinyMediaManager\n");
     sb.append("\n");
 
     try (FileWriterWithEncoding writer = new FileWriterWithEncoding(desktop, UrlUtil.UTF_8)) {

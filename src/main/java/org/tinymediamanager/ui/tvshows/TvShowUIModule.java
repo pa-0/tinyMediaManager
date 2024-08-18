@@ -54,6 +54,7 @@ import org.tinymediamanager.ui.tvshows.actions.TvShowAspectRatioDetectAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowBulkEditAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowChangeDatasourceAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowChangeSeasonArtworkAction;
+import org.tinymediamanager.ui.tvshows.actions.TvShowChangeToAbsoluteAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowCleanUpFilesAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowClearImageCacheAction;
 import org.tinymediamanager.ui.tvshows.actions.TvShowDeleteAction;
@@ -445,6 +446,7 @@ public class TvShowUIModule extends AbstractTmmUIModule {
     enhancededitPopupMenu.add(createAndRegisterAction(TvShowRebuildImageCacheAction.class));
     enhancededitPopupMenu.add(createAndRegisterAction(TvShowResetNewFlagAction.class));
     enhancededitPopupMenu.add(createAndRegisterAction(TvShowTitleToEntityMatcher.class));
+    enhancededitPopupMenu.add(createAndRegisterAction(TvShowChangeToAbsoluteAction.class));
     popupMenu.add(enhancededitPopupMenu);
 
     JMenu downloadMenu = new JMenu(TmmResourceBundle.getString("tmm.download"));

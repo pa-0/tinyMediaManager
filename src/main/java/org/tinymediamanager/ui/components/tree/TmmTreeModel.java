@@ -485,7 +485,7 @@ public class TmmTreeModel<E extends TmmTreeNode> extends DefaultTreeModel {
       final Set<ITmmTreeFilter<E>> filters = dataProvider.getTreeFilters();
 
       // filter
-      for (final E element : children) {
+      for (final E element : new ArrayList<>(children)) {
         // filter over all set filters
         boolean accepted = true;
         for (ITmmTreeFilter<E> filter : filters) {

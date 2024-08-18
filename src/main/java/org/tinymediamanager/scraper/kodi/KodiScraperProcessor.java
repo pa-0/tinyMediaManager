@@ -133,7 +133,7 @@ class KodiScraperProcessor {
     }
 
     String expr = exp.getExpression();
-    if (expr == null || expr.trim().length() == 0) {
+    if (expr == null || expr.strip().length() == 0) {
       LOGGER.warn("Expression was empty.  Returning processed output buffer using input as replacement array.");
       setBuffer(r.getDest(), processOutputBuffers(r.getOutput(), new String[] { "", in }), r.isAppendBuffer());
       return;

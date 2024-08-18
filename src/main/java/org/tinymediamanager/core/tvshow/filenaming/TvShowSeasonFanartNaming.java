@@ -71,7 +71,12 @@ public enum TvShowSeasonFanartNaming implements ITvShowSeasonFileNaming {
         return SEASON_FANART.getFilename(tvShowSeason, extension);
       }
 
-      return seasonFoldername + File.separator + String.format("season%02d-fanart.%s", tvShowSeason.getSeason(), extension);
+      String filename = String.format("season%02d-fanart.%s", tvShowSeason.getSeason(), extension);
+      if (tvShowSeason.getSeason() == 0 && TvShowModuleManager.getInstance().getSettings().isSpecialSeason()) {
+        filename = "season-specials-fanart." + extension;
+      }
+
+      return seasonFoldername + File.separator + filename;
     }
   }
 }

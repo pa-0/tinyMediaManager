@@ -32,7 +32,7 @@ import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 import org.tinymediamanager.ui.components.table.TmmTableFormat;
 import org.tinymediamanager.ui.components.tree.TmmTreeDataProvider;
 import org.tinymediamanager.ui.components.tree.TmmTreeNode;
-import org.tinymediamanager.ui.components.treetable.ITmmTreeTableSortingStrategy;
+import org.tinymediamanager.ui.components.treetable.AbstractTmmTreeTableNodeComparator;
 import org.tinymediamanager.ui.components.treetable.TmmTreeTableFormat;
 
 /**
@@ -419,11 +419,8 @@ public class TvShowTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
   /*
    * helper classes
    */
-  class TvShowTreeNodeComparator implements Comparator<TmmTreeNode>, ITmmTreeTableSortingStrategy {
+  class TvShowTreeNodeComparator extends AbstractTmmTreeTableNodeComparator {
     private final Comparator stringComparator;
-
-    private SortDirection    sortDirection;
-    private int              sortColumn;
 
     private Comparator       sortComparator;
 
@@ -484,6 +481,12 @@ public class TvShowTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
       }
       sortColumn = column;
 
+      sortComparator = getSortComparator();
+    }
+
+    @Override
+    public void fromString(String stringEncoded) {
+      super.fromString(stringEncoded);
       sortComparator = getSortComparator();
     }
 
@@ -595,20 +598,23 @@ public class TvShowTreeDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
     public String toString() {
       // return season name
       if (getUserObject() instanceof TvShowSeason season) {
-        if (StringUtils.isNotBlank(season.getTitle())) {
-          return season.getTitle();
+        if (season.getSeason() == -1) {
+          return TmmResourceBundle.getString("tvshow.uncategorized");
+        }
+
+        String title = "";
+
+        if (season.getSeason() == 0) {
+          title = TmmResourceBundle.getString("metatag.specials");
         }
         else {
-          if (season.getSeason() == -1) {
-            return TmmResourceBundle.getString("tvshow.uncategorized");
-          }
-
-          if (season.getSeason() == 0) {
-            return TmmResourceBundle.getString("metatag.specials");
-          }
-
-          return TmmResourceBundle.getString("metatag.season") + " " + season.getSeason();
+          title = TmmResourceBundle.getString("metatag.season") + " " + season.getSeason();
         }
+        if (StringUtils.isNotBlank(season.getTitle()) && !title.strip().equalsIgnoreCase(season.getTitle().strip())) {
+          title += " - " + season.getTitle();
+        }
+
+        return title;
       }
 
       // fallback: call super

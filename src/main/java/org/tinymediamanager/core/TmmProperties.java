@@ -16,12 +16,13 @@
 package org.tinymediamanager.core;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -52,7 +53,7 @@ public class TmmProperties {
   private TmmProperties() {
     properties = new SortedProperties();
 
-    try (InputStream input = new FileInputStream(new File(Settings.getInstance().getSettingsFolder(), PROPERTIES_FILE))) {
+    try (InputStream input = Files.newInputStream(Paths.get(Settings.getInstance().getSettingsFolder(), PROPERTIES_FILE))) {
       properties.load(input);
     }
     catch (FileNotFoundException ignored) {
@@ -67,7 +68,7 @@ public class TmmProperties {
 
   /**
    * the an instance of this class
-   * 
+   *
    * @return an instance of this class
    */
   public static synchronized TmmProperties getInstance() {
@@ -95,7 +96,7 @@ public class TmmProperties {
 
   /**
    * put a key/value pair into the properties file
-   * 
+   *
    * @param key
    *          the key
    * @param value
@@ -108,7 +109,7 @@ public class TmmProperties {
 
   /**
    * get the value for the given key
-   * 
+   *
    * @param key
    *          the key to search the value for
    * @return the value or null
@@ -119,7 +120,7 @@ public class TmmProperties {
 
   /**
    * get the value for the given key
-   * 
+   *
    * @param key
    *          the key to search the value for
    * @param defaultValue
@@ -150,7 +151,7 @@ public class TmmProperties {
   /**
    * get the value as Integer<br>
    * if the value is not available or not parsable, this will return zero
-   * 
+   *
    * @param key
    *          the key to search the value for
    * @return the value or zero

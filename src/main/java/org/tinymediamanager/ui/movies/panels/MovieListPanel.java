@@ -422,11 +422,28 @@ public class MovieListPanel extends TmmListPanel {
   }
 
   private static class MovieTableSortingStrategy extends MouseKeyboardSortingStrategy {
+    private boolean titleClicked = false;
+
+    @Override
+    public void columnClicked(SortingState sortingState, int column, int clicks, boolean shift, boolean control) {
+      if (column == 0) {
+        // click on title
+        titleClicked = true;
+      }
+      else if (!control) {
+        // everything else clicked without CTRL
+        titleClicked = false;
+      }
+      super.columnClicked(sortingState, column, clicks, shift, control);
+    }
+
     @Override
     public void finalHook(SortingState sortingState) {
 
-      // install sorting on title too if it is no yet selected
-      if (!sortingState.getSortingColumnIndexes().contains(0)) {
+      // install sorting on title too (in the last place) if it is no yet selected
+      if (!titleClicked) {
+        SortingState.SortingColumn sortingColumn = sortingState.getColumns().get(0);
+        sortingState.getRecentlyClickedColumns().remove(sortingColumn);
         sortingState.appendComparator(0, 0, false);
       }
     }

@@ -198,7 +198,7 @@ class MovieCommand implements Runnable {
       task.run(); // blocking
 
       // wait for other tmm threads (artwork download et all)
-      while (TmmTaskManager.getInstance().poolRunning()) {
+      while (TmmTaskManager.getInstance().isPoolRunning()) {
         try {
           Thread.sleep(2000);
         }

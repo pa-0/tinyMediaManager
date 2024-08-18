@@ -81,7 +81,7 @@ class KodiUtil {
         ret = ret.replace(xmlHeaderOrig, xmlHeaderNew);
       }
     }
-    return ret.trim();
+    return ret.strip();
   }
 
   /**

@@ -419,6 +419,77 @@ public class MediaArtwork {
   }
 
   /**
+   * Tries to generate a matching score, how good that artwork matches your preferences
+   * 
+   * @param wantedSize
+   *          the various image sizes 0,1,2,4,8,16
+   * @param preferredLanguages
+   *          the preferred languages array
+   * @return score
+   */
+  public int getMatchingScoreAccordingPreferences(int wantedSize, List<MediaLanguages> preferredLanguages, boolean preferFanartWoText,
+      boolean otherResolutions) {
+    // do not use likes here - just check against user preferences!
+    int score = 0;
+
+    boolean languageMatched = false;
+    boolean sizeMatched = false;
+
+    if (!language.isEmpty()) {
+      try {
+        MediaLanguages maLang = MediaLanguages.valueOf(language);
+        if (preferredLanguages.contains(maLang)) {
+          languageMatched = true;
+        }
+      }
+      catch (IllegalArgumentException ignore) {
+        // thrown, when we get a language, which is not in our ENUM
+      }
+    }
+    else {
+      // artwork language empty - did we prefer this?
+      // (either as "none" langu entry or with checkbox)
+      if (preferredLanguages.contains(MediaLanguages.none) || (preferFanartWoText && type == MediaArtworkType.BACKGROUND)) {
+        languageMatched = true;
+      }
+    }
+
+    if (wantedSize > 0) {
+      for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : imageSizes) {
+        if (imageSizeAndUrl.getSizeOrder() == wantedSize) {
+          // correct size as in settings? worth 10 points
+          sizeMatched = true;
+        }
+      }
+    }
+
+    if (languageMatched && sizeMatched) {
+      score += 90;
+    }
+    else if (languageMatched) {
+      score += 50;
+    }
+    else if (sizeMatched) {
+      score += 40;
+    }
+    else {
+      // well... not a single preference matched
+    }
+
+    // consider the amount of images? Nah, not needed
+    // if (otherResolutions) {
+    // score += imageSizes.size() * 2;
+    // }
+    if (isAnimated()) {
+      score += 5; // why not ^^
+    }
+
+    // image chooser finally sorts them by likes,
+    // so our short-sort order should be fine
+    return score;
+  }
+
+  /**
    * Get the smallest artwork if different sizes are available or null
    * 
    * @return the smallest artwork or null

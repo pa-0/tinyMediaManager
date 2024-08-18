@@ -53,7 +53,11 @@ import org.tinymediamanager.core.tvshow.TvShowSearchAndScrapeOptions;
 import org.tinymediamanager.core.tvshow.TvShowSettings;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
+import org.tinymediamanager.core.tvshow.tasks.TvShowARDetectorTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowEpisodeScrapeTask;
+import org.tinymediamanager.core.tvshow.tasks.TvShowFetchRatingsTask;
+import org.tinymediamanager.core.tvshow.tasks.TvShowMissingArtworkDownloadTask;
+import org.tinymediamanager.core.tvshow.tasks.TvShowReloadMediaInformationTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowRenameTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowScrapeTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowSubtitleSearchAndDownloadTask;
@@ -62,6 +66,7 @@ import org.tinymediamanager.core.tvshow.tasks.TvShowUpdateDatasourceTask;
 import org.tinymediamanager.scraper.MediaScraper;
 import org.tinymediamanager.scraper.ScraperType;
 import org.tinymediamanager.scraper.entities.MediaLanguages;
+import org.tinymediamanager.scraper.rating.RatingProvider;
 import org.tinymediamanager.scraper.util.ListUtils;
 
 /**
@@ -89,9 +94,14 @@ class TvShowCommandTask extends TmmThreadPool {
   protected void doInBackground() {
     // 1. update commands
     updateDataSources();
+    reloadMediaInfo();
+    aspectRatioDetection();
 
     // 2. scrape commands
     scrape();
+
+    // 2.1 fetch ratings
+    fetchRatings();
 
     // 3. download trailer
     downloadTrailer();
@@ -99,16 +109,19 @@ class TvShowCommandTask extends TmmThreadPool {
     // 4. download subtitles
     downloadSubtitles();
 
-    // 5. rename
+    // 5. download missing artwork
+    downloadMissingArtwork();
+
+    // 6. rename
     rename();
 
-    // 6. export
+    // 7. export
     export();
   }
 
   private void updateDataSources() {
     Set<String> dataSources = new TreeSet<>();
-    Set<Path> tvShowFolders = new TreeSet<>();
+    Set<TvShow> tvShowFolders = new HashSet<>();
 
     List<TvShow> existingTvShows = new ArrayList<>(tvShowList.getTvShows());
     List<TvShowEpisode> existingEpisodes = new ArrayList<>();
@@ -191,15 +204,58 @@ class TvShowCommandTask extends TmmThreadPool {
     return dataSources;
   }
 
-  private List<Path> getTvShowFoldersForScope(CommandScope scope) {
-    List<Path> tvShowFolders = new ArrayList<>();
+  public void reloadMediaInfo() {
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("reloadMediaInfo".equals(command.action)) {
+
+        LOGGER.info("reload media info... - {}", command);
+        List<TvShow> tvshows = getTvShowsForScope(command.scope);
+        List<TvShowEpisode> tvShowEpisodes = getEpisodesForScope(command.scope);
+
+        if (!tvshows.isEmpty() && !tvShowEpisodes.isEmpty()) {
+
+          setTaskName(TmmResourceBundle.getString("tvshow.updatemediainfo"));
+          publishState(TmmResourceBundle.getString("tvshow.updatemediainfo"), getProgressDone());
+
+          activeTask = new TvShowReloadMediaInformationTask(tvshows, tvShowEpisodes);
+          activeTask.run();
+
+          activeTask = null;
+        }
+      }
+    }
+  }
+
+  public void aspectRatioDetection() {
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("detectAspectRatio".equals(command.action)) {
+
+        LOGGER.info("detecting aspect ratio... - {}", command);
+        List<TvShowEpisode> tvShowEpisodes = getEpisodesForScope(command.scope);
+
+        if (!tvShowEpisodes.isEmpty()) {
+
+          setTaskName(TmmResourceBundle.getString("tvshow.ard"));
+          publishState(TmmResourceBundle.getString("tvshow.ard"), getProgressDone());
+
+          activeTask = new TvShowARDetectorTask(tvShowEpisodes);
+          activeTask.run();
+
+          activeTask = null;
+        }
+      }
+    }
+  }
+
+  private List<TvShow> getTvShowFoldersForScope(CommandScope scope) {
+    List<TvShow> tvShows = new ArrayList<>();
 
     switch (scope.name) {
       case "show":
         for (String path : ListUtils.nullSafe(Arrays.asList(scope.args))) {
           for (TvShow tvShow : tvShowList.getTvShows()) {
             if (tvShow.getPathNIO().toAbsolutePath().toString().equals(path)) {
-              tvShowFolders.add(tvShow.getPathNIO());
+              tvShows.add(tvShow);
               break;
             }
           }
@@ -207,7 +263,7 @@ class TvShowCommandTask extends TmmThreadPool {
         break;
     }
 
-    return tvShowFolders;
+    return tvShows;
   }
 
   private void scrape() {
@@ -246,7 +302,7 @@ class TvShowCommandTask extends TmmThreadPool {
       activeTask.run(); // blocking
 
       // wait for all image downloads!
-      while (TmmTaskManager.getInstance().imageDownloadsRunning()) {
+      while (TmmTaskManager.getInstance().isImageDownloadsRunning()) {
         try {
           Thread.sleep(2000);
         }
@@ -292,7 +348,7 @@ class TvShowCommandTask extends TmmThreadPool {
         activeTask.run(); // blocking
 
         // wait for other tmm threads (artwork download et all)
-        while (TmmTaskManager.getInstance().poolRunning()) {
+        while (TmmTaskManager.getInstance().isPoolRunning()) {
           try {
             Thread.sleep(2000);
           }
@@ -304,6 +360,38 @@ class TvShowCommandTask extends TmmThreadPool {
         // done
         activeTask = null;
       }
+    }
+  }
+
+  private void fetchRatings() {
+    Set<TvShow> tvShowsToScrape = new LinkedHashSet<>();
+    Set<TvShowEpisode> episodesToScrape = new LinkedHashSet<>();
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("fetchRatings".equals(command.action)) {
+        tvShowsToScrape.addAll(getTvShowsForScope(command.scope));
+        episodesToScrape.addAll(getEpisodesForScope(command.scope));
+      }
+    }
+
+    if (!tvShowsToScrape.isEmpty() || !episodesToScrape.isEmpty()) {
+      setTaskName(TmmResourceBundle.getString("tvshow.fetchratings"));
+      publishState(TmmResourceBundle.getString("tvshow.fetchratings"), getProgressDone());
+
+      activeTask = new TvShowFetchRatingsTask(tvShowsToScrape, episodesToScrape, RatingProvider.RatingSource.getRatingSourcesForTvShows());
+      activeTask.run(); // blocking
+
+      // wait for other tmm threads (artwork download et all)
+      while (TmmTaskManager.getInstance().isPoolRunning()) {
+        try {
+          Thread.sleep(2000);
+        }
+        catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      // done
+      activeTask = null;
     }
   }
 
@@ -410,6 +498,46 @@ class TvShowCommandTask extends TmmThreadPool {
 
           // done
           activeTask = null;
+        }
+      }
+    }
+  }
+
+  private void downloadMissingArtwork() {
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("downloadMissingArtwork".equals(command.action)) {
+        setTaskName(TmmResourceBundle.getString("tvshow.downloadmissingartwork"));
+        publishState(TmmResourceBundle.getString("tvshow.downloadmissingartwork"), getProgressDone());
+
+        TvShowSearchAndScrapeOptions tvShowSearchAndScrapeConfig = new TvShowSearchAndScrapeOptions();
+        tvShowSearchAndScrapeConfig.setCertificationCountry(TvShowModuleManager.getInstance().getSettings().getCertificationCountry());
+        tvShowSearchAndScrapeConfig.setReleaseDateCountry(TvShowModuleManager.getInstance().getSettings().getReleaseDateCountry());
+
+        // artwork scrapers
+        List<MediaScraper> selectedArtworkScrapers = new ArrayList<>();
+        for (MediaScraper artworkScraper : TvShowModuleManager.getInstance().getTvShowList().getAvailableArtworkScrapers()) {
+          if (TvShowModuleManager.getInstance().getSettings().getArtworkScrapers().contains(artworkScraper.getId())) {
+            selectedArtworkScrapers.add(artworkScraper);
+          }
+        }
+        tvShowSearchAndScrapeConfig.setArtworkScraper(selectedArtworkScrapers);
+
+        activeTask = new TvShowMissingArtworkDownloadTask(getTvShowsForScope(command.scope), getEpisodesForScope(command.scope),
+            tvShowSearchAndScrapeConfig, TvShowModuleManager.getInstance().getSettings().getTvShowScraperMetadataConfig(),
+            TvShowModuleManager.getInstance().getSettings().getEpisodeScraperMetadataConfig());
+        activeTask.run();
+
+        // done
+        activeTask = null;
+
+        // wait for other tmm threads (artwork download)
+        while (TmmTaskManager.getInstance().isPoolRunning()) {
+          try {
+            Thread.sleep(2000);
+          }
+          catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
         }
       }
     }

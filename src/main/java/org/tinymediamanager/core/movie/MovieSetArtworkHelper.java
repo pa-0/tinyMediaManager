@@ -305,7 +305,7 @@ public class MovieSetArtworkHelper {
           movieSetName = MovieRenamer.replacePathSeparators(movieSetName);
 
           // replace multiple spaces with a single one
-          movieSetName = movieSetName.replaceAll(" +", " ").trim();
+          movieSetName = movieSetName.replaceAll(" +", " ").strip();
 
           if (isMediaFileInArtworkFolder(movieSetName, artworkFolder, fileNaming, mediaFile)) {
             return mediaFile;
@@ -380,7 +380,7 @@ public class MovieSetArtworkHelper {
       movieSetName = MovieRenamer.replacePathSeparators(movieSetName);
 
       // replace multiple spaces with a single one
-      movieSetName = movieSetName.replaceAll(" +", " ").trim();
+      movieSetName = movieSetName.replaceAll(" +", " ").strip();
       findArtworkForType(movieSet, artworkFolder, movieSetName, type);
 
       // Kodi style
@@ -401,7 +401,7 @@ public class MovieSetArtworkHelper {
       movieSetName = MovieRenamer.replacePathSeparators(movieSetName);
 
       // replace multiple spaces with a single one
-      movieSetName = movieSetName.replaceAll(" +", " ").trim();
+      movieSetName = movieSetName.replaceAll(" +", " ").strip();
       findArtworkForType(movieSet, artworkFolder + File.separator + movieSetName, movieSetName, type);
 
       // Kodi style
@@ -530,7 +530,7 @@ public class MovieSetArtworkHelper {
     movieSetName = MovieRenamer.replacePathSeparators(movieSetName);
 
     // replace multiple spaces with a single one
-    movieSetName = movieSetName.replaceAll(" +", " ").trim();
+    movieSetName = movieSetName.replaceAll(" +", " ").strip();
 
     for (MediaFileType type : SUPPORTED_ARTWORK_TYPES) {
       // only if there is not yet any artwork assigned
@@ -1104,7 +1104,7 @@ public class MovieSetArtworkHelper {
       movieSetName = MovieRenamer.replacePathSeparators(movieSetName);
 
       // replace multiple spaces with a single one
-      movieSetName = movieSetName.replaceAll(" +", " ").trim();
+      movieSetName = movieSetName.replaceAll(" +", " ").strip();
 
       List<IMovieSetFileNaming> movieFileNamings = fileNamings.stream()
           .filter(fileNaming -> fileNaming.getFolderLocation() == IMovieSetFileNaming.Location.MOVIE_FOLDER)
@@ -1243,7 +1243,7 @@ public class MovieSetArtworkHelper {
     result = result.replace("|", replacement);
 
     // replace multiple spaces with a single one (and remove trailing ones)
-    result = result.replaceAll(" +", " ").trim();
+    result = result.replaceAll(" +", " ").strip();
 
     return result;
   }

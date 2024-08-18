@@ -27,9 +27,7 @@ import org.tinymediamanager.core.MediaFileHelper;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaSource;
-import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.entities.Movie;
-import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.license.TmmFeature;
 import org.tinymediamanager.scraper.exceptions.HttpException;
@@ -572,28 +570,13 @@ public class TraktTv implements TmmFeature {
     }
     StringBuilder sb = new StringBuilder(50);
 
-    // build a simple map of traktId-title for logging (but only IF we have errors)
-    Map<Integer, String> traktMap = new HashMap<>();
-    if ((se.movies != null && !se.movies.isEmpty()) || (se.shows != null && !se.shows.isEmpty()) || (se.seasons != null && !se.seasons.isEmpty())
-        || (se.episodes != null && !se.episodes.isEmpty())) {
-      MovieModuleManager.getInstance().getMovieList().getMovies().stream().forEach((n) -> {
-        traktMap.put(n.getTraktId(), n.getTitle());
-      });
-      TvShowModuleManager.getInstance().getTvShowList().getTvShows().stream().forEach((n) -> {
-        traktMap.put(n.getTraktId(), n.getTitle());
-        n.getEpisodes().stream().forEach((e) -> {
-          traktMap.put(e.getTraktTvId(), e.getTitle() + " S" + e.getSeason() + " E" + e.getEpisode());
-        });
-      });
-    }
-
     if (se.movies != null && !se.movies.isEmpty()) {
       sb.append("\n").append(se.movies.size()).append(" Movies: ");
-      se.movies.forEach(movie -> sb.append(movie.ids.trakt).append("-").append(traktMap.get(movie.ids.trakt)).append(","));
+      se.movies.forEach(movie -> sb.append(movie.ids).append(","));
     }
     if (se.shows != null && !se.shows.isEmpty()) {
       sb.append("\n").append(se.shows.size()).append(" Shows: ");
-      se.shows.forEach(show -> sb.append(show.ids.trakt).append("-").append(traktMap.get(show.ids.trakt)).append(","));
+      se.shows.forEach(show -> sb.append(show.ids).append(","));
     }
     if (se.seasons != null && !se.seasons.isEmpty()) {
       sb.append("\n").append(se.seasons.size()).append(" Seasons: ");
@@ -601,7 +584,7 @@ public class TraktTv implements TmmFeature {
     }
     if (se.episodes != null && !se.episodes.isEmpty()) {
       sb.append("\n").append(se.episodes.size()).append(" Episodes: ");
-      se.episodes.forEach(episode -> sb.append(episode.ids.trakt).append("-").append(traktMap.get(episode.ids.trakt)).append(","));
+      se.episodes.forEach(episode -> sb.append(episode.ids).append(","));
     }
 
     return sb.toString();

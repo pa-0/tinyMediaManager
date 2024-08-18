@@ -38,7 +38,6 @@ import org.tinymediamanager.core.tasks.TrailerDownloadTask;
 import org.tinymediamanager.core.tasks.YTDownloadTask;
 import org.tinymediamanager.core.threading.TmmTask;
 import org.tinymediamanager.core.threading.TmmTaskChain;
-import org.tinymediamanager.core.threading.TmmTaskManager;
 import org.tinymediamanager.scraper.entities.MediaCertification;
 import org.tinymediamanager.scraper.imdb.ImdbMovieTrailerProvider;
 
@@ -68,13 +67,13 @@ public class MovieHelpers {
   // Canada:18+ / Brazil:16 / Australia:M / Argentina:16</certification>
   public static MediaCertification parseCertificationStringForMovieSetupCountry(String name) {
     MediaCertification cert = MediaCertification.UNKNOWN;
-    name = name.trim();
+    name = name.strip();
     if (name.contains("/")) {
       // multiple countries
       String[] countries = name.split("/");
       // first try to find by setup CertLanguage
       for (String c : countries) {
-        c = c.trim();
+        c = c.strip();
         if (c.contains(":")) {
           String[] cs = c.split(":");
           cert = MediaCertification.getCertification(MovieModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1]);
@@ -92,7 +91,7 @@ public class MovieHelpers {
       // still not found localized cert? parse the name to find *ANY*
       // certificate
       for (String c : countries) {
-        c = c.trim();
+        c = c.strip();
         if (c.contains(":")) {
           String[] cs = c.split(":");
           cert = MediaCertification.findCertification(cs[1]);
@@ -112,11 +111,11 @@ public class MovieHelpers {
       // no slash, so only one country
       if (name.contains(":")) {
         String[] cs = name.split(":");
-        cert = MediaCertification.getCertification(MovieModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1].trim());
+        cert = MediaCertification.getCertification(MovieModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1].strip());
       }
       else {
         // no country? try to find only by name
-        cert = MediaCertification.getCertification(MovieModuleManager.getInstance().getSettings().getCertificationCountry(), name.trim());
+        cert = MediaCertification.getCertification(MovieModuleManager.getInstance().getSettings().getCertificationCountry(), name.strip());
       }
     }
     // still not found localized cert? parse the name to find *ANY* certificate
@@ -223,7 +222,8 @@ public class MovieHelpers {
     try {
       Matcher matcher = Utils.YOUTUBE_PATTERN.matcher(trailer.getUrl());
       if (matcher.matches()) {
-        YTDownloadTask task = new YTDownloadTask(trailer, MovieModuleManager.getInstance().getSettings().getTrailerQuality()) {
+        YTDownloadTask task = new YTDownloadTask(trailer, MovieModuleManager.getInstance().getSettings().getTrailerQuality(),
+            MovieModuleManager.getInstance().getSettings().isUseYtDlp()) {
           @Override
           protected Path getDestinationWoExtension() {
             return outputFolder.resolve(filename);

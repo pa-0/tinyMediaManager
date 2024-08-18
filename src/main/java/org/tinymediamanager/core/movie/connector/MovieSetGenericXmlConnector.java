@@ -202,6 +202,25 @@ public abstract class MovieSetGenericXmlConnector implements IMovieSetConnector 
     }
 
     if (!newNfos.isEmpty()) {
+      // remove orphaned NFO files (tmm style)
+      List<MediaFile> existingNfos = movieSet.getMediaFiles(MediaFileType.NFO);
+      for (MediaFile nfo : existingNfos) {
+        if (!MovieSetConnectors.isValidNFO(nfo.getFileAsPath())) {
+          // keep non tmm NFO files
+          newNfos.add(nfo);
+          continue;
+        }
+
+        if (!newNfos.contains(nfo)) {
+          try {
+            Utils.deleteFileWithBackup(nfo.getFileAsPath(), movieSet.getDataSource());
+          }
+          catch (Exception e) {
+            LOGGER.debug("Could not remove orphaned NFO - '{}'", e.getMessage());
+          }
+        }
+      }
+
       movieSet.removeAllMediaFiles(MediaFileType.NFO);
       movieSet.addToMediaFiles(newNfos);
     }

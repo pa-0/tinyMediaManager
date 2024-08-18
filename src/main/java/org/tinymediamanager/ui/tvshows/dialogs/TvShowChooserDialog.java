@@ -117,6 +117,7 @@ import org.tinymediamanager.ui.components.table.TmmTableModel;
 import org.tinymediamanager.ui.dialogs.ImageChooserDialog;
 import org.tinymediamanager.ui.dialogs.TmmDialog;
 import org.tinymediamanager.ui.renderer.BorderTableCellRenderer;
+import org.tinymediamanager.ui.renderer.IntegerTableCellRenderer;
 import org.tinymediamanager.ui.renderer.RightAlignTableCellRenderer;
 import org.tinymediamanager.ui.tvshows.TvShowChooserModel;
 
@@ -663,6 +664,7 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
             if (!episodesToScrape.isEmpty()) {
               // create the episode scrape options
               TvShowEpisodeSearchAndScrapeOptions scrapeOptions = new TvShowEpisodeSearchAndScrapeOptions(md.getIds());
+              scrapeOptions.loadDefaults();
               scrapeOptions.setMetadataScraper(model.getMediaScraper());
               scrapeOptions.setArtworkScraper(model.getArtworkScrapers());
               scrapeOptions.setLanguage(model.getLanguage());
@@ -993,6 +995,7 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
     private SearchResultTableFormat() {
       Comparator<TvShowChooserModel> searchResultComparator = new TvShowChooserDialog.SearchResultTitleComparator();
       Comparator<String> stringComparator = new StringComparator();
+      Comparator<Integer> integerComparator = new IntegerComparator();
 
       FontMetrics fontMetrics = getFontMetrics();
 
@@ -1007,11 +1010,12 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
       /*
        * year
        */
-      col = new Column(TmmResourceBundle.getString("metatag.year"), "year", TvShowChooserModel::getYear, String.class);
-      col.setColumnComparator(stringComparator);
+      col = new Column(TmmResourceBundle.getString("metatag.year"), "year", TvShowChooserModel::getYear, Integer.class);
+      col.setColumnComparator(integerComparator);
+      col.setCellRenderer(new IntegerTableCellRenderer());
       col.setColumnResizeable(false);
-      col.setMinWidth((int) (fontMetrics.stringWidth("2000") * 1.2f));
-      col.setMaxWidth((int) (fontMetrics.stringWidth("2000") * 1.4f));
+      col.setMinWidth(fontMetrics.stringWidth("2000") + getCellPadding());
+      col.setMaxWidth(fontMetrics.stringWidth("2000") + getCellPadding());
       addColumn(col);
 
       /*
@@ -1021,8 +1025,8 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
       col.setColumnComparator(stringComparator);
       col.setColumnResizeable(false);
       col.setCellRenderer(new RightAlignTableCellRenderer());
-      col.setMinWidth((int) (fontMetrics.stringWidth("tt7830912") * 1.1f));
-      col.setMaxWidth((int) (fontMetrics.stringWidth("tt7830912") * 1.3f));
+      col.setMinWidth(fontMetrics.stringWidth("tt7830912") + getCellPadding());
+      col.setMaxWidth(fontMetrics.stringWidth("tt7830912") + getCellPadding());
       addColumn(col);
     }
   }

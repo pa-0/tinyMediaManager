@@ -78,7 +78,7 @@ public class TvShowChooserModel extends AbstractModelObject {
   private String                         title         = "";
   private String                         originalTitle = "";
   private String                         overview      = "";
-  private String                         year          = "";
+  private int                            year          = 0;
   private String                         id            = "";
   private String                         combinedName  = "";
   private String                         posterUrl     = "";
@@ -98,13 +98,7 @@ public class TvShowChooserModel extends AbstractModelObject {
 
     setTitle(result.getTitle());
     setOriginalTitle(result.getOriginalTitle());
-
-    if (result.getYear() != 0) {
-      setYear(Integer.toString(result.getYear()));
-    }
-    else {
-      setYear("");
-    }
+    setYear(result.getYear());
 
     Object obj = result.getId();
     if (obj != null) {
@@ -173,12 +167,12 @@ public class TvShowChooserModel extends AbstractModelObject {
     firePropertyChange("posterUrl", oldValue, newValue);
   }
 
-  public String getYear() {
+  public int getYear() {
     return year;
   }
 
-  public void setYear(String year) {
-    String oldValue = this.year;
+  public void setYear(int year) {
+    int oldValue = this.year;
     this.year = year;
     firePropertyChange("year", oldValue, this.year);
   }
@@ -196,7 +190,7 @@ public class TvShowChooserModel extends AbstractModelObject {
   public void setCombinedName() {
     String oldValue = this.combinedName;
 
-    if (StringUtils.isNotBlank(getYear())) {
+    if (getYear() > 0) {
       this.combinedName = getTitle() + " (" + getYear() + ")";
     }
     else {

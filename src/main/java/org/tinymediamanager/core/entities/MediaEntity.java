@@ -361,6 +361,20 @@ public abstract class MediaEntity extends AbstractModelObject implements IPrinta
   }
 
   /**
+   * get the folder name of this {@link MediaEntity}
+   * 
+   * @return the folder name or an empty string
+   */
+  public String getFoldername() {
+    Path pathNIO = getPathNIO();
+    if (pathNIO == null) {
+      return "";
+    }
+
+    return pathNIO.getFileName().toString();
+  }
+
+  /**
    * get the parent relative to the data source as string
    *
    * @return a string which represents the parent relative to the data source
@@ -477,19 +491,19 @@ public abstract class MediaEntity extends AbstractModelObject implements IPrinta
 
   public void setTitle(String newValue) {
     String oldValue = title;
-    title = newValue == null ? "" : newValue.trim();
+    title = newValue == null ? "" : newValue.strip();
     firePropertyChange(TITLE, oldValue, newValue);
   }
 
   public void setOriginalTitle(String newValue) {
     String oldValue = originalTitle;
-    originalTitle = newValue == null ? "" : newValue.trim();
+    originalTitle = newValue == null ? "" : newValue.strip();
     firePropertyChange(ORIGINAL_TITLE, oldValue, newValue);
   }
 
   public void setPlot(String newValue) {
     String oldValue = plot;
-    plot = newValue == null ? "" : newValue.trim();
+    plot = newValue == null ? "" : newValue.strip();
     firePropertyChange(PLOT, oldValue, newValue);
   }
 

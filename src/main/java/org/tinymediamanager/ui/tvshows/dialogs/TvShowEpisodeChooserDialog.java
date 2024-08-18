@@ -372,8 +372,8 @@ public class TvShowEpisodeChooserDialog extends TmmDialog implements ActionListe
     }
 
     private boolean equals(String title1, String title2) {
-      String cleaned1 = title1.replaceAll("[!?,._-]", " ").replaceAll("\\s+", " ").trim();
-      String cleaned2 = title2.replaceAll("[!?,._-]", " ").replaceAll("\\s+", " ").trim();
+      String cleaned1 = title1.replaceAll("[!?,._-]", " ").replaceAll("\\s+", " ").strip();
+      String cleaned2 = title2.replaceAll("[!?,._-]", " ").replaceAll("\\s+", " ").strip();
       return cleaned1.equalsIgnoreCase(cleaned2);
     }
 

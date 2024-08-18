@@ -453,6 +453,15 @@ public class Url {
   }
 
   /**
+   * return the url as {@link String}
+   * 
+   * @return a {@link String} containing the whole url
+   */
+  public String getUrlAsString() {
+    return url;
+  }
+
+  /**
    * is the HTTP status code a 4xx/5xx?
    *
    * @return true/false

@@ -185,7 +185,7 @@ public class MediaProviderConfig {
    * @return the value or an empty string
    */
   public String getValue(String key) {
-    return getConfigObject(key).getValue();
+    return getConfigObject(key).getValue().strip();
   }
 
   /**

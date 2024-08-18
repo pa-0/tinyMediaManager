@@ -187,7 +187,7 @@ abstract class OmdbMetadataProvider implements IMediaProvider {
 
     String[] genres = movie.attr("genre").split(",");
     for (String genre : genres) {
-      genre = genre.trim();
+      genre = genre.strip();
       MediaGenres mediaGenres = MediaGenres.getGenre(genre);
       md.addGenre(mediaGenres);
     }
@@ -195,21 +195,21 @@ abstract class OmdbMetadataProvider implements IMediaProvider {
     String[] directors = movie.attr("director").split(",");
     for (String d : directors) {
       Person director = new Person(DIRECTOR);
-      director.setName(d.trim());
+      director.setName(d.strip());
       md.addCastMember(director);
     }
 
     String[] writers = movie.attr("writer").split(",");
     for (String w : writers) {
       Person writer = new Person(WRITER);
-      writer.setName(w.trim());
+      writer.setName(w.strip());
       md.addCastMember(writer);
     }
 
     String[] actors = movie.attr("actors").split(",");
     for (String a : actors) {
       Person actor = new Person(ACTOR);
-      actor.setName(a.trim());
+      actor.setName(a.strip());
       md.addCastMember(actor);
     }
 

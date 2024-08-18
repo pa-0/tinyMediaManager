@@ -29,14 +29,12 @@ import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
@@ -44,23 +42,27 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.jdesktop.beansbinding.AutoBinding;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.Property;
 import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
+import org.tinymediamanager.addon.YtDlpAddon;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.TrailerQuality;
-import org.tinymediamanager.core.TrailerSources;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.TvShowSettings;
 import org.tinymediamanager.core.tvshow.filenaming.TvShowTrailerNaming;
 import org.tinymediamanager.scraper.MediaScraper;
+import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.ScraperInTable;
 import org.tinymediamanager.ui.TableColumnResizer;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.components.CollapsiblePanel;
 import org.tinymediamanager.ui.components.DocsButton;
+import org.tinymediamanager.ui.components.JHintCheckBox;
 import org.tinymediamanager.ui.components.ReadOnlyTextPane;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.table.TmmTable;
@@ -78,7 +80,6 @@ public class TvShowTrailerSettingsPanel extends JPanel {
 
   private TmmTable                   tableTrailerScraper;
   private JTextPane                  tpScraperDescription;
-  private JComboBox<TrailerSources>  cbTrailerSource;
   private JComboBox<TrailerQuality>  cbTrailerQuality;
   private JCheckBox                  checkBox;
   private JCheckBox                  chckbxAutomaticTrailerDownload;
@@ -87,6 +88,7 @@ public class TvShowTrailerSettingsPanel extends JPanel {
   private JCheckBox                  cbTrailerFilename2;
   private JCheckBox                  cbTrailerFilename3;
   private JCheckBox                  cbTrailerFilename4;
+  private JHintCheckBox              chckbxUseYtDlp;
 
   TvShowTrailerSettingsPanel() {
     checkBoxListener = e -> checkChanges();
@@ -171,6 +173,7 @@ public class TvShowTrailerSettingsPanel extends JPanel {
 
     buildCheckBoxes();
 
+    chckbxUseYtDlp.setEnabled(new YtDlpAddon().isAvailable());
   }
 
   private void buildCheckBoxes() {
@@ -265,39 +268,41 @@ public class TvShowTrailerSettingsPanel extends JPanel {
     }
     {
       JPanel panelOptions = new JPanel();
-      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
+      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][][][]")); // 16lp ~ width of the
 
       JLabel lblOptionsT = new TmmLabel(TmmResourceBundle.getString("Settings.advancedoptions"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelOptions, lblOptionsT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#advanced-options-2"));
       add(collapsiblePanel, "cell 0 2,growx, wmin 0");
+
       {
+        chckbxUseYtDlp = new JHintCheckBox(TmmResourceBundle.getString("Settings.trailer.ytdlp"));
+        chckbxUseYtDlp.setToolTipText(TmmResourceBundle.getString("Settings.trailer.ytdlp.desc"));
+        chckbxUseYtDlp.setHintIcon(IconManager.HINT);
+        panelOptions.add(chckbxUseYtDlp, "cell 1 0 2 1");
+
         checkBox = new JCheckBox(TmmResourceBundle.getString("Settings.trailer.preferred"));
-        panelOptions.add(checkBox, "cell 1 0 2 1");
+        panelOptions.add(checkBox, "cell 1 1 2 1");
 
         JLabel lblTrailerSource = new JLabel(TmmResourceBundle.getString("Settings.trailer.source"));
-        panelOptions.add(lblTrailerSource, "cell 2 1");
-
-        cbTrailerSource = new JComboBox();
-        cbTrailerSource.setModel(new DefaultComboBoxModel<>(TrailerSources.values()));
-        panelOptions.add(cbTrailerSource, "cell 2 1");
+        panelOptions.add(lblTrailerSource, "cell 2 2");
 
         JLabel lblTrailerQuality = new JLabel(TmmResourceBundle.getString("Settings.trailer.quality"));
-        panelOptions.add(lblTrailerQuality, "cell 2 2");
+        panelOptions.add(lblTrailerQuality, "cell 2 3");
 
         cbTrailerQuality = new JComboBox();
         cbTrailerQuality.setModel(new DefaultComboBoxModel<>(TrailerQuality.values()));
-        panelOptions.add(cbTrailerQuality, "cell 2 2");
+        panelOptions.add(cbTrailerQuality, "cell 2 3");
 
         chckbxAutomaticTrailerDownload = new JCheckBox(TmmResourceBundle.getString("Settings.trailer.automaticdownload"));
-        panelOptions.add(chckbxAutomaticTrailerDownload, "cell 1 3 2 1");
+        panelOptions.add(chckbxAutomaticTrailerDownload, "cell 1 4 2 1");
 
         JLabel lblAutomaticTrailerDownloadHint = new JLabel(TmmResourceBundle.getString("Settings.trailer.automaticdownload.hint"));
-        panelOptions.add(lblAutomaticTrailerDownloadHint, "cell 2 4");
+        panelOptions.add(lblAutomaticTrailerDownloadHint, "cell 2 5");
         TmmFontHelper.changeFont(lblAutomaticTrailerDownloadHint, L2);
 
         JPanel panelTrailerFilenames = new JPanel();
-        panelOptions.add(panelTrailerFilenames, "cell 1 5 2 1");
+        panelOptions.add(panelTrailerFilenames, "cell 1 6 2 1");
         panelTrailerFilenames.setLayout(new MigLayout("insets 0", "[][]", "[][][]"));
 
         JLabel lblTrailerFileNaming = new JLabel(TmmResourceBundle.getString("Settings.trailerFileNaming"));
@@ -319,61 +324,51 @@ public class TvShowTrailerSettingsPanel extends JPanel {
 
         cbTrailerFilename4 = new JCheckBox("trailer." + TmmResourceBundle.getString("Settings.artwork.extension"));
         trailerFilenameButtonGroup.add(cbTrailerFilename4);
-        panelTrailerFilenames.add(cbTrailerFilename4, "cell 1 2");
+        panelTrailerFilenames.add(cbTrailerFilename4, "cell 1 3");
       }
     }
   }
 
   protected void initDataBindings() {
-    JTableBinding<ScraperInTable, List<ScraperInTable>, JTable> jTableBinding = SwingBindings
-        .createJTableBinding(AutoBinding.UpdateStrategy.READ_WRITE, scrapers, tableTrailerScraper);
+    JTableBinding jTableBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, scrapers, tableTrailerScraper);
     //
-    BeanProperty<ScraperInTable, Boolean> trailerScraperBeanProperty = BeanProperty.create("active");
-    jTableBinding.addColumnBinding(trailerScraperBeanProperty)
-        .setColumnName(TmmResourceBundle.getString("Settings.active"))
-        .setColumnClass(Boolean.class);
+    Property trailerScraperBeanProperty = BeanProperty.create("active");
+    jTableBinding.addColumnBinding(trailerScraperBeanProperty).setColumnName("Aktiv").setColumnClass(Boolean.class);
     //
-    BeanProperty<ScraperInTable, Icon> trailerScraperBeanProperty_1 = BeanProperty.create("scraperLogo");
-    jTableBinding.addColumnBinding(trailerScraperBeanProperty_1)
-        .setColumnName(TmmResourceBundle.getString("mediafiletype.logo"))
-        .setEditable(false)
-        .setColumnClass(ImageIcon.class);
+    Property trailerScraperBeanProperty_1 = BeanProperty.create("scraperLogo");
+    jTableBinding.addColumnBinding(trailerScraperBeanProperty_1).setColumnName("Logo").setEditable(false).setColumnClass(ImageIcon.class);
     //
-    BeanProperty<ScraperInTable, String> trailerScraperBeanProperty_2 = BeanProperty.create("scraperName");
-    jTableBinding.addColumnBinding(trailerScraperBeanProperty_2)
-        .setColumnName(TmmResourceBundle.getString("metatag.name"))
-        .setEditable(false)
-        .setColumnClass(String.class);
+    Property trailerScraperBeanProperty_2 = BeanProperty.create("scraperName");
+    jTableBinding.addColumnBinding(trailerScraperBeanProperty_2).setColumnName("Name").setEditable(false).setColumnClass(String.class);
     //
     jTableBinding.bind();
     //
-    BeanProperty<JTable, String> jTableBeanProperty = BeanProperty.create("selectedElement.scraperDescription");
-    BeanProperty<JTextPane, String> jTextPaneBeanProperty = BeanProperty.create("text");
-    AutoBinding<JTable, String, JTextPane, String> autoBinding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ, tableTrailerScraper,
-        jTableBeanProperty, tpScraperDescription, jTextPaneBeanProperty);
+    Property jTableBeanProperty = BeanProperty.create("selectedElement.scraperDescription");
+    Property jTextPaneBeanProperty = BeanProperty.create("text");
+    AutoBinding autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ, tableTrailerScraper, jTableBeanProperty, tpScraperDescription,
+        jTextPaneBeanProperty);
     autoBinding.bind();
     //
-    BeanProperty<TvShowSettings, TrailerSources> tvShowSettingsBeanProperty = BeanProperty.create("trailerSource");
-    BeanProperty<JComboBox<TrailerSources>, Object> jComboBoxBeanProperty = BeanProperty.create("selectedItem");
-    AutoBinding<TvShowSettings, TrailerSources, JComboBox<TrailerSources>, Object> autoBinding_1 = Bindings
-        .createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty, cbTrailerSource, jComboBoxBeanProperty);
-    autoBinding_1.bind();
-    //
-    BeanProperty<TvShowSettings, TrailerQuality> tvShowSettingsBeanProperty_1 = BeanProperty.create("trailerQuality");
-    BeanProperty<JComboBox<TrailerQuality>, Object> jComboBoxBeanProperty_1 = BeanProperty.create("selectedItem");
-    AutoBinding<TvShowSettings, TrailerQuality, JComboBox<TrailerQuality>, Object> autoBinding_2 = Bindings
-        .createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_1, cbTrailerQuality, jComboBoxBeanProperty_1);
+    Property tvShowSettingsBeanProperty_1 = BeanProperty.create("trailerQuality");
+    Property jComboBoxBeanProperty_1 = BeanProperty.create("selectedItem");
+    AutoBinding autoBinding_2 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_1, cbTrailerQuality,
+        jComboBoxBeanProperty_1);
     autoBinding_2.bind();
     //
-    BeanProperty<TvShowSettings, Boolean> tvShowSettingsBeanProperty_2 = BeanProperty.create("useTrailerPreference");
-    BeanProperty<JCheckBox, Boolean> jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding<TvShowSettings, Boolean, JCheckBox, Boolean> autoBinding_3 = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE,
-        settings, tvShowSettingsBeanProperty_2, checkBox, jCheckBoxBeanProperty);
+    Property tvShowSettingsBeanProperty_2 = BeanProperty.create("useTrailerPreference");
+    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
+    AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_2, checkBox,
+        jCheckBoxBeanProperty);
     autoBinding_3.bind();
     //
-    BeanProperty<TvShowSettings, Boolean> tvShowSettingsBeanProperty_3 = BeanProperty.create("automaticTrailerDownload");
-    AutoBinding<TvShowSettings, Boolean, JCheckBox, Boolean> autoBinding_4 = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE,
-        settings, tvShowSettingsBeanProperty_3, chckbxAutomaticTrailerDownload, jCheckBoxBeanProperty);
+    Property tvShowSettingsBeanProperty_3 = BeanProperty.create("automaticTrailerDownload");
+    AutoBinding autoBinding_4 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_3,
+        chckbxAutomaticTrailerDownload, jCheckBoxBeanProperty);
     autoBinding_4.bind();
+    //
+    Property tvShowSettingsBeanProperty = BeanProperty.create("useYtDlp");
+    AutoBinding autoBinding_1 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty, chckbxUseYtDlp,
+        jCheckBoxBeanProperty);
+    autoBinding_1.bind();
   }
 }

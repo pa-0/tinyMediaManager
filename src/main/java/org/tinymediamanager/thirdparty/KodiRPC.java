@@ -16,12 +16,14 @@
 
 package org.tinymediamanager.thirdparty;
 
+import java.io.File;
 import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -74,7 +76,7 @@ public class KodiRPC {
 
   private final JavaConnectionManager connectionManager = new JavaConnectionManager();
 
-  private final Map<String, String>   videodatasources  = new HashMap<>();                       // dir, label
+  private final Map<String, String>   videodatasources  = new LinkedHashMap<>();                 // dir, label
   private final List<String>          audiodatasources  = new ArrayList<>();
 
   // TMM DbId-to-KodiId mappings
@@ -159,7 +161,7 @@ public class KodiRPC {
         for (ListModel.SourceItem res : call.getResults()) {
           LOGGER.debug("Kodi datasource: {}", res.file);
           if (res.file.startsWith("multipath")) {
-            // more than one source mapped to a singe Kodi datasource
+            // more than one source mapped to a single Kodi datasource
             // multipath://%2fmedia%2f8TB%2fFilme%2fKino%2f/%2fmedia%2fWD-4TB%2f!Kino2%2f/
             String mp = res.file.replace("multipath://", ""); // remove prefix
             String[] source = mp.split("/"); // split on slash
@@ -200,6 +202,9 @@ public class KodiRPC {
       // KODI ds|file=id
       Map<String, Integer> kodiDsAndFolder = new HashMap<>();
       for (MovieDetail movie : call.getResults()) {
+        if (movie.file == null || movie.file.isEmpty()) {
+          continue;
+        }
 
         // stacking only supported on movies
         if (movie.file.startsWith("stack")) {
@@ -239,6 +244,9 @@ public class KodiRPC {
           // we have a match!
           moviemappings.put(value, kodiId);
         }
+        else {
+          LOGGER.trace("Could not map: {}", key);
+        }
       }
       LOGGER.debug("mapped {} movies", moviemappings.size());
     }
@@ -260,15 +268,31 @@ public class KodiRPC {
     return fileMap;
   }
 
+  private String parseDatasourceName(Path ds) {
+    // get the name of the datasource folder
+    // unfortunately, for UNC paths like \\server\share i cannot get the share name from Path
+    // and URI is so slow
+    String dsName = "";
+    if (ds.getFileName() != null) {
+      dsName = ds.getFileName().toString();
+    }
+    else {
+      // try with good old file, which is not so bitchy
+      File f = ds.toFile();
+      dsName = f.getName();
+    }
+    return dsName;
+  }
+
   private Map<String, UUID> parseEntity(MediaEntity entity, boolean isDisc) {
     Map<String, UUID> fileMap = new HashMap<>();
     Path ds = Paths.get(entity.getDataSource());
-    if (ds == null || ds.getFileName() == null) {
+    if (ds == null || ds.toString().isBlank()) {
       LOGGER.warn("Datasource was null? Ignoring {}", entity.toString());
       return fileMap;
     }
-    String dsName = ds.getFileName().toString();
 
+    String dsName = parseDatasourceName(ds);
     MediaFile main = entity.getMainFile();
     if (isDisc) {
       // Kodi RPC sends what we call the main disc identifier, but we have disc folder only
@@ -318,6 +342,9 @@ public class KodiRPC {
       // KODI ds|dir=id
       Map<String, Integer> kodiDsAndFolder = new HashMap<>();
       for (TVShowDetail show : tvShowCall.getResults()) {
+        if (show.file == null || show.file.isEmpty()) {
+          continue;
+        }
         // Kodi return full path of show dir
         String ds = detectDatasource(show.file); // detect datasource of show dir
         String rel = show.file.replace(ds, ""); // remove ds, to have a relative folder
@@ -334,7 +361,7 @@ public class KodiRPC {
       for (TvShow tmmShow : TvShowModuleManager.getInstance().getTvShowList().getTvShows()) {
         try {
           Path ds = Paths.get(tmmShow.getDataSource());
-          String dsName = ds.getFileName().toString();
+          String dsName = parseDatasourceName(ds);
           String rel = Utils.relPath(ds, tmmShow.getPathNIO());
           rel = rel.replaceAll(SEPARATOR_REGEX, "/"); // normalize separators
 
@@ -342,6 +369,9 @@ public class KodiRPC {
           if (kodiId != null && kodiId > 0) {
             // we have a match!
             tvshowmappings.put(tmmShow.getDbId(), kodiId);
+          }
+          else {
+            LOGGER.trace("Could not map: {}", dsName + "|" + rel);
           }
         }
         catch (Exception e) {
@@ -507,6 +537,9 @@ public class KodiRPC {
     if (episodeCall.getResults() != null && !episodeCall.getResults().isEmpty()) {
       Map<String, Integer> kodiDsAndFolder = new HashMap<>();
       for (EpisodeDetail ep : episodeCall.getResults()) {
+        if (ep.file == null || ep.file.isEmpty()) {
+          continue;
+        }
         // KODI ds|file=id
         // Kodi return full path of show dir
         String ds = detectDatasource(ep.file); // detect datasource of show dir
@@ -518,6 +551,7 @@ public class KodiRPC {
       }
       LOGGER.debug("KODI {} episodes", kodiDsAndFolder.size());
 
+      // TMM ds|dir=id
       Map<String, UUID> tmmDsAndFolder = prepareEpisodeFileMap(tmmShow);
       LOGGER.debug("TMM {} episodes", tmmDsAndFolder.size());
 

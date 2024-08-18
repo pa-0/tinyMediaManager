@@ -34,7 +34,7 @@ public class NamedFirstCharacterRenderer implements NamedRenderer {
   @Override
   public String render(Object o, String s, Locale locale, Map<String, Object> map) {
     if (o instanceof String && StringUtils.isNotBlank((String) o)) {
-      String first = ((String) o).trim().substring(0, 1);
+      String first = ((String) o).strip().substring(0, 1);
       if (first.matches("[\\p{L}]")) {
         return first.toUpperCase(Locale.ROOT);
       }

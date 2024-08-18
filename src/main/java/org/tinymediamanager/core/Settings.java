@@ -671,7 +671,7 @@ public final class Settings extends AbstractSettings {
       }
     }
     try {
-      ProxySettings.setProxySettings(getProxyHost(), getProxyPort() == null ? 0 : Integer.parseInt(getProxyPort().trim()), getProxyUsername(),
+      ProxySettings.setProxySettings(getProxyHost(), getProxyPort() == null ? 0 : Integer.parseInt(getProxyPort().strip()), getProxyUsername(),
           getProxyPassword());
     }
     catch (NumberFormatException e) {
@@ -846,7 +846,7 @@ public final class Settings extends AbstractSettings {
 
   public void setTraktAccessToken(String newValue) {
     String oldValue = this.traktAccessToken;
-    this.traktAccessToken = newValue.trim();
+    this.traktAccessToken = newValue.strip();
     firePropertyChange("traktAccessToken", oldValue, newValue);
   }
 

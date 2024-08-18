@@ -1014,6 +1014,17 @@ public class MovieArtworkHelper {
       }
     }
 
+    // nothing with the chosen language(s) found - just re-try with empty language in the right resolution
+    if (sortedArtwork.isEmpty()) {
+      for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().equals("")).toList()) {
+        for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : art.getImageSizes()) {
+          if (imageSizeAndUrl.getSizeOrder() == sizeOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
+            sortedArtwork.add(imageSizeAndUrl);
+          }
+        }
+      }
+    }
+
     // do we want to take other resolution artwork?
     if (MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
       int newOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER;
@@ -1044,6 +1055,28 @@ public class MovieArtworkHelper {
     }
 
     return sortedArtwork;
+  }
+
+  public static int getMatchingScoreAccordingPreferences(MediaArtwork ma) {
+
+    List<MediaLanguages> languages = MovieModuleManager.getInstance().getSettings().getImageScraperLanguages();
+    int size = 0;
+    switch (ma.getType()) {
+      case POSTER:
+      case KEYART:
+        size = MovieModuleManager.getInstance().getSettings().getImagePosterSize().getOrder();
+        break;
+
+      // all other use fanart size (as seen in Fanart.Tv metadata provider imageType mapping
+      default:
+        size = MovieModuleManager.getInstance().getSettings().getImageFanartSize().getOrder();
+        break;
+    }
+
+    boolean preferFanartWoText = MovieModuleManager.getInstance().getSettings().isImageScraperPreferFanartWoText();
+    boolean otherResolutions = MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions();
+    int score = ma.getMatchingScoreAccordingPreferences(size, languages, preferFanartWoText, otherResolutions);
+    return score;
   }
 
   /**

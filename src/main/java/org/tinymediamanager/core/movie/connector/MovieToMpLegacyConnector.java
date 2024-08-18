@@ -145,7 +145,7 @@ public class MovieToMpLegacyConnector extends MovieGenericXmlConnector {
     List<String> languages = new ArrayList<>();
     for (String langu : ParserUtils.split(movie.getSpokenLanguages())) {
       String translated = LanguageUtils.getLocalizedLanguageNameFromLocalizedString(MovieModuleManager.getInstance().getSettings().getNfoLanguage(),
-          langu.trim());
+          langu.strip());
       languages.add(translated);
     }
 

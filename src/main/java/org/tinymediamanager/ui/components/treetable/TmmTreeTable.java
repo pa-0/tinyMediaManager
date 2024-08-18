@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +40,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
 import javax.swing.event.TreeModelEvent;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -306,9 +306,7 @@ public class TmmTreeTable extends TmmTable {
           handleEnd += columnStart;
 
           TableColumn tableColumn = getColumnModel().getColumn(column);
-          TableCellEditor columnCellEditor = tableColumn.getCellEditor();
-          if ((me.getX() > ins.left && me.getX() >= handleStart && me.getX() <= handleEnd) || (me.getClickCount() > 1 && columnCellEditor == null)) {
-
+          if ((me.getX() > ins.left && me.getX() >= handleStart && me.getX() <= handleEnd)) {
             boolean expanded = layoutCache.isExpanded(path);
             if (!expanded) {
               getTreePathSupport().expandPath(path);
@@ -776,6 +774,28 @@ public class TmmTreeTable extends TmmTable {
         startUpdateSortAndFilterTimer();
       }
     }
+  }
+
+  public ITmmTreeTableSortingStrategy getSortStrategy() {
+    Comparator<?> comparator = ((TmmTreeModel<?>) getTreeTableModel().getTreeModel()).getDataProvider().getTreeComparator();
+    if (comparator instanceof ITmmTreeTableSortingStrategy sortStrategy) {
+      return sortStrategy;
+    }
+    return null;
+  }
+
+  public void setSortStrategy(String stringEncoded) {
+    ITmmTreeTableSortingStrategy sortingStrategy = getSortStrategy();
+
+    if (sortingStrategy == null) {
+      return;
+    }
+
+    sortingStrategy.fromString(stringEncoded);
+
+    updateFiltering();
+    // make sure the header also gets redrawn (this may not happen if the structure does not change)
+    getTableHeader().repaint();
   }
 
   private static class TmmTreeTableKeyAdapter extends KeyAdapter {

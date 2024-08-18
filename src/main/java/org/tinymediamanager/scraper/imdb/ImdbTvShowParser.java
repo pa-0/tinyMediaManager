@@ -648,7 +648,7 @@ public class ImdbTvShowParser extends ImdbParser {
 
               Element votesElement = row.getElementsByClass("ipl-rating-star__total-votes").first();
               if (votesElement != null) {
-                String countAsString = votesElement.ownText().replaceAll("[.,()]", "").trim();
+                String countAsString = votesElement.ownText().replaceAll("[.,()]", "").strip();
                 try {
                   MediaRating rating = new MediaRating(ImdbMetadataProvider.ID);
                   rating.setRating(Float.parseFloat(ratingAsString));
@@ -716,7 +716,7 @@ public class ImdbTvShowParser extends ImdbParser {
 
         int yearStart = episodeTitle.lastIndexOf('(');
         if (yearStart > 0) {
-          episodeTitle = episodeTitle.substring(0, yearStart - 1).trim();
+          episodeTitle = episodeTitle.substring(0, yearStart - 1).strip();
           md.setTitle(episodeTitle);
         }
       }
@@ -743,7 +743,7 @@ public class ImdbTvShowParser extends ImdbParser {
       String releaseDateText = releaseDateElement.ownText();
       int startOfCountry = releaseDateText.indexOf('(');
       if (startOfCountry > 0) {
-        releaseDateText = releaseDateText.substring(0, startOfCountry - 1).trim();
+        releaseDateText = releaseDateText.substring(0, startOfCountry - 1).strip();
       }
       md.setReleaseDate(parseDate(releaseDateText));
     }
@@ -772,7 +772,7 @@ public class ImdbTvShowParser extends ImdbParser {
       String ratingAsString = ratingElement.ownText().replace(",", ".");
       Element votesElement = doc.getElementsByClass("ipl-rating-star__total-votes").first();
       if (votesElement != null) {
-        String countAsString = votesElement.ownText().replaceAll("[.,()]", "").trim();
+        String countAsString = votesElement.ownText().replaceAll("[.,()]", "").strip();
         try {
           MediaRating rating = new MediaRating(MediaMetadata.IMDB);
           rating.setRating(Float.parseFloat(ratingAsString));
@@ -795,7 +795,7 @@ public class ImdbTvShowParser extends ImdbParser {
     }
     if (directorsElement != null) {
       for (Element directorElement : directorsElement.getElementsByClass("name")) {
-        String director = directorElement.text().trim();
+        String director = directorElement.text().strip();
 
         Person cm = new Person(Person.Type.DIRECTOR, director);
         // profile path

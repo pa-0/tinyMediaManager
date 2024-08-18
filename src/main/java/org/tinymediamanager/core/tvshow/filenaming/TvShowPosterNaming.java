@@ -38,5 +38,13 @@ public enum TvShowPosterNaming implements IFileNaming {
     public String getFilename(String basename, String extension) {
       return "folder." + extension;
     }
+  },
+
+  /** <folder-name>.* */
+  FOLDER_NAME {
+    @Override
+    public String getFilename(String basename, String extension) {
+      return basename + "." + extension;
+    }
   }
 }

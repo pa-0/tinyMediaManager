@@ -21,7 +21,6 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -105,7 +104,7 @@ import org.tinymediamanager.scraper.util.UrlUtil;
 
 /**
  * The Class Utils.
- * 
+ *
  * @author Manuel Laggner / Myron Boyle
  */
 public class Utils {
@@ -185,7 +184,7 @@ public class Utils {
 
   /**
    * gets the filename part, and returns last extension
-   * 
+   *
    * @param path
    *          the path to get the last extension for
    * @return the last extension found
@@ -205,7 +204,7 @@ public class Utils {
    * because deduplication creates windows junction points, we check here if it is<br>
    * not a directory, and either a regular file or "other" one.<br>
    * see http://serverfault.com/a/667220
-   * 
+   *
    * @param file
    * @return
    */
@@ -234,7 +233,7 @@ public class Utils {
    * see http://serverfault.com/a/667220<br>
    * <br>
    * <b>Changed to only check for NOT DIRECTORY, treating all others as regular</b>
-   * 
+   *
    * @param attr
    * @return
    */
@@ -252,7 +251,7 @@ public class Utils {
   /**
    * returns the relative path of 2 absolute file paths<br>
    * "/a/b & /a/b/c/d -> c/d
-   * 
+   *
    * @param parent
    *          the directory
    * @param child
@@ -266,7 +265,7 @@ public class Utils {
   /**
    * returns the relative path of 2 absolute file paths<br>
    * "/a/b & /a/b/c/d -> c/d
-   * 
+   *
    * @param parent
    *          the directory
    * @param child
@@ -279,7 +278,7 @@ public class Utils {
 
   /**
    * gets a list of all datasources, sorted by the "longest" first
-   * 
+   *
    * @return
    */
   public static List<String> getAllDatasources() {
@@ -303,7 +302,7 @@ public class Utils {
   /**
    * Returns the sortable variant of title/originaltitle<br>
    * eg "The Bourne Legacy" -> "Bourne Legacy, The".
-   * 
+   *
    * @param title
    *          the title
    * @return the title/originaltitle in its sortable format
@@ -338,13 +337,13 @@ public class Utils {
       }
     }
 
-    return title.trim();
+    return title.strip();
   }
 
   /**
    * Returns the common name of title/originaltitle when it is named sortable<br>
    * eg "Bourne Legacy, The" -> "The Bourne Legacy".
-   * 
+   *
    * @param title
    *          the title
    * @return the original title
@@ -360,13 +359,13 @@ public class Utils {
       }
       title = title.replaceAll("(?i)(.*), " + Pattern.quote(prfx) + "$", prfx + delim + "$1");
     }
-    return title.trim();
+    return title.strip();
   }
 
   /**
    * Clean stacking markers.<br>
    * Same logic as detection, but just returning string w/o
-   * 
+   *
    * @param filename
    *          the filename WITH extension
    * @return the string
@@ -410,7 +409,7 @@ public class Utils {
   /**
    * Clean stacking markers.<br>
    * Same logic as detection, but just returning string w/o
-   * 
+   *
    * @param filename
    *          the filename WITH extension
    * @return the string
@@ -427,7 +426,7 @@ public class Utils {
 
   /**
    * Returns the stacking information from FOLDER name
-   * 
+   *
    * @param filename
    *          the filename
    * @return the stacking information
@@ -448,7 +447,7 @@ public class Utils {
 
   /**
    * Returns the stacking information from filename
-   * 
+   *
    * @param filename
    *          the filename
    * @return the stacking information
@@ -502,7 +501,7 @@ public class Utils {
 
   /**
    * Returns the stacking prefix
-   * 
+   *
    * @param filename
    *          the filename
    * @return the stacking prefix - might be empty
@@ -518,7 +517,7 @@ public class Utils {
 
   /**
    * Returns the stacking information from filename
-   * 
+   *
    * @param filename
    *          the filename
    * @return the stacking information
@@ -556,7 +555,7 @@ public class Utils {
 
   /**
    * Unquote.
-   * 
+   *
    * @param str
    *          the str
    * @return the string
@@ -569,7 +568,7 @@ public class Utils {
 
   /**
    * gets the UTF-8 encoded System property.
-   * 
+   *
    * @param prop
    *          the property to fetch
    * @return the enc prop
@@ -616,7 +615,7 @@ public class Utils {
   /**
    * replaces a string with placeholder ({}) with the string from the replacement array the strings in the replacement array have to be in the same
    * order as the placeholder in the source string
-   * 
+   *
    * @param source
    *          string
    * @param replacements
@@ -658,7 +657,7 @@ public class Utils {
    * since renameTo() might not work in first place, retry it up to 5 times.<br>
    * (better wait 5 sec for success, than always copying a 50gig directory ;)<br>
    * <b>And NO, we're NOT doing a copy+delete as fallback!</b>
-   * 
+   *
    * @param srcDir
    *          the directory to be moved
    * @param destDir
@@ -813,7 +812,7 @@ public class Utils {
    * since renameTo() might not work in first place, retry it up to 5 times.<br>
    * (better wait 5 sec for success, than always copying a 50gig directory ;)<br>
    * <b>And NO, we're NOT doing a copy+delete as fallback!</b>
-   * 
+   *
    * @param srcFile
    *          the file to be moved
    * @param destFile
@@ -917,7 +916,7 @@ public class Utils {
 
   /**
    * copy a file, preserving the attributes, but NOT overwrite it
-   * 
+   *
    * @param srcFile
    *          the file to be copied
    * @param destFile
@@ -1051,7 +1050,7 @@ public class Utils {
    * <b>PHYSICALLY</b> deletes a file by moving it to datasource backup folder<br>
    * DS\.backup\&lt;filename&gt;<br>
    * maintaining its originating directory
-   * 
+   *
    * @param file
    *          the file to be deleted
    * @param datasource
@@ -1128,7 +1127,7 @@ public class Utils {
   /**
    * <b>PHYSICALLY</b> deletes a file (w/o backup)<br>
    * only doing a check if it is not a directory
-   * 
+   *
    * @param file
    *          the file to be deleted
    * @return true/false if successful
@@ -1158,7 +1157,7 @@ public class Utils {
    * <b>PHYSICALLY</b> deletes a complete directory by moving it to datasource backup folder<br>
    * DS\.backup\&lt;foldername&gt;<br>
    * maintaining its originating directory
-   * 
+   *
    * @param folder
    *          the folder to be deleted
    * @param datasource
@@ -1236,7 +1235,7 @@ public class Utils {
 
   /**
    * returns a list of all available GUI languages
-   * 
+   *
    * @return List of Locales
    */
   public static List<Locale> getLanguages() {
@@ -1306,7 +1305,7 @@ public class Utils {
 
   /**
    * Gets a correct Locale (language + country) from given language.
-   * 
+   *
    * @param language
    *          as 2char
    * @return Locale
@@ -1344,7 +1343,7 @@ public class Utils {
 
   /**
    * returns all known translations for a key, like "metatag.title"
-   * 
+   *
    * @param key
    * @return list of translated values
    */
@@ -1368,7 +1367,7 @@ public class Utils {
   /**
    * creates a zipped backup of file in backup folder with yyyy-MM-dd timestamp<br>
    * <b>does overwrite already existing file from today!</b>
-   * 
+   *
    * @param file
    *          the file to backup
    */
@@ -1378,7 +1377,7 @@ public class Utils {
 
   /**
    * creates a zipped backup of file in backup folder with yyyy-MM-dd timestamp
-   * 
+   *
    * @param file
    *          the file to backup
    * @param overwrite
@@ -1412,7 +1411,7 @@ public class Utils {
 
   /**
    * Deletes old backup files in backup folder; keep only last X files
-   * 
+   *
    * @param file
    *          the file of backup to be deleted
    * @param keep
@@ -1423,7 +1422,8 @@ public class Utils {
     String fname = file.getFileName().toString();
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(Globals.BACKUP_FOLDER))) {
       for (Path path : directoryStream) {
-        if (path.getFileName().toString().matches(fname + "\\.\\d{4}\\-\\d{2}\\-\\d{2}\\.zip") || // name.ext.yyyy-mm-dd.zip
+        if (path.getFileName().toString().matches(fname + "\\.\\d{4}\\-\\d{2}\\-\\d{2}\\.zip") ||
+        // name.ext.yyyy-mm-dd.zip
             path.getFileName().toString().matches(fname + "\\.\\d{4}\\-\\d{2}\\-\\d{2}")) { // old name.ext.yyyy-mm-dd
           al.add(path);
         }
@@ -1451,7 +1451,7 @@ public class Utils {
 
   /**
    * Sends a wake-on-lan packet for specified MAC address across subnet
-   * 
+   *
    * @param macAddr
    *          the mac address to 'wake up'
    */
@@ -1491,7 +1491,7 @@ public class Utils {
 
   /**
    * Deletes a complete directory recursively, using Java NIO
-   * 
+   *
    * @param dir
    *          directory to delete
    * @throws IOException
@@ -1588,7 +1588,7 @@ public class Utils {
 
   /**
    * check whether a folder is empty or not
-   * 
+   *
    * @param folder
    *          the folder to be checked
    * @return true/false
@@ -1608,7 +1608,7 @@ public class Utils {
 
   /**
    * Creates (or adds) a file to a ZIP
-   * 
+   *
    * @param zipFile
    *          Path of zip file
    * @param toBeAdded
@@ -1630,7 +1630,7 @@ public class Utils {
         ZipArchiveEntry entry = new ZipArchiveEntry(entryName);
         archive.putArchiveEntry(entry);
 
-        try (FileInputStream fis = new FileInputStream(file); BufferedInputStream input = new BufferedInputStream(fis)) {
+        try (InputStream is = Files.newInputStream(file.toPath()); BufferedInputStream input = new BufferedInputStream(is)) {
           IOUtils.copy(input, archive);
         }
         archive.closeArchiveEntry();
@@ -1666,7 +1666,7 @@ public class Utils {
 
   /**
    * Unzips the specified zip file to the specified destination directory. Replaces any files in the destination, if they already exist.
-   * 
+   *
    * @param zipFile
    *          the name of the zip file to extract
    * @param destDir
@@ -1788,7 +1788,7 @@ public class Utils {
 
   /**
    * Java NIO replacement of commons-io
-   * 
+   *
    * @param file
    *          the file to write the string to
    * @param text
@@ -1817,7 +1817,7 @@ public class Utils {
 
   /**
    * Java NIO replacement of commons-io
-   * 
+   *
    * @param file
    *          the file to read the string from
    * @return the read string
@@ -1838,7 +1838,7 @@ public class Utils {
 
   /**
    * Copies a complete directory recursively, using Java NIO
-   * 
+   *
    * @param from
    *          source
    * @param to
@@ -1904,7 +1904,7 @@ public class Utils {
 
   /**
    * detect the artwork extension from the url
-   * 
+   *
    * @param url
    *          the url to analyze
    * @return the detected artwork type or jpg as fallback
@@ -1945,7 +1945,7 @@ public class Utils {
   /**
    * detect the artwork extension from the content type<br />
    * taken from https://wiki.selfhtml.org/wiki/MIME-Type/%C3%9Cbersicht#I
-   * 
+   *
    * @param contentType
    *          the HTTP header "content type"
    * @return the artwork extension or an empty string if not detectable
@@ -2053,7 +2053,7 @@ public class Utils {
   /**
    * Returns the size of that disc folder<br>
    * Counts only files which are "discFiles()", so a generated NFO would not interfere.
-   * 
+   *
    * @param path
    * @return
    */
@@ -2150,7 +2150,7 @@ public class Utils {
 
   /**
    * get the temporary folder for this tmm instance
-   * 
+   *
    * @return a string to the temporary folder
    */
   public static String getTempFolder() {
@@ -2233,7 +2233,7 @@ public class Utils {
 
   /**
    * Deletes "unwanted files/folders" according to settings. Same as the action, but w/o GUI.
-   * 
+   *
    * @param me
    *          the {@link MediaEntity} to clean
    */
@@ -2327,7 +2327,7 @@ public class Utils {
 
   /**
    * replace all illegal characters in a filename with an underscore
-   * 
+   *
    * @param filename
    *          the filename to be cleaned
    * @return the cleaned filename
@@ -2345,7 +2345,6 @@ public class Utils {
    * @param value
    *          the value
    * @return 1 if the value is not null/empty - 0 otherwise
-   *
    */
   public static int returnOneWhenFilled(String value) {
     if (StringUtils.isNotBlank(value)) {
@@ -2360,7 +2359,6 @@ public class Utils {
    * @param value
    *          the value
    * @return 1 if the value is not null/empty - 0 otherwise
-   *
    */
   public static int returnOneWhenFilled(int value) {
     if (value > 0) {
@@ -2375,7 +2373,6 @@ public class Utils {
    * @param value
    *          the value
    * @return 1 if the value is not null/empty - 0 otherwise
-   *
    */
   public static int returnOneWhenFilled(Date value) {
     if (value != null && value.getTime() > 0) {
@@ -2390,7 +2387,6 @@ public class Utils {
    * @param value
    *          the value
    * @return 1 if the value is not null/empty - 0 otherwise
-   *
    */
   public static int returnOneWhenFilled(Collection<?> value) {
     if (value != null && !value.isEmpty()) {
@@ -2405,7 +2401,6 @@ public class Utils {
    * @param value
    *          the value
    * @return 1 if the value is not null/empty - 0 otherwise
-   *
    */
   public static int returnOneWhenFilled(Map<?, ?> value) {
     if (value != null && !value.isEmpty()) {
@@ -2416,7 +2411,7 @@ public class Utils {
 
   /**
    * Format any file size according the preferred UI setting
-   * 
+   *
    * @param filesize
    *          the file size in bytes
    * @return the formatted file size as {@link String}

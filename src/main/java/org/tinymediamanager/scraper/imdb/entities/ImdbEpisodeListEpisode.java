@@ -20,7 +20,7 @@ public class ImdbEpisodeListEpisode {
   public int                  voteCount            = 0;
   public ImdbReleaseDate      releaseDate          = null;
   public int                  releaseYear          = 0;
-  public ImdbEpisodeListImage image                = null;
+  public ImdbImageString      image                = null;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new HashMap<>();
@@ -32,25 +32,5 @@ public class ImdbEpisodeListEpisode {
 
   public String toString() {
     return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-  }
-
-  public class ImdbEpisodeListImage {
-
-    public String               caption              = "";
-    public String               url                  = "";
-    public Integer              maxHeight            = 0;
-    public Integer              maxWidth             = 0;
-
-    @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<>();
-
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-      this.additionalProperties.put(name, value);
-    }
-
-    public String toString() {
-      return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
   }
 }

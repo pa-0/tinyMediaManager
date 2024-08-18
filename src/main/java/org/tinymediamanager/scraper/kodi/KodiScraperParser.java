@@ -100,7 +100,7 @@ class KodiScraperParser {
   private boolean parseAppendBuffer(String attribute) {
     if (attribute == null)
       return false;
-    if (attribute.trim().endsWith("+"))
+    if (attribute.strip().endsWith("+"))
       return true;
     return false;
   }
@@ -153,7 +153,7 @@ class KodiScraperParser {
   }
 
   private int parseInt(String attribute) {
-    if (attribute == null || attribute.trim().length() == 0)
+    if (attribute == null || attribute.strip().length() == 0)
       return 0;
     if (attribute.endsWith("+")) {
       attribute = attribute.substring(0, attribute.length() - 1);
@@ -162,7 +162,7 @@ class KodiScraperParser {
   }
 
   private boolean parseBoolean(String attribute, boolean defaultNull) {
-    if (attribute == null || attribute.trim().length() == 0)
+    if (attribute == null || attribute.strip().length() == 0)
       return defaultNull;
     if ("yes".equalsIgnoreCase(attribute))
       return true;

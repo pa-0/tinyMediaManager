@@ -28,14 +28,12 @@ import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
@@ -49,18 +47,20 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
+import org.tinymediamanager.addon.YtDlpAddon;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.TrailerQuality;
-import org.tinymediamanager.core.TrailerSources;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieSettings;
 import org.tinymediamanager.core.movie.filenaming.MovieTrailerNaming;
 import org.tinymediamanager.scraper.MediaScraper;
+import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.ScraperInTable;
 import org.tinymediamanager.ui.TableColumnResizer;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.components.CollapsiblePanel;
 import org.tinymediamanager.ui.components.DocsButton;
+import org.tinymediamanager.ui.components.JHintCheckBox;
 import org.tinymediamanager.ui.components.ReadOnlyTextPane;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.table.TmmTable;
@@ -83,7 +83,6 @@ class MovieTrailerSettingsPanel extends JPanel {
 
   private TmmTable                   tableScraperInTable;
   private JTextPane                  tpScraperDescription;
-  private JComboBox<TrailerSources>  cbTrailerSource;
   private JComboBox<TrailerQuality>  cbTrailerQuality;
   private JCheckBox                  checkBox;
   private JCheckBox                  chckbxAutomaticTrailerDownload;
@@ -94,6 +93,7 @@ class MovieTrailerSettingsPanel extends JPanel {
   private JCheckBox                  cbTrailerFilename4;
   private JLabel                     lblAutomaticTrailerDownloadHint;
   private JCheckBox                  chckbxTrailerDiscKodiStyle;
+  private JHintCheckBox              chckbxYtDlp;
 
   MovieTrailerSettingsPanel() {
     checkBoxListener = e -> checkChanges();
@@ -177,6 +177,8 @@ class MovieTrailerSettingsPanel extends JPanel {
     }
 
     buildCheckBoxes();
+
+    chckbxYtDlp.setEnabled(new YtDlpAddon().isAvailable());
   }
 
   private void buildCheckBoxes() {
@@ -274,39 +276,38 @@ class MovieTrailerSettingsPanel extends JPanel {
     }
     {
       JPanel panelOptions = new JPanel();
-      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
+      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][][][][]")); // 16lp ~ width of the
 
       JLabel lblOptionsT = new TmmLabel(TmmResourceBundle.getString("Settings.advancedoptions"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelOptions, lblOptionsT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/movies/settings#advanced-options-2"));
       add(collapsiblePanel, "cell 0 2,growx, wmin 0");
+
       {
+        chckbxYtDlp = new JHintCheckBox(TmmResourceBundle.getString("Settings.trailer.ytdlp"));
+        chckbxYtDlp.setToolTipText(TmmResourceBundle.getString("Settings.trailer.ytdlp.desc"));
+        chckbxYtDlp.setHintIcon(IconManager.HINT);
+        panelOptions.add(chckbxYtDlp, "cell 1 0 2 1");
+
         checkBox = new JCheckBox(TmmResourceBundle.getString("Settings.trailer.preferred"));
-        panelOptions.add(checkBox, "cell 1 0 2 1");
-
-        JLabel lblTrailerSource = new JLabel(TmmResourceBundle.getString("Settings.trailer.source"));
-        panelOptions.add(lblTrailerSource, "cell 2 1");
-
-        cbTrailerSource = new JComboBox();
-        cbTrailerSource.setModel(new DefaultComboBoxModel<>(TrailerSources.values()));
-        panelOptions.add(cbTrailerSource, "cell 2 1");
+        panelOptions.add(checkBox, "cell 1 1 2 1");
 
         JLabel lblTrailerQuality = new JLabel(TmmResourceBundle.getString("Settings.trailer.quality"));
-        panelOptions.add(lblTrailerQuality, "cell 2 2");
+        panelOptions.add(lblTrailerQuality, "cell 2 3");
 
         cbTrailerQuality = new JComboBox();
         cbTrailerQuality.setModel(new DefaultComboBoxModel<>(TrailerQuality.values()));
-        panelOptions.add(cbTrailerQuality, "cell 2 2");
+        panelOptions.add(cbTrailerQuality, "cell 2 3");
 
         chckbxAutomaticTrailerDownload = new JCheckBox(TmmResourceBundle.getString("Settings.trailer.automaticdownload"));
-        panelOptions.add(chckbxAutomaticTrailerDownload, "cell 2 3");
+        panelOptions.add(chckbxAutomaticTrailerDownload, "cell 2 4");
 
         lblAutomaticTrailerDownloadHint = new JLabel(TmmResourceBundle.getString("Settings.trailer.automaticdownload.hint"));
-        panelOptions.add(lblAutomaticTrailerDownloadHint, "cell 2 4");
+        panelOptions.add(lblAutomaticTrailerDownloadHint, "cell 2 5");
         TmmFontHelper.changeFont(lblAutomaticTrailerDownloadHint, L2);
 
         JPanel panelTrailerFilenames = new JPanel();
-        panelOptions.add(panelTrailerFilenames, "cell 1 5 2 1");
+        panelOptions.add(panelTrailerFilenames, "cell 1 6 2 1");
         panelTrailerFilenames.setLayout(new MigLayout("insets 0", "[][]", "[][][]"));
 
         JLabel lblTrailerFileNaming = new JLabel(TmmResourceBundle.getString("Settings.trailerFileNaming"));
@@ -332,75 +333,65 @@ class MovieTrailerSettingsPanel extends JPanel {
       }
 
       chckbxTrailerDiscKodiStyle = new JCheckBox(TmmResourceBundle.getString("Settings.trailerDiscFolder"));
-      panelOptions.add(chckbxTrailerDiscKodiStyle, "cell 2 6");
+      panelOptions.add(chckbxTrailerDiscKodiStyle, "cell 2 7");
     }
   }
 
   protected void initDataBindings() {
-    JTableBinding<ScraperInTable, List<ScraperInTable>, JTable> jTableBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, scrapers,
-        tableScraperInTable);
+    JTableBinding jTableBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, scrapers, tableScraperInTable);
     //
-    BeanProperty<ScraperInTable, Boolean> ScraperInTableBeanProperty = BeanProperty.create("active");
-    jTableBinding.addColumnBinding(ScraperInTableBeanProperty)
-        .setColumnName(TmmResourceBundle.getString("Settings.active"))
-        .setColumnClass(Boolean.class);
+    Property ScraperInTableBeanProperty = BeanProperty.create("active");
+    jTableBinding.addColumnBinding(ScraperInTableBeanProperty).setColumnName("Aktiv").setColumnClass(Boolean.class);
     //
-    BeanProperty<ScraperInTable, Icon> ScraperInTableBeanProperty_1 = BeanProperty.create("scraperLogo");
-    jTableBinding.addColumnBinding(ScraperInTableBeanProperty_1)
-        .setColumnName(TmmResourceBundle.getString("mediafiletype.logo"))
-        .setEditable(false)
-        .setColumnClass(ImageIcon.class);
+    Property ScraperInTableBeanProperty_1 = BeanProperty.create("scraperLogo");
+    jTableBinding.addColumnBinding(ScraperInTableBeanProperty_1).setColumnName("Logo").setEditable(false).setColumnClass(ImageIcon.class);
     //
-    BeanProperty<ScraperInTable, String> ScraperInTableBeanProperty_2 = BeanProperty.create("scraperName");
-    jTableBinding.addColumnBinding(ScraperInTableBeanProperty_2)
-        .setColumnName(TmmResourceBundle.getString("metatag.name"))
-        .setEditable(false)
-        .setColumnClass(String.class);
+    Property ScraperInTableBeanProperty_2 = BeanProperty.create("scraperName");
+    jTableBinding.addColumnBinding(ScraperInTableBeanProperty_2).setColumnName("Name").setEditable(false).setColumnClass(String.class);
     //
     jTableBinding.bind();
     //
-    BeanProperty<JTable, String> jTableBeanProperty = BeanProperty.create("selectedElement.scraperDescription");
-    BeanProperty<JTextPane, String> jTextPaneBeanProperty = BeanProperty.create("text");
-    AutoBinding<JTable, String, JTextPane, String> autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ, tableScraperInTable,
-        jTableBeanProperty, tpScraperDescription, jTextPaneBeanProperty);
+    Property jTableBeanProperty = BeanProperty.create("selectedElement.scraperDescription");
+    Property jTextPaneBeanProperty = BeanProperty.create("text");
+    AutoBinding autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ, tableScraperInTable, jTableBeanProperty, tpScraperDescription,
+        jTextPaneBeanProperty);
     autoBinding.bind();
     //
-    BeanProperty<MovieSettings, TrailerSources> movieSettingsBeanProperty = BeanProperty.create("trailerSource");
-    BeanProperty<JComboBox<TrailerSources>, Object> jComboBoxBeanProperty = BeanProperty.create("selectedItem");
-    AutoBinding<MovieSettings, TrailerSources, JComboBox<TrailerSources>, Object> autoBinding_1 = Bindings
-        .createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty, cbTrailerSource, jComboBoxBeanProperty);
-    autoBinding_1.bind();
-    //
-    BeanProperty<MovieSettings, TrailerQuality> movieSettingsBeanProperty_1 = BeanProperty.create("trailerQuality");
-    BeanProperty<JComboBox<TrailerQuality>, Object> jComboBoxBeanProperty_1 = BeanProperty.create("selectedItem");
-    AutoBinding<MovieSettings, TrailerQuality, JComboBox<TrailerQuality>, Object> autoBinding_2 = Bindings
-        .createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_1, cbTrailerQuality, jComboBoxBeanProperty_1);
+    Property movieSettingsBeanProperty_1 = BeanProperty.create("trailerQuality");
+    Property jComboBoxBeanProperty_1 = BeanProperty.create("selectedItem");
+    AutoBinding autoBinding_2 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_1, cbTrailerQuality,
+        jComboBoxBeanProperty_1);
     autoBinding_2.bind();
     //
-    BeanProperty<MovieSettings, Boolean> movieSettingsBeanProperty_2 = BeanProperty.create("useTrailerPreference");
-    BeanProperty<JCheckBox, Boolean> jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding<MovieSettings, Boolean, JCheckBox, Boolean> autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings,
-        movieSettingsBeanProperty_2, checkBox, jCheckBoxBeanProperty);
+    Property movieSettingsBeanProperty_2 = BeanProperty.create("useTrailerPreference");
+    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
+    AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_2, checkBox,
+        jCheckBoxBeanProperty);
     autoBinding_3.bind();
     //
-    BeanProperty<MovieSettings, Boolean> movieSettingsBeanProperty_3 = BeanProperty.create("automaticTrailerDownload");
-    AutoBinding<MovieSettings, Boolean, JCheckBox, Boolean> autoBinding_4 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings,
-        movieSettingsBeanProperty_3, chckbxAutomaticTrailerDownload, jCheckBoxBeanProperty);
+    Property movieSettingsBeanProperty_3 = BeanProperty.create("automaticTrailerDownload");
+    AutoBinding autoBinding_4 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_3,
+        chckbxAutomaticTrailerDownload, jCheckBoxBeanProperty);
     autoBinding_4.bind();
     //
-    BeanProperty<JCheckBox, Boolean> jCheckBoxBeanProperty_1 = BeanProperty.create("enabled");
-    AutoBinding<JCheckBox, Boolean, JCheckBox, Boolean> autoBinding_5 = Bindings.createAutoBinding(UpdateStrategy.READ, checkBox,
-        jCheckBoxBeanProperty, chckbxAutomaticTrailerDownload, jCheckBoxBeanProperty_1);
+    Property jCheckBoxBeanProperty_1 = BeanProperty.create("enabled");
+    AutoBinding autoBinding_5 = Bindings.createAutoBinding(UpdateStrategy.READ, checkBox, jCheckBoxBeanProperty, chckbxAutomaticTrailerDownload,
+        jCheckBoxBeanProperty_1);
     autoBinding_5.bind();
     //
-    BeanProperty<JLabel, Boolean> jLabelBeanProperty = BeanProperty.create("enabled");
-    AutoBinding<JCheckBox, Boolean, JLabel, Boolean> autoBinding_6 = Bindings.createAutoBinding(UpdateStrategy.READ, checkBox, jCheckBoxBeanProperty,
-        lblAutomaticTrailerDownloadHint, jLabelBeanProperty);
+    Property jLabelBeanProperty = BeanProperty.create("enabled");
+    AutoBinding autoBinding_6 = Bindings.createAutoBinding(UpdateStrategy.READ, checkBox, jCheckBoxBeanProperty, lblAutomaticTrailerDownloadHint,
+        jLabelBeanProperty);
     autoBinding_6.bind();
     //
     Property movieSettingsBeanProperty_4 = BeanProperty.create("trailerDiscFolderInside");
     AutoBinding autoBinding_7 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_4,
         chckbxTrailerDiscKodiStyle, jCheckBoxBeanProperty);
     autoBinding_7.bind();
+    //
+    Property movieSettingsBeanProperty = BeanProperty.create("useYtDlp");
+    AutoBinding autoBinding_1 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty, chckbxYtDlp,
+        jCheckBoxBeanProperty);
+    autoBinding_1.bind();
   }
 }

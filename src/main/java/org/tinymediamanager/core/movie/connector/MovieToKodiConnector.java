@@ -173,7 +173,7 @@ public class MovieToKodiConnector extends MovieGenericXmlConnector {
     // parse out the ID from the url and store it in the right notation
     Matcher matcher = Utils.YOUTUBE_PATTERN.matcher(trailer.getUrl());
     if (matcher.matches()) {
-      return "plugin://plugin.video.youtube/?action=play_video&videoid=" + matcher.group(5);
+      return "plugin://plugin.video.youtube/play/?video_id=" + matcher.group(5);
     }
 
     // other urls are handled by the hd-trailers.net plugin

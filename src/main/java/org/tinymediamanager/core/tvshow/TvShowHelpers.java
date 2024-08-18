@@ -56,8 +56,8 @@ import org.tinymediamanager.scraper.util.MetadataUtil;
 public class TvShowHelpers {
   private static final Logger  LOGGER               = LoggerFactory.getLogger(TvShowHelpers.class);
 
-  private static final Pattern SEASON_NUMBER        = Pattern.compile("(?i)season(\\d+).*");
-  private static final Pattern SEASON_FOLDER_NUMBER = Pattern.compile("(?i).*(\\d+).*");
+  private static final Pattern SEASON_NUMBER        = Pattern.compile("(?i)season\\s?(\\d+).*");
+  private static final Pattern SEASON_FOLDER_NUMBER = Pattern.compile("(?i).*?(\\d+).*");
 
   private TvShowHelpers() {
     throw new IllegalAccessError();
@@ -77,13 +77,13 @@ public class TvShowHelpers {
   // Canada:18+ / Brazil:16 / Australia:M / Argentina:16</certification>
   public static MediaCertification parseCertificationStringForTvShowSetupCountry(String name) {
     MediaCertification cert = MediaCertification.UNKNOWN;
-    name = name.trim();
+    name = name.strip();
     if (name.contains("/")) {
       // multiple countries
       String[] countries = name.split("/");
       // first try to find by setup CertLanguage
       for (String c : countries) {
-        c = c.trim();
+        c = c.strip();
         if (c.contains(":")) {
           String[] cs = c.split(":");
           cert = MediaCertification.getCertification(TvShowModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1]);
@@ -101,7 +101,7 @@ public class TvShowHelpers {
       // still not found localized cert? parse the name to find *ANY*
       // certificate
       for (String c : countries) {
-        c = c.trim();
+        c = c.strip();
         if (c.contains(":")) {
           String[] cs = c.split(":");
           cert = MediaCertification.findCertification(cs[1]);
@@ -121,14 +121,14 @@ public class TvShowHelpers {
       // no slash, so only one country
       if (name.contains(":")) {
         String[] cs = name.split(":");
-        cert = MediaCertification.getCertification(TvShowModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1].trim());
+        cert = MediaCertification.getCertification(TvShowModuleManager.getInstance().getSettings().getCertificationCountry(), cs[1].strip());
         if (cert == MediaCertification.UNKNOWN) {
-          cert = MediaCertification.findCertification(cs[1].trim());
+          cert = MediaCertification.findCertification(cs[1].strip());
         }
       }
       else {
         // no country? try to find only by name
-        cert = MediaCertification.getCertification(TvShowModuleManager.getInstance().getSettings().getCertificationCountry(), name.trim());
+        cert = MediaCertification.getCertification(TvShowModuleManager.getInstance().getSettings().getCertificationCountry(), name.strip());
       }
     }
     // still not found localized cert? parse the name to find *ANY* certificate
@@ -276,7 +276,8 @@ public class TvShowHelpers {
     try {
       Matcher matcher = Utils.YOUTUBE_PATTERN.matcher(trailer.getUrl());
       if (matcher.matches()) {
-        YTDownloadTask task = new YTDownloadTask(trailer, TvShowModuleManager.getInstance().getSettings().getTrailerQuality()) {
+        YTDownloadTask task = new YTDownloadTask(trailer, TvShowModuleManager.getInstance().getSettings().getTrailerQuality(),
+            TvShowModuleManager.getInstance().getSettings().isUseYtDlp()) {
           @Override
           protected Path getDestinationWoExtension() {
             return tvshow.getPathNIO().resolve(filename);

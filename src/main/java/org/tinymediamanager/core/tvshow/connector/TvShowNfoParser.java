@@ -16,10 +16,11 @@
 
 package org.tinymediamanager.core.tvshow.connector;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -56,12 +57,14 @@ import org.tinymediamanager.scraper.util.StrgUtils;
 
 /**
  * The class TvShowNfoParser is used to parse all types of NFO/XML files
- * 
+ *
  * @author Manuel Laggner
  */
 public class TvShowNfoParser {
   private static final Logger       LOGGER              = LoggerFactory.getLogger(TvShowNfoParser.class);
-  /** ignore the following tags since they originally do not belong to a TV show NFO */
+  /**
+   * ignore the following tags since they originally do not belong to a TV show NFO
+   */
   private static final List<String> IGNORE              = Arrays.asList("epbookmark", "resume");
 
   private Element                   root;
@@ -200,7 +203,7 @@ public class TvShowNfoParser {
 
   /**
    * parse the given file
-   * 
+   *
    * @param path
    *          the path to the NFO/XML to be parsed
    * @return a new instance of the parser class
@@ -208,7 +211,9 @@ public class TvShowNfoParser {
    *           any exception if parsing fails
    */
   public static TvShowNfoParser parseNfo(Path path) throws IOException {
-    return new TvShowNfoParser(Jsoup.parse(new FileInputStream(path.toFile()), "UTF-8", "", Parser.xmlParser()));
+    try (InputStream is = Files.newInputStream(path)) {
+      return new TvShowNfoParser(Jsoup.parse(is, "UTF-8", "", Parser.xmlParser()));
+    }
   }
 
   /**
@@ -225,7 +230,7 @@ public class TvShowNfoParser {
   /**
    * determines whether this was a valid NFO or not<br />
    * we use several fields which should be filled in a valid NFO for decision
-   * 
+   *
    * @return true/false
    */
   public boolean isValidNfo() {
@@ -1137,7 +1142,7 @@ public class TvShowNfoParser {
           // old style - single tag with delimiter
           String[] split = genre.ownText().split("/");
           for (String sp : split) {
-            genres.add(MediaGenres.getGenre(sp.trim()));
+            genres.add(MediaGenres.getGenre(sp.strip()));
           }
         }
       }
@@ -1287,21 +1292,29 @@ public class TvShowNfoParser {
     if (element != null) {
       // the trailer can come as a plain http link or prepared for kodi
 
-      // try to parse out youtube trailer plugin
-      Pattern pattern = Pattern.compile("plugin://plugin.video.youtube/\\?action=play_video&videoid=(.*)$");
+      // try to parse out new youtube trailer plugin
+      Pattern pattern = Pattern.compile("plugin://plugin.video.youtube/play/\\?video_id=(.*)$");
       Matcher matcher = pattern.matcher(element.ownText());
       if (matcher.matches()) {
-        trailer = "http://www.youtube.com/watch?v=" + matcher.group(1);
+        trailer = "https://www.youtube.com/watch?v=" + matcher.group(1);
       }
       else {
-        pattern = Pattern.compile("plugin://plugin.video.hdtrailers_net/video/.*\\?/(.*)$");
+        // try to parse out old youtube trailer plugin
+        pattern = Pattern.compile("plugin://plugin.video.youtube/\\?action=play_video&videoid=(.*)$");
         matcher = pattern.matcher(element.ownText());
         if (matcher.matches()) {
-          try {
-            trailer = URLDecoder.decode(matcher.group(1), "UTF-8");
-          }
-          catch (UnsupportedEncodingException ignored) {
-            // ignored
+          trailer = "https://www.youtube.com/watch?v=" + matcher.group(1);
+        }
+        else {
+          pattern = Pattern.compile("plugin://plugin.video.hdtrailers_net/video/.*\\?/(.*)$");
+          matcher = pattern.matcher(element.ownText());
+          if (matcher.matches()) {
+            try {
+              trailer = URLDecoder.decode(matcher.group(1), "UTF-8");
+            }
+            catch (UnsupportedEncodingException ignored) {
+              // ignored
+            }
           }
         }
       }

@@ -25,16 +25,18 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Manuel Laggner
  */
+@Deprecated
 public enum TrailerSources {
 
   //@formatter:off
   YOUTUBE("Youtube", Collections.singletonList("youtube")),
+  IMDB("IMDb", Collections.singletonList("imdb")),
   APPLE("Apple", Collections.singletonList("apple")),
   AOL("Aol", Collections.singletonList("aol")),
   HDTRAILERS("HD Trailers", Collections.singletonList("hdtrailers"));  // @formatter:on
 
-  private String       displayText;
-  private List<String> possibleSources;
+  private final String       displayText;
+  private final List<String> possibleSources;
 
   TrailerSources(String text, List<String> sources) {
     this.displayText = text;

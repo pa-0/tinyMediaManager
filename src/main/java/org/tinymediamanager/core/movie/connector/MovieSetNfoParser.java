@@ -19,7 +19,8 @@ package org.tinymediamanager.core.movie.connector;
 import static org.tinymediamanager.scraper.MediaMetadata.TMDB;
 import static org.tinymediamanager.scraper.MediaMetadata.TMDB_SET;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +45,7 @@ import org.tinymediamanager.scraper.util.ParserUtils;
 
 /**
  * The class MovieSetNfoParser is used to parse all types of NFO files for movie sets
- * 
+ *
  * @author Manuel Laggner
  */
 public class MovieSetNfoParser {
@@ -119,7 +120,7 @@ public class MovieSetNfoParser {
 
   /**
    * parse the given file
-   * 
+   *
    * @param path
    *          the path to the NFO/XML to be parsed
    * @return a new instance of the parser class
@@ -127,7 +128,9 @@ public class MovieSetNfoParser {
    *           any exception if parsing fails
    */
   public static MovieSetNfoParser parseNfo(Path path) throws Exception {
-    return new MovieSetNfoParser(Jsoup.parse(new FileInputStream(path.toFile()), "UTF-8", "", Parser.xmlParser()));
+    try (InputStream is = Files.newInputStream(path)) {
+      return new MovieSetNfoParser(Jsoup.parse(is, "UTF-8", "", Parser.xmlParser()));
+    }
   }
 
   /**
@@ -146,7 +149,7 @@ public class MovieSetNfoParser {
   /**
    * determines whether this was a valid NFO or not<br />
    * we use several fields which should be filled in a valid NFO for decision
-   * 
+   *
    * @return true/false
    */
   public boolean isValidNfo() {
@@ -312,7 +315,7 @@ public class MovieSetNfoParser {
         if (StringUtils.isNotBlank(genre.ownText())) {
           // old style - single tag with delimiter
           for (String sp : ParserUtils.split(genre.ownText())) {
-            genres.add(MediaGenres.getGenre(sp.trim()));
+            genres.add(MediaGenres.getGenre(sp.strip()));
           }
         }
       }

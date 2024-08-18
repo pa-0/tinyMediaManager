@@ -135,7 +135,8 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
         Response<SearchResultResponse> httpResponse = tvdb.getSearchService().getSearch(searchString, SearchType.MOVIE).execute();
 
         if (!httpResponse.isSuccessful()) {
-          throw new HttpException(httpResponse.code(), httpResponse.message());
+          String msg = httpResponse.message().isBlank() ? httpResponse.errorBody().string() : httpResponse.message();
+          throw new HttpException(httpResponse.code(), msg);
         }
 
         searchResults = httpResponse.body().data;
@@ -286,7 +287,8 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
 
       Response<MovieExtendedResponse> httpResponse = tvdb.getMoviesService().getMovieExtended(id).execute();
       if (!httpResponse.isSuccessful()) {
-        throw new HttpException(httpResponse.code(), httpResponse.message());
+        String msg = httpResponse.message().isBlank() ? httpResponse.errorBody().string() : httpResponse.message();
+        throw new HttpException(httpResponse.code(), msg);
       }
       movie = httpResponse.body().data;
 

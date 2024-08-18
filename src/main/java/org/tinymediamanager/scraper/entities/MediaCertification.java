@@ -19,6 +19,7 @@ package org.tinymediamanager.scraper.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.tinymediamanager.core.TmmResourceBundle;
 
 /**
@@ -76,7 +77,9 @@ public enum MediaCertification {
     NL_6(CountryCode.NL, "6", new String[] { "6" }),
     NL_9(CountryCode.NL, "9", new String[] { "9" }),
     NL_12(CountryCode.NL, "12", new String[] { "12" }),
+    NL_14(CountryCode.NL, "14", new String[] { "14" }),
     NL_16(CountryCode.NL, "16", new String[] { "16" }),
+    NL_18(CountryCode.NL, "18", new String[] { "18" }),
 
     JP_G(CountryCode.JP, "G", new String[] { "G" }),
     JP_PG12(CountryCode.JP, "PG-12", new String[] { "PG-12" }),
@@ -397,7 +400,7 @@ public enum MediaCertification {
         certstring += " / " + c.getCountry().getName() + ":" + c.getName();
       }
     }
-    return certstring.substring(3).trim(); // strip off first slash
+    return certstring.substring(3).strip(); // strip off first slash
   }
 
   /**
@@ -447,7 +450,7 @@ public enum MediaCertification {
         }
       }
     }
-    return certstring.substring(3).trim(); // strip off first slash
+    return certstring.substring(3).strip(); // strip off first slash
   }
 
   /**
@@ -458,9 +461,19 @@ public enum MediaCertification {
    * @return the certification
    */
   public static MediaCertification findCertification(String name) {
+    if (StringUtils.isBlank(name)) {
+      return UNKNOWN;
+    }
+
+    // for GB-15 instead of GB_15
+    String alternateName = name.replace("-", "_");
+
     for (MediaCertification cert : MediaCertification.values()) {
       // check if the ENUM name matches
       if (cert.name().equalsIgnoreCase(name)) {
+        return cert;
+      }
+      if (cert.name().equalsIgnoreCase(alternateName)) {
         return cert;
       }
       // check if the name matches
@@ -474,6 +487,7 @@ public enum MediaCertification {
         }
       }
     }
+
     return UNKNOWN;
   }
 
@@ -487,10 +501,20 @@ public enum MediaCertification {
    * @return the certification
    */
   public static MediaCertification getCertification(CountryCode country, String name) {
+    if (StringUtils.isBlank(name)) {
+      return UNKNOWN;
+    }
+
+    // for GB-15 instead of GB_15
+    String alternateName = name.replace("-", "_");
+
     // try to find the certification
     for (MediaCertification cert : MediaCertification.getCertificationsforCountry(country)) {
       // check if the ENUM name matches
       if (cert.name().equalsIgnoreCase(name)) {
+        return cert;
+      }
+      if (cert.name().equalsIgnoreCase(alternateName)) {
         return cert;
       }
       // check if the name matches
@@ -504,6 +528,7 @@ public enum MediaCertification {
         }
       }
     }
+
     return UNKNOWN;
   }
 

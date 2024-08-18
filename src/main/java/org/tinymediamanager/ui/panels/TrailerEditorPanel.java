@@ -40,6 +40,7 @@ public class TrailerEditorPanel extends AbstractModalInputPanel {
   private final JTextField   tfSource;
   private final JTextField   tfQuality;
   private final JTextField   tfUrl;
+  private final JTextField   tfId;
 
   public TrailerEditorPanel(MediaTrailer mediaTrailer) {
     super();
@@ -78,12 +79,21 @@ public class TrailerEditorPanel extends AbstractModalInputPanel {
         tfUrl.setColumns(10);
         add(tfUrl, "cell 1 3,growx,wmin 0");
       }
+      {
+        JLabel lblIdT = new JLabel(TmmResourceBundle.getString("metatag.id"));
+        add(lblIdT, "cell 0 4");
+
+        tfId = new JTextField();
+        tfId.setColumns(10);
+        add(tfId, "cell 1 4,growx,wmin 0");
+      }
     }
 
     tfName.setText(mediaTrailer.getName());
     tfSource.setText(mediaTrailer.getProvider());
     tfQuality.setText(mediaTrailer.getQuality());
     tfUrl.setText(mediaTrailer.getUrl());
+    tfId.setText(mediaTrailer.getId());
 
     // set focus to the first textfield
     SwingUtilities.invokeLater(tfName::requestFocus);
@@ -91,7 +101,12 @@ public class TrailerEditorPanel extends AbstractModalInputPanel {
 
   @Override
   protected void onClose() {
-    if (StringUtils.isAnyBlank(tfName.getText(), tfUrl.getText())) {
+    // Url OR id must be set
+    if (StringUtils.isAllBlank(tfId.getText(), tfUrl.getText())) {
+      JOptionPane.showMessageDialog(TrailerEditorPanel.this, TmmResourceBundle.getString("message.missingitems"));
+      return;
+    }
+    if (StringUtils.isBlank(tfName.getText())) {
       JOptionPane.showMessageDialog(TrailerEditorPanel.this, TmmResourceBundle.getString("message.missingitems"));
       return;
     }
@@ -100,6 +115,7 @@ public class TrailerEditorPanel extends AbstractModalInputPanel {
     mediaTrailer.setProvider(tfSource.getText());
     mediaTrailer.setQuality(tfQuality.getText());
     mediaTrailer.setUrl(tfUrl.getText());
+    mediaTrailer.setId(tfId.getText());
     mediaTrailer.setDate(new Date());
 
     setVisible(false);

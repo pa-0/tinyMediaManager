@@ -63,8 +63,8 @@ public class UpdateCheck {
     try (Scanner scanner = new Scanner(getdownFile.toFile())) {
       while (scanner.hasNextLine()) {
         String[] kv = scanner.nextLine().split("=");
-        if ("appbase".equals(kv[0].trim()) || "mirror".equals(kv[0].trim())) {
-          updateUrls.add(kv[1].trim());
+        if ("appbase".equals(kv[0].strip()) || "mirror".equals(kv[0].strip())) {
+          updateUrls.add(kv[1].strip());
         }
       }
 
@@ -104,7 +104,7 @@ public class UpdateCheck {
 
           remoteDigest = UrlUtil.getStringFromUrl(url);
           if (remoteDigest != null && remoteDigest.contains("tmm.jar")) {
-            remoteDigest = remoteDigest.trim();
+            remoteDigest = remoteDigest.strip();
             valid = true; // bingo!
             remoteUrl = uu;
           }
@@ -130,7 +130,7 @@ public class UpdateCheck {
       // compare with our local
       String localDigest = "";
       try {
-        localDigest = Utils.readFileToString(digestFile).trim();
+        localDigest = Utils.readFileToString(digestFile).strip();
       }
       catch (Exception ignored) {
         // ignored

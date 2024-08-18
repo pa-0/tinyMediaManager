@@ -39,6 +39,7 @@ import org.tinymediamanager.core.entities.MediaEntity;
 import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.threading.TmmTask;
 import org.tinymediamanager.scraper.http.StreamingUrl;
+import org.tinymediamanager.scraper.http.Url;
 import org.tinymediamanager.scraper.util.ListUtils;
 import org.tinymediamanager.scraper.util.UrlUtil;
 
@@ -62,7 +63,7 @@ public abstract class DownloadTask extends TmmTask {
    * @param description
    *          the description to set
    */
-  public DownloadTask(String description, String url) {
+  protected DownloadTask(String description, String url) {
     super(description, 100, TaskType.BACKGROUND_TASK);
     this.url = url;
   }
@@ -157,7 +158,7 @@ public abstract class DownloadTask extends TmmTask {
         }
 
         if (u.isFault()) {
-          MessageManager.instance.pushMessage(new Message(MessageLevel.ERROR, u.getUrl(), u.getStatusLine()));
+          handleDownloadProblem(u);
           setState(TaskState.FAILED);
           return;
         }
@@ -329,6 +330,17 @@ public abstract class DownloadTask extends TmmTask {
    */
   protected void downloadFinished() {
     // nothing to do here
+  }
+
+  /**
+   * callback to handle any download problem
+   * 
+   * @param url
+   *          the url containing the download problem
+   */
+  protected void handleDownloadProblem(Url url) {
+    LOGGER.error("Could not download the url '{}' - HTTP '{}' - '{}'", url.getUrlAsString(), url.getStatusCode(), url.getStatusLine());
+    MessageManager.instance.pushMessage(new Message(MessageLevel.ERROR, url.getUrlAsString(), url.getStatusLine()));
   }
 
   /**

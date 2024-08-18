@@ -13,6 +13,9 @@ VERSION=$(grep 'human.version' tinyMediaManager/tinyMediaManager.app/Contents/Re
 touch tinyMediaManager/tinyMediaManager.app/Contents/Resources/Java/.userdir
 
 # sign
+echo "signing flatlaf dylib"
+codesign --force --options=runtime --deep --timestamp --entitlements ../AppBundler/macos/hardened_runtime_entitlements.plist --sign "${MAC_SIGN_CERT}" tinyMediaManager/tinyMediaManager.app/Contents/Resources/Java/lib/flatlaf-macos-*.dylib
+
 echo "signing app"
 codesign --force --options=runtime --deep --timestamp --entitlements ../AppBundler/macos/hardened_runtime_entitlements.plist --sign "${MAC_SIGN_CERT}" tinyMediaManager/tinyMediaManager.app
 
@@ -60,6 +63,9 @@ VERSION=$(grep 'human.version' tinyMediaManager/tinyMediaManager.app/Contents/Re
 touch tinyMediaManager/tinyMediaManager.app/Contents/Resources/Java/.userdir
 
 # sign
+echo "signing flatlaf dylib"
+codesign --force --options=runtime --deep --timestamp --entitlements ../AppBundler/macos/hardened_runtime_entitlements.plist --sign "${MAC_SIGN_CERT}" tinyMediaManager/tinyMediaManager.app/Contents/Resources/Java/lib/flatlaf-macos-*.dylib
+
 echo "signing app"
 codesign --force --options=runtime --deep --timestamp --entitlements ../AppBundler/macos/hardened_runtime_entitlements.plist --sign "${MAC_SIGN_CERT}" tinyMediaManager/tinyMediaManager.app
 

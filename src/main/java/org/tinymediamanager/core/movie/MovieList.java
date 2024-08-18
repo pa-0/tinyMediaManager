@@ -428,13 +428,13 @@ public final class MovieList extends AbstractModelObject {
    * Load movies from database.
    */
   void loadMoviesFromDatabase(MVMap<UUID, String> movieMap) {
+    LOGGER.info("Loading {} movies from database...", movieMap.size());
+
     // load movies
     ObjectReader movieObjectReader = MovieModuleManager.getInstance().getMovieObjectReader();
 
     List<UUID> toRemove = new ArrayList<>();
-
     long start = System.nanoTime();
-
     Set<Movie> loadedMoviesWithoutDuplicates = new HashSet<>();
 
     new ArrayList<>(movieMap.keyList()).forEach((uuid) -> {
@@ -474,18 +474,16 @@ public final class MovieList extends AbstractModelObject {
       movieMap.remove(uuid);
     }
 
-    LOGGER.info("found {} movies in database", movieList.size());
     LOGGER.debug("took {} ms", (end - start) / 1000000);
   }
 
   void loadMovieSetsFromDatabase(MVMap<UUID, String> movieSetMap) {
+    LOGGER.info("Loading {} movie sets from database...", movieSetMap.size());
     ReadWriteLock lock = new ReentrantReadWriteLock();
 
     // load movie sets
     ObjectReader movieSetObjectReader = MovieModuleManager.getInstance().getMovieSetObjectReader();
-
     List<UUID> toRemove = new ArrayList<>();
-
     long start = System.nanoTime();
 
     new ArrayList<>(movieSetMap.keyList()).parallelStream().forEach((uuid) -> {
@@ -514,9 +512,7 @@ public final class MovieList extends AbstractModelObject {
       movieSetMap.remove(uuid);
     }
 
-    LOGGER.info("found {} movieSets in database", movieSetList.size());
     LOGGER.debug("took {} ms", (end - start) / 1000000);
-
   }
 
   void initDataAfterLoading() {

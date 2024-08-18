@@ -49,7 +49,7 @@ public class DOMUtils {
     NodeList nl = el.getElementsByTagName(tag);
     if (nl.getLength() > 0) {
       Node n = nl.item(0);
-      return StringUtils.trim(n.getTextContent());
+      return StringUtils.strip(n.getTextContent());
     }
     return null;
   }
@@ -67,7 +67,7 @@ public class DOMUtils {
     NodeList nl = el.getElementsByTagName(tag);
     if (nl.getLength() > 0) {
       Node n = nl.item(0);
-      return NumberUtils.toInt(StringUtils.trim(n.getTextContent()));
+      return NumberUtils.toInt(StringUtils.strip(n.getTextContent()));
     }
     return 0;
   }

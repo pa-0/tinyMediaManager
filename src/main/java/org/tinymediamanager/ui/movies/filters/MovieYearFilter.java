@@ -15,11 +15,12 @@
  */
 package org.tinymediamanager.ui.movies.filters;
 
+import java.time.LocalDate;
+
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
-import org.joda.time.DateTime;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.scraper.util.MetadataUtil;
@@ -47,24 +48,24 @@ public class MovieYearFilter extends AbstractNumberMovieFilter {
 
   @Override
   public void clearFilter() {
-    spinnerLow.setValue(DateTime.now().year().get());
-    spinnerHigh.setValue(DateTime.now().year().get());
+    spinnerLow.setValue(LocalDate.now().getYear());
+    spinnerHigh.setValue(LocalDate.now().getYear());
   }
 
   @Override
   public void setFilterValue(Object value) {
     String[] values = value.toString().split(",");
     if (values.length > 0) {
-      spinnerLow.setValue(MetadataUtil.parseInt(values[0], DateTime.now().year().get()));
+      spinnerLow.setValue(MetadataUtil.parseInt(values[0], LocalDate.now().getYear()));
     }
     if (values.length > 1) {
-      spinnerHigh.setValue(MetadataUtil.parseInt(values[1], DateTime.now().year().get()));
+      spinnerHigh.setValue(MetadataUtil.parseInt(values[1], LocalDate.now().getYear()));
     }
   }
 
   @Override
   protected SpinnerNumberModel getNumberModel() {
-    return new SpinnerNumberModel(DateTime.now().year().get(), 1800, 2100, 1);
+    return new SpinnerNumberModel(LocalDate.now().getYear(), 1800, 2100, 1);
   }
 
   @Override

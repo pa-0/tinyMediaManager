@@ -178,7 +178,7 @@ public class OfdbMovieTrailerProvider extends OfdbMetadataProvider implements IM
       while (m.find()) {
         // LOGGER.info(doc.getElementsByClass("clips").html());
         // parse each line with 5 qualities
-        String tname = m.group(1).trim();
+        String tname = m.group(1).strip();
         tname = tname.replaceFirst(":$", ""); // replace ending colon
 
         String urls = m.group(2);
@@ -188,7 +188,7 @@ public class OfdbMovieTrailerProvider extends OfdbMetadataProvider implements IM
         while (lm.find()) {
           String turl = lm.group(1);
           String tpix = "";
-          String tformat = lm.group(2).replaceAll("&nbsp;", "").trim();
+          String tformat = lm.group(2).replaceAll("&nbsp;", "").strip();
           switch (tformat) {
             case "small":
               tpix = "90p";

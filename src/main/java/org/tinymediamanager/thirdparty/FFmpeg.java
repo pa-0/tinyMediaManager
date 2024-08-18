@@ -189,7 +189,7 @@ public class FFmpeg {
         || fFmpegAddon.isAvailable());
   }
 
-  private static String getFfmpegExecutable() throws IOException {
+  public static String getFfmpegExecutable() throws IOException {
     FFmpegAddon fFmpegAddon = new FFmpegAddon();
 
     if (!Settings.getInstance().isUseInternalMediaFramework() && StringUtils.isNotBlank(Settings.getInstance().getMediaFramework())) {

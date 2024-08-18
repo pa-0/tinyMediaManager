@@ -15,9 +15,6 @@
  */
 package org.tinymediamanager.addon;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.apache.commons.lang3.SystemUtils;
 
 /**
@@ -31,21 +28,6 @@ public class FFmpegAddon implements IAddon {
   @Override
   public String getAddonName() {
     return ADDON_NAME;
-  }
-
-  @Override
-  public boolean isAvailable() {
-    Path addonFolder = getAddonFolder();
-
-    if (!Files.exists(addonFolder)) {
-      return false;
-    }
-
-    if (Files.exists(addonFolder.resolve(getExecutableFilename()))) {
-      return true;
-    }
-
-    return false;
   }
 
   @Override

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.entities.MediaTrailer;
 import org.tinymediamanager.core.movie.MovieSearchAndScrapeOptions;
+import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.TrailerSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.entities.MediaType;
@@ -63,7 +64,7 @@ public class ImdbTvShowTrailerProvider extends ImdbMetadataProvider implements I
     }
 
     if (!MediaIdUtil.isValidImdbId(imdbId)) {
-      LOGGER.warn("not possible to scrape from IMDB - imdbId found");
+      LOGGER.warn("not possible to scrape from IMDB - no imdbId found");
       throw new MissingIdException(MediaMetadata.IMDB);
     }
 
@@ -82,7 +83,9 @@ public class ImdbTvShowTrailerProvider extends ImdbMetadataProvider implements I
    */
   public String getUrlForId(MediaTrailer trailer) {
     try {
-      return new ImdbTvShowParser(this, EXECUTOR).getFreshUrlForTrailer(trailer);
+      return new ImdbTvShowParser(this, EXECUTOR).getFreshUrlForTrailer(trailer,
+          TvShowModuleManager.getInstance().getSettings().getScraperLanguage().getLanguage(),
+          TvShowModuleManager.getInstance().getSettings().getCertificationCountry().getAlpha2());
     }
     catch (Exception e) {
       LOGGER.warn("Could not fetch video: {}", e.getMessage());

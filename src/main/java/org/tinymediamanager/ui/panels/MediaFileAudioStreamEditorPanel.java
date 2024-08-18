@@ -147,10 +147,10 @@ public class MediaFileAudioStreamEditorPanel extends AbstractModalInputPanel {
 
     Object obj = cbLanguage.getSelectedItem();
     if (obj instanceof LanguageContainer localeContainer) {
-      audioStream.setLanguage(localeContainer.value.trim());
+      audioStream.setLanguage(localeContainer.value.strip());
     }
     else if (obj instanceof String language) {
-      audioStream.setLanguage(language.trim());
+      audioStream.setLanguage(language.strip());
     }
 
     audioStream.setTitle(tfTitle.getText());

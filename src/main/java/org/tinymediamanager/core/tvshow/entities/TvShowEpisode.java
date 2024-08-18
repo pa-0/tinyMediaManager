@@ -231,6 +231,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
     originalFilename = source.originalFilename;
     productionCompany = source.productionCompany;
     dummy = source.dummy;
+    note = source.note;
   }
 
   @Override

@@ -19,6 +19,8 @@ import static org.tinymediamanager.scraper.MediaMetadata.TVDB;
 import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.AIRED;
 
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -413,9 +415,9 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       episodeNr = options.getIdAsIntOrDefault(MediaMetadata.EPISODE_NR, -1);
     }
 
-    Date releaseDate = null;
+    LocalDate releaseDate = null;
     if (options.getMetadata() != null && options.getMetadata().getReleaseDate() != null) {
-      releaseDate = options.getMetadata().getReleaseDate();
+      releaseDate = LocalDate.ofInstant(options.getMetadata().getReleaseDate().toInstant(), ZoneId.systemDefault());
     }
     if (releaseDate == null && (seasonNr == -1 || episodeNr == -1) && episodeTvdbId == 0) {
       LOGGER.warn("no aired date/season number/episode number found");
@@ -456,9 +458,12 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     if (foundEpisode == null && releaseDate != null) {
       // we did not find the episode via season/episode number - search via release date
       for (MediaMetadata episode : episodes) {
-        if (episode.getReleaseDate() == releaseDate) {
-          foundEpisode = episode;
-          break;
+        if (episode.getReleaseDate() != null) {
+          LocalDate epdate = LocalDate.ofInstant(episode.getReleaseDate().toInstant(), ZoneId.systemDefault());
+          if (epdate.equals(releaseDate)) {
+            foundEpisode = episode;
+            break;
+          }
         }
       }
     }
@@ -690,7 +695,20 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
           result.setOverview(searchResultRecord.overview);
         }
       }
-      result.setYear(MetadataUtil.parseInt(searchResultRecord.year, 0));
+      int year = MetadataUtil.parseInt(searchResultRecord.year, 0);
+      result.setYear(year);
+      // we do the same in getMetadata, do it also here to improve search result score calculation!
+      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
+        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
+        result.setTitle(clearYearFromTitle(result.getTitle(), year));
+      }
+      // same, but with search year; eg "Battlestar Galactica (2003), from 2005"
+      year = options.getSearchYear();
+      if (year > 0 && result.getTitle().contains(String.valueOf(year))) {
+        LOGGER.debug("Weird TVDB entry - removing date {} from title", year);
+        result.setTitle(clearYearFromTitle(result.getTitle(), year));
+      }
+
       result.setPosterUrl(searchResultRecord.imageUrl);
 
       // calculate score

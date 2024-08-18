@@ -58,9 +58,9 @@ class KodiUrl {
       return;
     }
 
-    if (url.trim().contains("<url")) {
+    if (url.strip().contains("<url")) {
       // parse FIRST <url>url</url> syntax (could be multiple!)
-      url = StrgUtils.substr(url, "(<url.*?>.*?</url>)").trim();
+      url = StrgUtils.substr(url, "(<url.*?>.*?</url>)").strip();
 
       try {
         url = StringEscapeUtils.unescapeHtml4(url);
@@ -80,7 +80,7 @@ class KodiUrl {
       }
     }
     else {
-      this.urlString = url.trim();
+      this.urlString = url.strip();
     }
     LOGGER.trace("KodiUrl using Url from String: " + urlString);
   }
@@ -98,7 +98,7 @@ class KodiUrl {
   private void updateFromElement(Element e) {
     urlString = e.getTextContent();
     if (urlString != null) {
-      urlString = urlString.trim();
+      urlString = urlString.strip();
     }
     LOGGER.trace("KodiUrl using Url from Xml: " + urlString);
     functionName = e.getAttribute("function");

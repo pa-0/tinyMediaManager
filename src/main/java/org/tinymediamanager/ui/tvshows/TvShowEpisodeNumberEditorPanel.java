@@ -47,8 +47,23 @@ public class TvShowEpisodeNumberEditorPanel extends AbstractModalInputPanel {
     super();
 
     List<MediaEpisodeGroup> episodeGroups = new ArrayList<>(episodeGroupsInTvShow);
-    // also add display order
+
+    // make sure aired order is always available
     boolean found = false;
+
+    for (MediaEpisodeGroup episodeGroup : episodeGroupsInTvShow) {
+      if (episodeGroup.getEpisodeGroupType().equals(MediaEpisodeGroup.EpisodeGroupType.AIRED)) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      episodeGroups.add(0, MediaEpisodeGroup.DEFAULT_AIRED);
+    }
+
+    // also add display order when missing
+    found = false;
 
     for (MediaEpisodeGroup episodeGroup : episodeGroupsInTvShow) {
       if (episodeGroup.getEpisodeGroupType().equals(MediaEpisodeGroup.EpisodeGroupType.DISPLAY)) {

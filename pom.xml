@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.tinymediamanager</groupId>
     <artifactId>tinyMediaManager</artifactId>
-    <version>5.0.4-SNAPSHOT</version>
+    <version>5.0.10-SNAPSHOT</version>
     <name>tinyMediaManager</name>
     <description>a media management tool written in Java</description>
     <url>https://www.tinymediamanager.org/</url>
@@ -85,9 +85,10 @@
         <okhttp.version>4.12.0</okhttp.version>
         <slf4j.version>2.0.9</slf4j.version>
         <release.version>2.5.3</release.version>
-        <jre.version>21.0.1</jre.version>
+        <jre.version>21.0.4</jre.version>
         <ffmpeg.version>6.0</ffmpeg.version>
-        <launcher.version>5.0.4</launcher.version>
+        <launcher.version>5.0.6</launcher.version>
+        <flatlaf.version>3.5.1</flatlaf.version>
         <jackson.version>2.15.2</jackson.version>
         <sonar.java.source>17</sonar.java.source>
     </properties>
@@ -95,7 +96,7 @@
         <dependency>
             <groupId>org.tinymediamanager</groupId>
             <artifactId>license</artifactId>
-            <version>2.1.18</version>
+            <version>2.1.20</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -177,11 +178,6 @@
             <artifactId>okhttp-brotli</artifactId>
             <version>${okhttp.version}</version>
         </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
-        </dependency>
         <!-- J9 / J10 / J11 deps -->
         <dependency>
             <groupId>javax.activation</groupId>
@@ -236,7 +232,7 @@
         <dependency>
             <groupId>com.floreysoft</groupId>
             <artifactId>jmte</artifactId>
-            <version>7.0.2</version>
+            <version>7.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.miglayout</groupId>
@@ -305,7 +301,7 @@
         <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
-            <version>3.4</version>
+            <version>${flatlaf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.formdev</groupId>
@@ -340,18 +336,12 @@
         <dependency>
             <groupId>org.tinymediamanager</groupId>
             <artifactId>yt</artifactId>
-            <version>3.0.2-tmm7</version>
+            <version>3.0.2-tmm10</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.10.0</version>
-        </dependency>
-        <!-- legacy -->
-        <dependency>
-            <groupId>com.uwetrottmann.thetvdb-java</groupId>
-            <artifactId>thetvdb-java</artifactId>
-            <version>2.4.0</version>
         </dependency>
         <!-- testing -->
         <dependency>
@@ -1050,6 +1040,41 @@
                                     <outputDirectory>${project.build.directory}/launcher</outputDirectory>
                                     <overWriteReleases>false</overWriteReleases>
                                     <overWriteSnapshots>true</overWriteSnapshots>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-flatlaf</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>com.formdev</groupId>
+                                            <artifactId>flatlaf</artifactId>
+                                            <version>${flatlaf.version}</version>
+                                            <classifier>no-natives</classifier>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>com.formdev</groupId>
+                                            <artifactId>flatlaf</artifactId>
+                                            <version>${flatlaf.version}</version>
+                                            <classifier>macos-arm64</classifier>
+                                            <type>dylib</type>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>com.formdev</groupId>
+                                            <artifactId>flatlaf</artifactId>
+                                            <version>${flatlaf.version}</version>
+                                            <classifier>macos-x86_64</classifier>
+                                            <type>dylib</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/flatlaf</outputDirectory>
+                                    <overWriteReleases>true</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
+                                    <stripVersion>true</stripVersion>
                                 </configuration>
                             </execution>
                         </executions>

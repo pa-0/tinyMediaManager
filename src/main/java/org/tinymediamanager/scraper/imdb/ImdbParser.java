@@ -19,7 +19,6 @@ import static org.tinymediamanager.core.entities.Person.Type.ACTOR;
 import static org.tinymediamanager.core.entities.Person.Type.PRODUCER;
 import static org.tinymediamanager.core.entities.Person.Type.WRITER;
 import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType.THUMB;
-import static org.tinymediamanager.scraper.imdb.ImdbMetadataProvider.CAT_TITLE;
 
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -70,6 +69,7 @@ import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.http.InMemoryCachedUrl;
 import org.tinymediamanager.scraper.http.OnDiskCachedUrl;
 import org.tinymediamanager.scraper.http.Url;
+import org.tinymediamanager.scraper.imdb.entities.ImdbAdvancedSearchResult;
 import org.tinymediamanager.scraper.imdb.entities.ImdbCast;
 import org.tinymediamanager.scraper.imdb.entities.ImdbCategory;
 import org.tinymediamanager.scraper.imdb.entities.ImdbChartTitleEdge;
@@ -277,7 +277,7 @@ public abstract class ImdbParser {
       return false;
     }
 
-    ResultCategory category = getResultCategory(text.trim());
+    ResultCategory category = getResultCategory(text.strip());
     if (category == null) {
       return false;
     }
@@ -387,17 +387,14 @@ public abstract class ImdbParser {
 
     Url url;
 
-    // ***************************************
-    // ignore for now!
-    // ***************************************
     boolean advancedSearch = false;
     // always use advSearch for TV, since we need to filter out tvMovies on TV scraping :/
     // if (options.getMediaType() == MediaType.TV_SHOW) {
     // advancedSearch = true;
     // }
-    // if (isIncludeShortResults() || isIncludeTvMovieResults() || isIncludeVideogameResults() || isIncludeAdultResults()) {
-    // advancedSearch = true;
-    // }
+    if (isIncludeShortResults() || isIncludeTvMovieResults() || isIncludeVideogameResults() || isIncludeAdultResults()) {
+      advancedSearch = true;
+    }
 
     try {
       if (advancedSearch) {
@@ -405,7 +402,7 @@ public abstract class ImdbParser {
         // build advanced search queries per entity
         String cats = "";
         if (options.getMediaType() == MediaType.MOVIE) {
-          cats = "&title_type=feature,documentary";
+          cats = "&title_type=feature";
           if (isIncludeShortResults()) {
             cats += ",short,tv_short"; // tv shorts are "short movies played solely on tv, mostly ads, but also dinnerForOne"
           }
@@ -429,7 +426,11 @@ public abstract class ImdbParser {
         url = new InMemoryCachedUrl(constructUrl("search/title/?title=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), cats));
       }
       else {
-        url = new InMemoryCachedUrl(constructUrl("find/?q=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), CAT_TITLE));
+        String cat = "&s=tt&ttype=ft"; // movies
+        if (options.getMediaType() == MediaType.TV_SHOW) {
+          cat = "&s=tt&ttype=tv";
+        }
+        url = new InMemoryCachedUrl(constructUrl("find/?q=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), cat));
       }
       url.addHeader("Accept-Language", getAcceptLanguage(language, country));
     }
@@ -460,7 +461,11 @@ public abstract class ImdbParser {
       String json = doc.getElementById("__NEXT_DATA__").data();
       if (!json.isEmpty()) {
         JsonNode node = mapper.readTree(json);
-        JsonNode resultsNode = JsonUtils.at(node, "/props/pageProps/titleResults/results");
+        JsonNode resultsNode = JsonUtils.at(node, "/props/pageProps/titleResults/results"); // find
+        if (resultsNode.isMissingNode()) {
+          // advanced search
+          resultsNode = JsonUtils.at(node, "/props/pageProps/searchResults/titleResults/titleListItems");
+        }
 
         // check if we were redirected to detail page directly (when searching with id)
         if (resultsNode.isMissingNode()) {
@@ -471,11 +476,22 @@ public abstract class ImdbParser {
           results.add(sr);
         }
         else {
-          for (ImdbSearchResult result : JsonUtils.parseList(mapper, resultsNode, ImdbSearchResult.class)) {
-            MediaSearchResult sr = parseJsonSearchResults(result, options);
-            // only add wanted ones
-            if (sr != null && options.getMediaType().equals(result.getMediaType())) {
-              results.add(sr);
+          if (advancedSearch) {
+            for (ImdbAdvancedSearchResult result : JsonUtils.parseList(mapper, resultsNode, ImdbAdvancedSearchResult.class)) {
+              MediaSearchResult sr = parseJsonAdvancedSearchResults(result, options);
+              // only add wanted ones
+              if (sr != null && options.getMediaType().equals(result.getMediaType())) {
+                results.add(sr);
+              }
+            }
+          }
+          else {
+            for (ImdbSearchResult result : JsonUtils.parseList(mapper, resultsNode, ImdbSearchResult.class)) {
+              MediaSearchResult sr = parseJsonSearchResults(result, options);
+              // only add wanted ones
+              if (sr != null && options.getMediaType().equals(result.getMediaType())) {
+                results.add(sr);
+              }
             }
           }
         }
@@ -484,7 +500,9 @@ public abstract class ImdbParser {
         }
       }
     }
-    catch (Exception e) {
+    catch (
+
+    Exception e) {
       getLogger().warn("Error parsing JSON - '{}'", e.getMessage());
     }
 
@@ -587,6 +605,29 @@ public abstract class ImdbParser {
     if (result.titlePosterImageModel != null) {
       sr.setPosterUrl(result.titlePosterImageModel.url);
     }
+
+    if (sr.getIMDBId().equals(options.getImdbId())) {
+      // perfect match
+      sr.setScore(1);
+    }
+    else {
+      // calculate the score by comparing the search result with the search options
+      sr.calculateScore(options);
+    }
+    return sr;
+  }
+
+  private MediaSearchResult parseJsonAdvancedSearchResults(ImdbAdvancedSearchResult result, MediaSearchAndScrapeOptions options) {
+    MediaSearchResult sr = new MediaSearchResult(ImdbMetadataProvider.ID, options.getMediaType());
+
+    sr.setIMDBId(result.getId());
+    sr.setTitle(result.titleText);
+    sr.setYear(result.releaseYear);
+    if (result.primaryImage != null) {
+      sr.setPosterUrl(result.primaryImage.url);
+    }
+    sr.setOriginalTitle(result.originalTitleText);
+    sr.setOverview(result.plot);
 
     if (sr.getIMDBId().equals(options.getImdbId())) {
       // perfect match
@@ -820,36 +861,37 @@ public abstract class ImdbParser {
     // but validate whether it is legal or not
     if (StringUtils.isNotBlank(language) && StringUtils.isNotBlank(country) && LocaleUtils.isAvailableLocale(new Locale(language, country))) {
       String combined = language + "-" + country;
-      languageString.add(combined.toLowerCase(Locale.ROOT));
+      languageString.add(combined);
     }
 
     // also build langu & default country
     Locale localeFromLanguage = UrlUtil.getLocaleFromLanguage(language);
+    String cFromLang = localeFromLanguage.getCountry();
     if (localeFromLanguage != null) {
-      String combined = language + "-" + localeFromLanguage.getCountry().toLowerCase(Locale.ROOT);
+      String combined = language + (cFromLang.isEmpty() ? "" : "-" + cFromLang);
       if (!languageString.contains(combined)) {
         languageString.add(combined);
       }
     }
 
     if (StringUtils.isNotBlank(language)) {
-      languageString.add(language.toLowerCase(Locale.ROOT));
+      languageString.add(language);
     }
 
     // second: the JRE language
     Locale jreLocale = Locale.getDefault();
-    String combined = (jreLocale.getLanguage() + "-" + jreLocale.getCountry()).toLowerCase(Locale.ROOT);
+    String jreCountry = jreLocale.getCountry();
+    String combined = jreLocale.getLanguage() + (jreCountry.isEmpty() ? "" : "-" + jreCountry);
     if (!languageString.contains(combined)) {
       languageString.add(combined);
     }
-
-    if (!languageString.contains(jreLocale.getLanguage().toLowerCase(Locale.ROOT))) {
-      languageString.add(jreLocale.getLanguage().toLowerCase(Locale.ROOT));
+    if (!languageString.contains(jreLocale.getLanguage())) {
+      languageString.add(jreLocale.getLanguage());
     }
 
     // third: fallback to en
-    if (!languageString.contains("en-us")) {
-      languageString.add("en-us");
+    if (!languageString.contains("en-US")) {
+      languageString.add("en-US");
     }
     if (!languageString.contains("en")) {
       languageString.add("en");
@@ -870,7 +912,7 @@ public abstract class ImdbParser {
       qualifier -= 0.1;
     }
 
-    return languages.toString().toLowerCase(Locale.ROOT);
+    return languages.toString();
   }
 
   /**
@@ -971,11 +1013,11 @@ public abstract class ImdbParser {
         int sizeOrder = 0;
         if (options.getMediaType() == MediaType.TV_EPISODE) {
           mediaArtwork = new MediaArtwork(ImdbMetadataProvider.ID, THUMB);
-          sizeOrder = MediaArtwork.ThumbSizes.getSizeOrder(img.width);
+          sizeOrder = MediaArtwork.ThumbSizes.getSizeOrder(img.getWidth());
         }
         else {
           mediaArtwork = new MediaArtwork(ImdbMetadataProvider.ID, MediaArtworkType.POSTER);
-          sizeOrder = MediaArtwork.PosterSizes.getSizeOrder(img.width);
+          sizeOrder = MediaArtwork.PosterSizes.getSizeOrder(img.getWidth());
         }
 
         mediaArtwork.setOriginalUrl(img.url);
@@ -983,9 +1025,9 @@ public abstract class ImdbParser {
         mediaArtwork.setImdbId(img.id);
 
         // add original size
-        mediaArtwork.addImageSize(img.width, img.height, img.url, sizeOrder);
+        mediaArtwork.addImageSize(img.getWidth(), img.getHeight(), img.url, sizeOrder);
         // add variants
-        adoptArtworkSizes(mediaArtwork, img.width);
+        adoptArtworkSizes(mediaArtwork, img.getWidth());
 
         md.addMediaArt(mediaArtwork);
       }
@@ -995,7 +1037,7 @@ public abstract class ImdbParser {
       for (JsonNode vid : ListUtils.nullSafe(primaryTrailers)) {
         ImdbVideo video = JsonUtils.parseObject(mapper, vid.get("node"), ImdbVideo.class);
         for (ImdbPlaybackUrl vidurl : ListUtils.nullSafe(video.playbackURLs)) {
-          if (vidurl.displayName.value.equalsIgnoreCase("AUTO")) {
+          if (vidurl.displayName.value.equalsIgnoreCase("AUTO") || vidurl.displayName.value.equalsIgnoreCase("SD")) {
             continue;
           }
           MediaTrailer trailer = new MediaTrailer();
@@ -1026,16 +1068,16 @@ public abstract class ImdbParser {
       for (JsonNode fanart : ListUtils.nullSafe(titleMainImages)) {
         ImdbImage i = JsonUtils.parseObject(mapper, fanart.get("node"), ImdbImage.class);
         // only parse landscape ones as fanarts
-        if (i != null && i.width > i.height) {
+        if (i != null && i.getWidth() > i.getHeight()) {
           MediaArtwork mediaArtwork = new MediaArtwork(ImdbMetadataProvider.ID, MediaArtworkType.BACKGROUND);
           mediaArtwork.setOriginalUrl(i.url);
           mediaArtwork.setPreviewUrl(i.url); // well, yes
           mediaArtwork.setImdbId(i.id);
 
           // add original size
-          mediaArtwork.addImageSize(i.width, i.height, i.url, MediaArtwork.FanartSizes.getSizeOrder(i.width));
+          mediaArtwork.addImageSize(i.getWidth(), i.getHeight(), i.url, MediaArtwork.FanartSizes.getSizeOrder(i.getWidth()));
           // add variants
-          adoptArtworkSizes(mediaArtwork, i.width);
+          adoptArtworkSizes(mediaArtwork, i.getWidth());
 
           md.addMediaArt(mediaArtwork);
         }
@@ -1103,8 +1145,8 @@ public abstract class ImdbParser {
    * @return
    * @throws Exception
    */
-  protected String getFreshUrlForTrailer(MediaTrailer trailer) throws Exception {
-    Callable<Document> worker = new ImdbWorker(constructUrl("video/", trailer.getId()), "", "", true);
+  protected String getFreshUrlForTrailer(MediaTrailer trailer, String language, String country) throws Exception {
+    Callable<Document> worker = new ImdbWorker(constructUrl("video/", trailer.getId()), language, country, true);
     Future<Document> futureVid = executor.submit(worker);
     Document doc = futureVid.get();
 
@@ -1141,7 +1183,7 @@ public abstract class ImdbParser {
 
       int yearStart = movieTitle.lastIndexOf('(');
       if (yearStart > 0) {
-        movieTitle = movieTitle.substring(0, yearStart - 1).trim();
+        movieTitle = movieTitle.substring(0, yearStart - 1).strip();
         md.setTitle(movieTitle);
       }
     }
@@ -1153,7 +1195,7 @@ public abstract class ImdbParser {
       int startOfYear = content.lastIndexOf('(');
       if (startOfYear > 0) {
         // noo - this is NOT the original title!!! (seems always english?) parse from AKAs page...
-        String originalTitle = content.substring(0, startOfYear - 1).trim();
+        String originalTitle = content.substring(0, startOfYear - 1).strip();
         md.setOriginalTitle(originalTitle);
 
         String yearText = content.substring(startOfYear);
@@ -1204,7 +1246,7 @@ public abstract class ImdbParser {
       String ratingAsString = ratingElement.ownText().replace(",", ".");
       Element votesElement = doc.getElementsByClass("ipl-rating-star__total-votes").first();
       if (votesElement != null) {
-        String countAsString = votesElement.ownText().replaceAll("[.,()]", "").trim();
+        String countAsString = votesElement.ownText().replaceAll("[.,()]", "").strip();
         try {
           MediaRating rating = new MediaRating(MediaMetadata.IMDB);
           rating.setRating(Float.parseFloat(ratingAsString));
@@ -1242,7 +1284,7 @@ public abstract class ImdbParser {
       String releaseDateText = releaseDateElement.ownText();
       int startOfCountry = releaseDateText.indexOf('(');
       if (startOfCountry > 0) {
-        releaseDateText = releaseDateText.substring(0, startOfCountry - 1).trim();
+        releaseDateText = releaseDateText.substring(0, startOfCountry - 1).strip();
       }
       md.setReleaseDate(parseDate(releaseDateText));
     }
@@ -1402,7 +1444,7 @@ public abstract class ImdbParser {
     }
     if (directorsElement != null) {
       for (Element directorElement : directorsElement.getElementsByClass("name")) {
-        String director = directorElement.text().trim();
+        String director = directorElement.text().strip();
 
         Person cm = new Person(Person.Type.DIRECTOR, director);
         // profile path
@@ -1813,7 +1855,7 @@ public abstract class ImdbParser {
     if (characterElement != null) {
       characterName = cleanString(characterElement.text());
       // and now strip off trailing commentaries like - (120 episodes, 2006-2014)
-      characterName = characterName.replaceAll("\\(.*?\\)$", "").trim();
+      characterName = characterName.replaceAll("\\(.*?\\)$", "").strip();
     }
 
     String image = "";
@@ -2075,7 +2117,7 @@ public abstract class ImdbParser {
       return "";
     }
     // remove non-breaking spaces
-    String newString = StringUtils.trim(oldString.replace(String.valueOf((char) 160), " "));
+    String newString = StringUtils.strip(oldString.replace(String.valueOf((char) 160), " "));
 
     // if there is a leading AND trailing quotation marks (e.g. at TV shows) - remove them
     if (newString.startsWith("\"") && newString.endsWith("\"")) {

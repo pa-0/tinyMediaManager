@@ -448,7 +448,7 @@ public class StrgUtils {
       }
       title = title.replaceAll("(?i)(.*), " + prfx, prfx + delim + "$1");
     }
-    return title.trim();
+    return title.strip();
   }
 
   /**

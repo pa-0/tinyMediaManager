@@ -138,10 +138,10 @@ public class MediaFileSubtitleEditorPanel extends AbstractModalInputPanel {
 
     Object obj = cbLanguage.getSelectedItem();
     if (obj instanceof LanguageContainer localeContainer) {
-      subtitle.setLanguage(localeContainer.value.trim());
+      subtitle.setLanguage(localeContainer.value.strip());
     }
     else if (obj instanceof String language) {
-      subtitle.setLanguage(language.trim());
+      subtitle.setLanguage(language.strip());
     }
 
     subtitle.setTitle(tfTitle.getText());

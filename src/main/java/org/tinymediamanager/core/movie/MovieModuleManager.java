@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -374,42 +375,40 @@ public final class MovieModuleManager implements ITmmModule {
     }
 
     try {
-      Map<MediaEntity, Long> pending = new HashMap<>(pendingChanges);
-
       long now = System.currentTimeMillis();
 
-      for (Map.Entry<MediaEntity, Long> entry : pending.entrySet()) {
+      // filter on commit delay, and put into ordered TreeMap
+      Map<UUID, MediaEntity> mapToSave = new TreeMap<>();
+      for (Map.Entry<MediaEntity, Long> entry : pendingChanges.entrySet()) {
         if (force || entry.getValue() < (now - COMMIT_DELAY)) {
-          try {
-            if (entry.getKey() instanceof Movie) {
-              // store movie
-              Movie movie = (Movie) entry.getKey();
+          mapToSave.put(entry.getKey().getDbId(), entry.getKey());
+        }
+      }
 
-              // only diffs
-              String oldValue = movieMap.get(movie.getDbId());
-              String newValue = movieObjectWriter.writeValueAsString(movie);
-              if (!StringUtils.equals(oldValue, newValue)) {
-                movieMap.put(movie.getDbId(), newValue);
-              }
-            }
-            else if (entry.getKey() instanceof MovieSet) {
-              // store movie set
-              MovieSet movieSet = (MovieSet) entry.getKey();
-
-              // only diffs
-              String oldValue = movieSetMap.get(movieSet.getDbId());
-              String newValue = movieSetObjectWriter.writeValueAsString(movieSet);
-              if (!StringUtils.equals(oldValue, newValue)) {
-                movieSetMap.put(movieSet.getDbId(), newValue);
-              }
+      for (Map.Entry<UUID, MediaEntity> entry : mapToSave.entrySet()) {
+        try {
+          if (entry.getValue() instanceof Movie movie) {
+            // only diffs
+            String oldValue = movieMap.get(movie.getDbId());
+            String newValue = movieObjectWriter.writeValueAsString(movie);
+            if (!StringUtils.equals(oldValue, newValue)) {
+              movieMap.put(movie.getDbId(), newValue);
             }
           }
-          catch (Exception e) {
-            LOGGER.warn("could not store '{}' - '{}'", entry.getKey().getClass().getName(), e.getMessage());
+          else if (entry.getValue() instanceof MovieSet movieSet) {
+            // only diffs
+            String oldValue = movieSetMap.get(movieSet.getDbId());
+            String newValue = movieSetObjectWriter.writeValueAsString(movieSet);
+            if (!StringUtils.equals(oldValue, newValue)) {
+              movieSetMap.put(movieSet.getDbId(), newValue);
+            }
           }
-          finally {
-            pendingChanges.remove(entry.getKey());
-          }
+        }
+        catch (Exception e) {
+          LOGGER.warn("could not store '{}' - '{}'", entry.getKey().getClass().getName(), e.getMessage());
+        }
+        finally {
+          pendingChanges.remove(entry.getValue());
         }
       }
     }
@@ -454,14 +453,14 @@ public final class MovieModuleManager implements ITmmModule {
    * gets the JSON out of the DB from specified movie
    * 
    * @param movie
+   *          the {@link Movie} to dump the data for
    * @return JSON string
    */
   public String getMovieJsonFromDB(Movie movie) {
     try {
       ObjectMapper mapper = new ObjectMapper();
       Object json = mapper.readValue(movieMap.get(movie.getDbId()), Object.class);
-      String s = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-      return s;
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
     }
     catch (Exception e) {
       LOGGER.error("Cannot parse JSON!", e);
@@ -473,14 +472,14 @@ public final class MovieModuleManager implements ITmmModule {
    * gets the JSON out of the DB from specified movieSet
    * 
    * @param movieSet
+   *          the {@link MovieSet} to dump the data for
    * @return JSON string
    */
   public String getMovieSetJsonFromDB(MovieSet movieSet) {
     try {
       ObjectMapper mapper = new ObjectMapper();
       Object json = mapper.readValue(movieSetMap.get(movieSet.getDbId()), Object.class);
-      String s = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-      return s;
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
     }
     catch (Exception e) {
       LOGGER.error("Cannot parse JSON!", e);

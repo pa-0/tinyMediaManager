@@ -15,12 +15,24 @@ public class ImdbImage {
   public String               url                  = "";
   public Integer              height               = 0;
   public Integer              width                = 0;
+  public Integer              maxHeight            = 0;
+  public Integer              maxWidth             = 0;
+  public ImdbCaption          caption              = null;
+
   @JsonIgnore
   private Map<String, Object> additionalProperties = new HashMap<>();
 
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
+  }
+
+  public int getHeight() {
+    return height == 0 ? maxHeight : height;
+  }
+
+  public int getWidth() {
+    return width == 0 ? maxWidth : width;
   }
 
   public String toString() {

@@ -542,6 +542,7 @@ public final class TvShowList extends AbstractModelObject {
    * Load tv shows from database.
    */
   void loadTvShowsFromDatabase(MVMap<UUID, String> tvShowMap, MVMap<UUID, String> seasonMap, MVMap<UUID, String> episodesMap) {
+    LOGGER.info("Loading {} TvShows from database...", tvShowMap.size());
     TvShowModuleManager module = TvShowModuleManager.getInstance();
 
     //////////////////////////////////////////////////
@@ -590,7 +591,6 @@ public final class TvShowList extends AbstractModelObject {
     for (UUID uuid : toRemove) {
       tvShowMap.remove(uuid);
     }
-    LOGGER.info("found {} TV shows in database", tvShowsFromDb.size());
     LOGGER.debug("took {} ms", (end - start) / 1000000);
 
     // build a map for faster show lookup
@@ -603,11 +603,10 @@ public final class TvShowList extends AbstractModelObject {
     //////////////////////////////////////////////////
     // load all seasons from the database
     //////////////////////////////////////////////////
+    LOGGER.info("Loading {} seasons from database...", seasonMap.size());
     toRemove.clear();
     ObjectReader seasonObjectReader = TvShowModuleManager.getInstance().getSeasonObjectReader();
 
-    // just to get the episode count
-    List<TvShowSeason> seasonsToCount = new ArrayList<>();
     start = System.nanoTime();
     new ArrayList<>(seasonMap.keyList()).forEach(uuid -> {
       String json = "";
@@ -621,7 +620,6 @@ public final class TvShowList extends AbstractModelObject {
         if (tvShow != null) {
           season.setTvShow(tvShow);
           tvShow.addSeason(season);
-          seasonsToCount.add(season);
         }
         else {
           // or remove orphans
@@ -639,17 +637,15 @@ public final class TvShowList extends AbstractModelObject {
     for (UUID uuid : toRemove) {
       seasonMap.remove(uuid);
     }
-    LOGGER.info("found {} seasons in database", seasonsToCount.size());
     LOGGER.debug("took {} ms", (end - start) / 1000000);
 
     //////////////////////////////////////////////////
     // load all episodes from the database
     //////////////////////////////////////////////////
+    LOGGER.info("Loading {} episodes from database... (+ {} dummy w/o physical file)", episodesMap.size(), dummyCnt);
     toRemove.clear();
     ObjectReader episodeObjectReader = TvShowModuleManager.getInstance().getEpisodeObjectReader();
 
-    // just to get the episode count
-    List<TvShowEpisode> episodesToCount = new ArrayList<>();
     start = System.nanoTime();
     new ArrayList<>(episodesMap.keyList()).forEach(uuid -> {
       String json = "";
@@ -675,7 +671,6 @@ public final class TvShowList extends AbstractModelObject {
         if (tvShow != null) {
           episode.setTvShow(tvShow);
           tvShow.addEpisode(episode);
-          episodesToCount.add(episode);
         }
         else {
           // or remove orphans
@@ -693,7 +688,6 @@ public final class TvShowList extends AbstractModelObject {
     for (UUID uuid : toRemove) {
       episodesMap.remove(uuid);
     }
-    LOGGER.info("found {} episodes in database (+ {} dummy w/o physical file)", episodesToCount.size(), dummyCnt);
     LOGGER.debug("took {} ms", (end - start) / 1000000);
 
     //////////////////////////////////////////////////

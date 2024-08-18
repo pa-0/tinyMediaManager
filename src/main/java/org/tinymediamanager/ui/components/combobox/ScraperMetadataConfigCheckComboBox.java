@@ -126,7 +126,7 @@ public class ScraperMetadataConfigCheckComboBox<E extends ScraperMetadataConfig>
     }
   }
 
-  private class ScraperMetadataConfigEditor extends CheckBoxEditor {
+  private class ScraperMetadataConfigEditor extends DefaultCheckBoxEditor {
     @Override
     protected JComponent getEditorItem(E userObject) {
       return new ScraperMetadataConfigEditorItem(userObject);

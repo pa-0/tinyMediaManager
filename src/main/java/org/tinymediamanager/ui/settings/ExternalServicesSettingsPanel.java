@@ -16,6 +16,7 @@
 package org.tinymediamanager.ui.settings;
 
 import static org.tinymediamanager.ui.TmmFontHelper.H3;
+import static org.tinymediamanager.ui.TmmFontHelper.L2;
 
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +40,11 @@ import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.license.License;
 import org.tinymediamanager.thirdparty.trakttv.TraktTv;
 import org.tinymediamanager.ui.MainWindow;
+import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.TmmUIHelper;
 import org.tinymediamanager.ui.components.CollapsiblePanel;
 import org.tinymediamanager.ui.components.DocsButton;
+import org.tinymediamanager.ui.components.ReadOnlyTextArea;
 import org.tinymediamanager.ui.components.TmmLabel;
 
 import net.miginfocom.swing.MigLayout;
@@ -140,7 +144,7 @@ class ExternalServicesSettingsPanel extends JPanel {
   }
 
   private void initComponents() {
-    setLayout(new MigLayout("", "[600lp,grow]", "[]"));
+    setLayout(new MigLayout("", "[600lp,grow]", "[][15lp!][]"));
     {
       JPanel panelTrakt = new JPanel();
       panelTrakt.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][10lp!][]")); // 16lp ~ width of the
@@ -174,18 +178,22 @@ class ExternalServicesSettingsPanel extends JPanel {
     }
     {
       JPanel panelMdbList = new JPanel();
-      panelMdbList.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][15lp][][]", "[]"));
+      panelMdbList.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[]"));
       JLabel lblMdbListT = new TmmLabel(TmmResourceBundle.getString("Settings.external.rating.mdblist"), H3);
 
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelMdbList, lblMdbListT, true);
-      add(collapsiblePanel, "cell 0 1,growx, wmin 0");
+      add(collapsiblePanel, "cell 0 2,growx, wmin 0");
       {
         JLabel lblMdbListApiKeyT = new JLabel(TmmResourceBundle.getString("Settings.api.key"));
-        panelMdbList.add(lblMdbListApiKeyT, "cell 1 0");
+        panelMdbList.add(lblMdbListApiKeyT, "cell 1 0 2 1");
 
         tfMdbListApiKey = new JTextField();
-        panelMdbList.add(tfMdbListApiKey, "cell 2 0");
+        panelMdbList.add(tfMdbListApiKey, "cell 1 0 2 1");
         tfMdbListApiKey.setColumns(30);
+
+        JTextArea tpMediaPlayer = new ReadOnlyTextArea(TmmResourceBundle.getString("Settings.external.rating.mdblist.hint"));
+        panelMdbList.add(tpMediaPlayer, "cell 1 1 2 1,growx, wmin 0");
+        TmmFontHelper.changeFont(tpMediaPlayer, L2);
       }
     }
     initDataBindings();

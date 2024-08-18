@@ -130,9 +130,7 @@ abstract class FanartTvMetadataProvider implements IMediaProvider {
 
       case CLEARART:
         artworks.addAll(prepareArtwork(images.hdmovieclearart, ImageType.HDMOVIECLEARART));
-        artworks.addAll(prepareArtwork(images.movieart, ImageType.MOVIEART));
         artworks.addAll(prepareArtwork(images.hdclearart, ImageType.HDCLEARART));
-        artworks.addAll(prepareArtwork(images.clearart, ImageType.CLEARART));
         break;
 
       case DISC:
@@ -142,9 +140,7 @@ abstract class FanartTvMetadataProvider implements IMediaProvider {
       case LOGO:
       case CLEARLOGO:
         artworks.addAll(prepareArtwork(images.hdmovielogo, ImageType.HDMOVIELOGO));
-        artworks.addAll(prepareArtwork(images.movielogo, ImageType.MOVIELOGO));
         artworks.addAll(prepareArtwork(images.hdtvlogo, ImageType.HDTVLOGO));
-        artworks.addAll(prepareArtwork(images.clearlogo, ImageType.CLEARLOGO));
         break;
 
       case SEASON_POSTER:
@@ -184,16 +180,12 @@ abstract class FanartTvMetadataProvider implements IMediaProvider {
         artworks.addAll(prepareArtwork(images.tvbanner, ImageType.TVBANNER));
 
         artworks.addAll(prepareArtwork(images.hdmovieclearart, ImageType.HDMOVIECLEARART));
-        artworks.addAll(prepareArtwork(images.movieart, ImageType.MOVIEART));
         artworks.addAll(prepareArtwork(images.hdclearart, ImageType.HDCLEARART));
-        artworks.addAll(prepareArtwork(images.clearart, ImageType.CLEARART));
 
         artworks.addAll(prepareArtwork(images.moviedisc, ImageType.MOVIEDISC));
 
         artworks.addAll(prepareArtwork(images.hdmovielogo, ImageType.HDMOVIELOGO));
-        artworks.addAll(prepareArtwork(images.movielogo, ImageType.MOVIELOGO));
         artworks.addAll(prepareArtwork(images.hdtvlogo, ImageType.HDTVLOGO));
-        artworks.addAll(prepareArtwork(images.clearlogo, ImageType.CLEARLOGO));
 
         artworks.addAll(prepareArtwork(images.seasonbanner, ImageType.SEASONBANNER));
         artworks.addAll(prepareArtwork(images.seasonposter, ImageType.SEASONPOSTER));
@@ -261,31 +253,25 @@ abstract class FanartTvMetadataProvider implements IMediaProvider {
 
   private enum ImageType {
 
-    // @formatter:off
-    HDMOVIECLEARART(1000, 562, MediaArtworkType.CLEARART, FanartSizes.MEDIUM.getOrder()),
+    CHARACTERART(512, 512, MediaArtworkType.CHARACTERART, FanartSizes.MEDIUM.getOrder()),
     HDCLEARART(1000, 562, MediaArtworkType.CLEARART, FanartSizes.MEDIUM.getOrder()),
-    MOVIETHUMB(1000, 562, MediaArtworkType.THUMB, ThumbSizes.MEDIUM.getOrder()),
-    SEASONTHUMB(1000, 562, MediaArtworkType.SEASON_THUMB, ThumbSizes.MEDIUM.getOrder()),
-    TVTHUMB(500, 281, MediaArtworkType.THUMB, ThumbSizes.MEDIUM.getOrder()),
-    MOVIEBACKGROUND(1920, 1080, MediaArtworkType.BACKGROUND, FanartSizes.LARGE.getOrder()),
-    SHOWBACKGROUND(1920, 1080, MediaArtworkType.BACKGROUND, FanartSizes.LARGE.getOrder()),
-    MOVIEPOSTER(1000, 1426, MediaArtworkType.POSTER, PosterSizes.LARGE.getOrder()),
-    MOVIEKEYART(1000, 1426, MediaArtworkType.KEYART, PosterSizes.LARGE.getOrder()),
-    TVPOSTER(1000, 1426, MediaArtworkType.POSTER, PosterSizes.LARGE.getOrder()),
-    TVKEYART(1000, 1426, MediaArtworkType.KEYART, PosterSizes.LARGE.getOrder()),
-    SEASONPOSTER(1000, 1426, MediaArtworkType.SEASON_POSTER, MediaArtwork.PosterSizes.LARGE.getOrder()),
-    TVBANNER(1000, 185, MediaArtworkType.BANNER, FanartSizes.MEDIUM.getOrder()),
-    MOVIEBANNER(1000, 185, MediaArtworkType.BANNER, FanartSizes.MEDIUM.getOrder()),
-    SEASONBANNER(1000, 185, MediaArtworkType.SEASON_BANNER, FanartSizes.MEDIUM.getOrder()),
+    HDMOVIECLEARART(1000, 562, MediaArtworkType.CLEARART, FanartSizes.MEDIUM.getOrder()),
     HDMOVIELOGO(800, 310, MediaArtworkType.CLEARLOGO, FanartSizes.MEDIUM.getOrder()),
     HDTVLOGO(800, 310, MediaArtworkType.CLEARLOGO, FanartSizes.MEDIUM.getOrder()),
-    CLEARLOGO(400, 155, MediaArtworkType.CLEARLOGO, FanartSizes.SMALL.getOrder()),
-    MOVIELOGO(400, 155, MediaArtworkType.CLEARLOGO, FanartSizes.SMALL.getOrder()),
-    CLEARART(500, 281, MediaArtworkType.CLEARART, FanartSizes.SMALL.getOrder()),
-    MOVIEART(500, 281, MediaArtworkType.CLEARART, FanartSizes.SMALL.getOrder()),
+    MOVIEBACKGROUND(1920, 1080, MediaArtworkType.BACKGROUND, FanartSizes.LARGE.getOrder()),
+    MOVIEBANNER(1000, 185, MediaArtworkType.BANNER, FanartSizes.MEDIUM.getOrder()),
     MOVIEDISC(1000, 1000, MediaArtworkType.DISC, FanartSizes.MEDIUM.getOrder()),
-    CHARACTERART(512, 512, MediaArtworkType.CHARACTERART, FanartSizes.MEDIUM.getOrder());
-    // @formatter:on
+    MOVIEKEYART(1000, 1426, MediaArtworkType.KEYART, PosterSizes.LARGE.getOrder()),
+    MOVIEPOSTER(1000, 1426, MediaArtworkType.POSTER, PosterSizes.LARGE.getOrder()),
+    MOVIETHUMB(1000, 562, MediaArtworkType.THUMB, ThumbSizes.MEDIUM.getOrder()),
+    SEASONBANNER(1000, 185, MediaArtworkType.SEASON_BANNER, FanartSizes.MEDIUM.getOrder()),
+    SEASONPOSTER(1000, 1426, MediaArtworkType.SEASON_POSTER, MediaArtwork.PosterSizes.LARGE.getOrder()),
+    SEASONTHUMB(1000, 562, MediaArtworkType.SEASON_THUMB, ThumbSizes.MEDIUM.getOrder()),
+    SHOWBACKGROUND(1920, 1080, MediaArtworkType.BACKGROUND, FanartSizes.LARGE.getOrder()),
+    TVBANNER(1000, 185, MediaArtworkType.BANNER, FanartSizes.MEDIUM.getOrder()),
+    TVKEYART(1000, 1426, MediaArtworkType.KEYART, PosterSizes.LARGE.getOrder()),
+    TVPOSTER(1000, 1426, MediaArtworkType.POSTER, PosterSizes.LARGE.getOrder()),
+    TVTHUMB(500, 281, MediaArtworkType.THUMB, ThumbSizes.MEDIUM.getOrder());
 
     ImageType(int width, int height, MediaArtworkType type, int sizeOrder) {
       this.width = width;

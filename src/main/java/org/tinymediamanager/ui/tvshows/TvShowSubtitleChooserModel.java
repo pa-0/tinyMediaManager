@@ -21,6 +21,7 @@ import org.tinymediamanager.core.AbstractModelObject;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.scraper.SubtitleSearchResult;
 import org.tinymediamanager.scraper.entities.MediaLanguages;
+import org.tinymediamanager.scraper.exceptions.ScrapeException;
 
 /**
  * This is the model for the TvShowSubtitleChooser
@@ -61,7 +62,10 @@ public class TvShowSubtitleChooserModel extends AbstractModelObject {
     return releaseName;
   }
 
-  public String getDownloadUrl() {
+  public String getDownloadUrl() throws ScrapeException {
+    if (result == null) {
+      return "";
+    }
     return result.getUrl();
   }
 

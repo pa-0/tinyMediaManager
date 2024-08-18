@@ -58,9 +58,11 @@ import org.tinymediamanager.core.jmte.NamedArrayUniqueRenderer;
 import org.tinymediamanager.core.jmte.NamedBitrateRenderer;
 import org.tinymediamanager.core.jmte.NamedDateRenderer;
 import org.tinymediamanager.core.jmte.NamedFilesizeRenderer;
+import org.tinymediamanager.core.jmte.NamedFramerateRenderer;
 import org.tinymediamanager.core.jmte.NamedLowerCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedNumberRenderer;
 import org.tinymediamanager.core.jmte.NamedReplacementRenderer;
+import org.tinymediamanager.core.jmte.NamedSplitRenderer;
 import org.tinymediamanager.core.jmte.NamedTitleCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedUpperCaseRenderer;
 import org.tinymediamanager.core.jmte.RegexpProcessor;
@@ -147,6 +149,7 @@ public class MovieRenamer {
     tokenMap.put("videoResolution", "movie.mediaInfoVideoResolution");
     tokenMap.put("videoBitDepth", "movie.mediaInfoVideoBitDepth");
     tokenMap.put("videoBitRate", "movie.mediaInfoVideoBitrate;bitrate");
+    tokenMap.put("framerate", "movie.mediaInfoFrameRate;framerate");
 
     tokenMap.put("audioCodec", "movie.mediaInfoAudioCodec");
     tokenMap.put("audioCodecList", "movie.mediaInfoAudioCodecList");
@@ -1265,19 +1268,21 @@ public class MovieRenamer {
   public static Engine createEngine() {
     Engine engine = Engine.createEngine();
     engine.registerRenderer(Number.class, new ZeroNumberRenderer());
-    engine.registerNamedRenderer(new NamedDateRenderer());
-    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
-    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
-    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
     engine.registerNamedRenderer(new MovieNamedFirstCharacterRenderer());
-    engine.registerNamedRenderer(new NamedArrayRenderer());
-    engine.registerNamedRenderer(new NamedArrayUniqueRenderer());
-    engine.registerNamedRenderer(new NamedNumberRenderer());
-    engine.registerNamedRenderer(new NamedFilesizeRenderer());
-    engine.registerNamedRenderer(new NamedBitrateRenderer());
-    engine.registerNamedRenderer(new NamedReplacementRenderer());
     engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetRenderer());
     engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetWithDummyRenderer());
+    engine.registerNamedRenderer(new NamedArrayRenderer());
+    engine.registerNamedRenderer(new NamedArrayUniqueRenderer());
+    engine.registerNamedRenderer(new NamedBitrateRenderer());
+    engine.registerNamedRenderer(new NamedDateRenderer());
+    engine.registerNamedRenderer(new NamedFilesizeRenderer());
+    engine.registerNamedRenderer(new NamedFramerateRenderer());
+    engine.registerNamedRenderer(new NamedLowerCaseRenderer());
+    engine.registerNamedRenderer(new NamedNumberRenderer());
+    engine.registerNamedRenderer(new NamedReplacementRenderer());
+    engine.registerNamedRenderer(new NamedSplitRenderer());
+    engine.registerNamedRenderer(new NamedTitleCaseRenderer());
+    engine.registerNamedRenderer(new NamedUpperCaseRenderer());
     engine.registerNamedRenderer(new ChainedNamedRenderer(engine.getAllNamedRenderers()));
 
     engine.registerAnnotationProcessor(new RegexpProcessor());
@@ -1371,15 +1376,18 @@ public class MovieRenamer {
     newDestination = newDestination.replace(": ", " - "); // nicer
     newDestination = newDestination.replace(":", "-"); // nicer
 
+    // replace new lines
+    newDestination = newDestination.replaceAll("\r?\n", " ");
+
     // replace multiple spaces with a single one
-    newDestination = newDestination.replaceAll(" +", " ").trim();
+    newDestination = newDestination.replaceAll(" +", " ");
 
     if (SystemUtils.IS_OS_WINDOWS) {
       // remove illegal characters on Windows
-      newDestination = newDestination.replace("\"", " ").trim();
+      newDestination = newDestination.replace("\"", " ");
     }
 
-    return newDestination.trim();
+    return newDestination.strip();
   }
 
   /**

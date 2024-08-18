@@ -43,16 +43,30 @@ import org.tinymediamanager.core.entities.MediaSource;
 import org.tinymediamanager.core.entities.MediaTrailer;
 import org.tinymediamanager.core.entities.Person;
 import org.tinymediamanager.core.jmte.JmteUtils;
+import org.tinymediamanager.core.jmte.NamedArrayRenderer;
+import org.tinymediamanager.core.jmte.NamedArrayUniqueRenderer;
+import org.tinymediamanager.core.jmte.NamedBitrateRenderer;
 import org.tinymediamanager.core.jmte.NamedDateRenderer;
-import org.tinymediamanager.core.jmte.NamedFirstCharacterRenderer;
+import org.tinymediamanager.core.jmte.NamedFilesizeRenderer;
+import org.tinymediamanager.core.jmte.NamedFramerateRenderer;
+import org.tinymediamanager.core.jmte.NamedLowerCaseRenderer;
+import org.tinymediamanager.core.jmte.NamedNumberRenderer;
+import org.tinymediamanager.core.jmte.NamedReplacementRenderer;
+import org.tinymediamanager.core.jmte.NamedSplitRenderer;
+import org.tinymediamanager.core.jmte.NamedTitleCaseRenderer;
 import org.tinymediamanager.core.jmte.NamedUpperCaseRenderer;
 import org.tinymediamanager.core.jmte.TmmModelAdaptor;
 import org.tinymediamanager.core.jmte.TmmOutputAppender;
+import org.tinymediamanager.core.jmte.ZeroNumberRenderer;
+import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedFirstCharacterRenderer;
+import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedIndexOfMovieSetRenderer;
+import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedIndexOfMovieSetWithDummyRenderer;
 import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.core.movie.entities.MovieSet;
 import org.tinymediamanager.scraper.entities.MediaCertification;
 
 import com.floreysoft.jmte.Engine;
+import com.floreysoft.jmte.extended.ChainedNamedRenderer;
 
 public class MovieJmteTests extends BasicMovieTest {
 
@@ -65,9 +79,23 @@ public class MovieJmteTests extends BasicMovieTest {
       Movie movie = createMovie();
 
       engine = Engine.createEngine();
+      engine.registerRenderer(Number.class, new ZeroNumberRenderer());
+      engine.registerNamedRenderer(new MovieNamedFirstCharacterRenderer());
+      engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetRenderer());
+      engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetWithDummyRenderer());
+      engine.registerNamedRenderer(new NamedArrayRenderer());
+      engine.registerNamedRenderer(new NamedArrayUniqueRenderer());
+      engine.registerNamedRenderer(new NamedBitrateRenderer());
       engine.registerNamedRenderer(new NamedDateRenderer());
+      engine.registerNamedRenderer(new NamedFilesizeRenderer());
+      engine.registerNamedRenderer(new NamedFramerateRenderer());
+      engine.registerNamedRenderer(new NamedLowerCaseRenderer());
+      engine.registerNamedRenderer(new NamedNumberRenderer());
+      engine.registerNamedRenderer(new NamedReplacementRenderer());
+      engine.registerNamedRenderer(new NamedSplitRenderer());
+      engine.registerNamedRenderer(new NamedTitleCaseRenderer());
       engine.registerNamedRenderer(new NamedUpperCaseRenderer());
-      engine.registerNamedRenderer(new NamedFirstCharacterRenderer());
+      engine.registerNamedRenderer(new ChainedNamedRenderer(engine.getAllNamedRenderers()));
 
       engine.setModelAdaptor(new TmmModelAdaptor());
       engine.setOutputAppender(new TmmOutputAppender() {
@@ -147,7 +175,31 @@ public class MovieJmteTests extends BasicMovieTest {
 
       // test parent and space separator expressions
       compare("${parent}", "A" + File.separator + "1992");
-      compare("${movie.country}", "US DE");
+      compare("${movie.country}", "US DE, Vereinigte Staaten, Germany");
+
+      // string-to-array test
+      compare("${movie.country;split}", "US DE, Vereinigte Staaten, Germany");
+      compare("${movie.country;split()}", "US DE, Vereinigte Staaten, Germany");
+      compare("${movie.country;split(asdf)}", "US DE, Vereinigte Staaten, Germany");
+      compare("${movie.country;split(-1)}", "US DE, Vereinigte Staaten, Germany");
+      compare("${movie.country;split(0)}", "US DE");
+      compare("${movie.country;split(1)}", "Vereinigte Staaten");
+      compare("${movie.country;split(2)}", "Germany");
+      compare("${movie.country;split(3)}", "US DE, Vereinigte Staaten, Germany"); // ioob
+      compare("${movie.country;chain(split(2);upper)}", "GERMANY");
+      // from/to
+      compare("${movie.country;split(0,0)}", "US DE, Vereinigte Staaten, Germany"); // invalid
+      compare("${movie.country;split(1,0)}", "US DE, Vereinigte Staaten, Germany"); // invalid
+      compare("${movie.country;split(a,Z)}", "US DE, Vereinigte Staaten, Germany"); // invalid
+      compare("${movie.country;split(0,1)}", "US DE, Vereinigte Staaten");
+      compare("${movie.country;split(2,3)}", "Germany");
+      compare("${movie.country;split(2 , 3)}", "Germany");
+      compare("${movie.country;split(1,2)}", "Vereinigte Staaten, Germany");
+      compare("${movie.country;split(0,17)}", "US DE, Vereinigte Staaten, Germany");
+      compare("${movie.country;split(1,17)}", "Vereinigte Staaten, Germany");
+      compare("${movie.country;split(2,17)}", "Germany");
+      compare("${movie.country;split(3,17)}", ""); // empty or all?
+
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -206,7 +258,7 @@ public class MovieJmteTests extends BasicMovieTest {
     movie.setTmdbId(812);
     movie.setId("trakt", 655);
     movie.setProductionCompany("Walt Disney");
-    movie.setCountry("US/DE");
+    movie.setCountry("US/DE, Vereinigte Staaten, Germany");
     movie.setCertification(MediaCertification.US_G);
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

@@ -23,6 +23,8 @@ import static org.tinymediamanager.core.MediaFileType.SEASON_THUMB;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Files;
@@ -40,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import org.apache.commons.lang3.StringUtils;
@@ -354,6 +357,8 @@ public class TvShowSeasonEditorDialog extends AbstractEditorDialog {
       addButton(cancelButton);
 
       JButton okButton = new JButton(new OKAction());
+      getRootPane().registerKeyboardAction(new OKAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK),
+          JComponent.WHEN_IN_FOCUSED_WINDOW);
       addDefaultButton(okButton);
     }
   }
