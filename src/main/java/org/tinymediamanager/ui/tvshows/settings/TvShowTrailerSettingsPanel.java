@@ -324,7 +324,7 @@ public class TvShowTrailerSettingsPanel extends JPanel {
 
         cbTrailerFilename4 = new JCheckBox("trailer." + TmmResourceBundle.getString("Settings.artwork.extension"));
         trailerFilenameButtonGroup.add(cbTrailerFilename4);
-        panelTrailerFilenames.add(cbTrailerFilename4, "cell 1 2");
+        panelTrailerFilenames.add(cbTrailerFilename4, "cell 1 3");
       }
     }
   }

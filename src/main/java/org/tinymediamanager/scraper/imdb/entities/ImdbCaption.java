@@ -9,19 +9,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class ImdbEpisodeListEpisode {
-
-  public String               id                   = "";
-  public String               episode              = "";
-  public String               season               = "";
-  public String               titleText            = "";
-  public String               plot                 = "";
-  public double               aggregateRating      = 0.0;
-  public int                  voteCount            = 0;
-  public ImdbReleaseDate      releaseDate          = null;
-  public int                  releaseYear          = 0;
-  public ImdbImageString      image                = null;
-
+public class ImdbCaption {
+  public String               plainText;
   @JsonIgnore
   private Map<String, Object> additionalProperties = new HashMap<>();
 

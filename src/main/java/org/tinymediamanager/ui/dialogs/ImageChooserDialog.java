@@ -79,7 +79,9 @@ import org.tinymediamanager.core.ImageUtils;
 import org.tinymediamanager.core.TmmProperties;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.Utils;
+import org.tinymediamanager.core.movie.MovieArtworkHelper;
 import org.tinymediamanager.core.movie.MovieModuleManager;
+import org.tinymediamanager.core.tvshow.TvShowArtworkHelper;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 import org.tinymediamanager.scraper.ArtworkSearchAndScrapeOptions;
@@ -317,7 +319,11 @@ public class ImageChooserDialog extends TmmDialog {
       panelFilter.add(cbSize, "cell 2 1,growx,wmin 0");
 
       cbLanguage = new TmmCheckComboBox();
-      cbLanguage.setSingleLineEditor();
+      cbLanguage.setSingleLineEditor(); // looks weird when preselecting langu?
+      // our preferred should be activated?
+      // List<MediaLanguages> preferred = TvShowModuleManager.getInstance().getSettings().getImageScraperLanguages();
+      // cbLanguage.setItems(preferred);
+      // cbLanguage.setSelectedItems(preferred);
       panelFilter.add(cbLanguage, "cell 4 1,growx,wmin 0");
     }
     {
@@ -596,6 +602,13 @@ public class ImageChooserDialog extends TmmDialog {
     button.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
+        // DEBUG
+        // if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+        // Object o = button.getClientProperty("MediaArtwork");
+        // if (o instanceof MediaArtwork) {
+        // System.out.println((MediaArtwork) o);
+        // }
+        // }
         if (e.getClickCount() >= 2 && e.getButton() == MouseEvent.BUTTON1) {
           button.setSelected(true);
           new OkAction().actionPerformed(new ActionEvent(e.getSource(), e.getID(), "OK"));
@@ -712,16 +725,24 @@ public class ImageChooserDialog extends TmmDialog {
 
       MediaArtwork artwork1 = (MediaArtwork) obj1;
       MediaArtwork artwork2 = (MediaArtwork) obj2;
-
-      if (artwork1.getBiggestArtwork() == null || artwork2.getBiggestArtwork() == null) {
-        return 0;
+      int score1 = 0;
+      int score2 = 0;
+      if (mediaType == MediaType.MOVIE || mediaType == MediaType.MOVIE_SET) {
+        score1 = MovieArtworkHelper.getMatchingScoreAccordingPreferences(artwork1);
+        score2 = MovieArtworkHelper.getMatchingScoreAccordingPreferences(artwork2);
       }
-
-      int result = artwork2.getBiggestArtwork().compareTo(artwork1.getBiggestArtwork());
+      else if (mediaType == MediaType.TV_SHOW || mediaType == MediaType.TV_EPISODE) {
+        score1 = TvShowArtworkHelper.getMatchingScoreAccordingPreferences(artwork1);
+        score2 = TvShowArtworkHelper.getMatchingScoreAccordingPreferences(artwork2);
+      }
+      int result = Integer.compare(score2, score1);
       if (result == 0) {
-        // same size
-        // sort by likes descending
+        // same score - sort by likes descending
         result = Integer.compare(artwork2.getLikes(), artwork1.getLikes());
+      }
+      if (result == 0) {
+        // last resort
+        result = artwork2.getBiggestArtwork().compareTo(artwork1.getBiggestArtwork());
       }
 
       return result;

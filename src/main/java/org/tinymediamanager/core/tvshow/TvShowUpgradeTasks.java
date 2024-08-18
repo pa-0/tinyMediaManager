@@ -15,6 +15,7 @@
  */
 package org.tinymediamanager.core.tvshow;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -177,18 +178,60 @@ public class TvShowUpgradeTasks extends UpgradeTasks {
           for (int i = season.getMediaFiles().size() - 1; i >= 0; i--) {
             MediaFile mf = season.getMediaFiles().get(i);
             if (mf.isGraphic()) {
-              String rel = Utils.relPath(tvShow.getPath(), mf.getPath());
-              int nr = TvShowHelpers.detectSeasonFromFileAndFolder(mf.getFilename(), rel);
-              if (nr != season.getSeason()) {
-                LOGGER.debug("{}: Removing {} from season {}, because it was season {}", tvShow.getTitle(), mf.getType(), season.getSeason(), nr);
-                season.removeFromMediaFiles(mf);
-                registerForSaving(season);
+              try {
+                String rel = Utils.relPath(tvShow.getPathNIO(), mf.getFileAsPath());
+                int nr = TvShowHelpers.detectSeasonFromFileAndFolder(mf.getFilename(), rel);
+                if (nr != season.getSeason()) {
+                  LOGGER.debug("{}: Removing {} from season {}, because it was season {}", tvShow.getTitle(), mf.getType(), season.getSeason(), nr);
+                  season.removeFromMediaFiles(mf);
+                  registerForSaving(season);
+                }
+              }
+              catch (Exception e) {
+                LOGGER.warn("Could not upgrade 5005: {} / {}", tvShow.getPathNIO(), mf.getFileAsPath());
               }
             }
           }
         }
       }
       module.setDbVersion(5005);
+    }
+
+    // fix season artwork, which have the wrong path in DB - fix d229c685129ce12967b0211151c8d113d78ce678
+    if (module.getDbVersion() < 5006) {
+      LOGGER.info("performing upgrade to ver: {}", 5006);
+      for (TvShow tvShow : tvShowList.getTvShows()) {
+        boolean changed = false;
+        String showDirName = tvShow.getPathNIO().getFileName().toString();
+        for (TvShowSeason season : tvShow.getSeasons()) {
+          for (MediaFile mf : season.getMediaFiles()) {
+            if (!mf.getFileAsPath().startsWith(tvShow.getPathNIO())) {
+              LOGGER.info("5006: fixing wrong MediaFile {} / {}", tvShow.getPathNIO(), mf.getFileAsPath());
+              try {
+                Path mfFolder = mf.getFileAsPath().getParent();
+                if (mfFolder.getFileName().toString().equals(showDirName)) {
+                  // file in showDir
+                  mf.setFile(tvShow.getPathNIO().resolve(mf.getFilename()));
+                  changed = true;
+                }
+                else if (mfFolder.getParent().getFileName().toString().equals(showDirName)) {
+                  // inside seasonDir?
+                  Path newP = mf.getFileAsPath().getParent().getFileName().resolve(mf.getFileAsPath().getFileName()); // relative
+                  mf.setFile(tvShow.getPathNIO().resolve(newP));
+                  changed = true;
+                }
+              }
+              catch (Exception e) {
+                LOGGER.warn("5006: Whoa, we had some error correcting the paths: {}", e);
+              }
+            }
+          }
+        }
+        if (changed) {
+          tvShow.saveToDb();
+        }
+      }
+      module.setDbVersion(5006);
     }
 
     saveAll();

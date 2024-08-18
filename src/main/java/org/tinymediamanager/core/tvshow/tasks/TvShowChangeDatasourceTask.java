@@ -30,6 +30,7 @@ import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.core.threading.TmmThreadPool;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
+import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 
 /**
  * the class {@link TvShowChangeDatasourceTask} is used to change a Data source of a whole TV show including the move/copy of all files
@@ -95,6 +96,11 @@ public class TvShowChangeDatasourceTask extends TmmThreadPool {
           tvShow.setDataSource(datasource);
           tvShow.setPath(destDir.toAbsolutePath().toString());
           tvShow.updateMediaFilePath(srcDir, destDir);
+
+          for (TvShowSeason tvShowSeason : tvShow.getSeasons()) {
+            tvShowSeason.updateMediaFilePath(srcDir, destDir);
+          }
+
           for (TvShowEpisode episode : new ArrayList<>(tvShow.getEpisodes())) {
             episode.setDataSource(datasource);
             episode.replacePathForRenamedTvShowRoot(srcDir, destDir);

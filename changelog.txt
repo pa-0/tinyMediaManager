@@ -1,17 +1,25 @@
 Version 5.0.10
 =======================
-+ (TV shows) Treat episodes w/o season as "Season 1" upon importing!
-+ (renderer) split(1,3) renderer can now contain a range...
-x updated Java to 21.0.4
-x (MDBList) use correct mediaType to overcome duplicate IDs #2660
-x improved restoring of window positions #2649
-x do not clip filter dialog after loading #2655
-x upgraded FlatLaf to 3.5.1 to avoid the "UnsupportedOperationException: PERPIXEL_TRANSLUCENT" error
-x [KodiRPC] fix mapping of TMM <-> Kodi #2664
++ [TV shows] Treat episodes w/o season as "Season 1" upon importing!
++ [Renderer] split(1,3) renderer can now contain a range...
++ [HTTP API] added reloadMediaInfo and detectAspectRatio to the HTTP commands
+x [Libs] updated Java to 21.0.4
+x [Libs] upgraded FlatLaf to 3.5.1 to avoid the "UnsupportedOperationException: PERPIXEL_TRANSLUCENT" error
+x [Movies] fix creating of movie sets when "Do not overwrite existing data" is selected #2672
+x [TV shows] fixed an issue of not updating the season artwork correctly #2671
 x [UDS] fix parsing season artwork numbers on import #2669
+x [Subtitles] fix parsing language/flags when in own directory thx @u/Baldish
+x [UI] improved restoring of window positions #2649
+x [UI] do not clip filter dialog after loading #2655
 x [UI] display correct "missing" for trailer metadata #2668
 x [UI] do not exhaust visible space when adding many filter values #2655
+x [UI] also adhere user preferences for sorting in the image chooser thx @u/JMcClane1972
 x [UniversalScraper] fix scraping season name/plot from EpisodeGroups #2659
+x [UniversalScraper] re-enabled fallback for episodes #2667
+x [MDBList] use correct mediaType to overcome duplicate IDs #2660
+x [Fanart.tv] remove long deprecated clearlogo/clearart images #2585
+x [IMDB] further improve scraper
+x [KodiRPC] fix mapping of TMM <-> Kodi #2664
 
 
 Version 5.0.9

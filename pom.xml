@@ -87,7 +87,7 @@
         <release.version>2.5.3</release.version>
         <jre.version>21.0.4</jre.version>
         <ffmpeg.version>6.0</ffmpeg.version>
-        <launcher.version>5.0.5</launcher.version>
+        <launcher.version>5.0.6</launcher.version>
         <flatlaf.version>3.5.1</flatlaf.version>
         <jackson.version>2.15.2</jackson.version>
         <sonar.java.source>17</sonar.java.source>
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.tinymediamanager</groupId>
             <artifactId>license</artifactId>
-            <version>2.1.19</version>
+            <version>2.1.20</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

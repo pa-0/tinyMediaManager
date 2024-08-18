@@ -61,7 +61,8 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
  * @author Manuel Laggner
  */
 public class ExportAnalysisDataAction extends TmmAction {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ExportAnalysisDataAction.class);
+  private static final long   serialVersionUID = 1L;
+  private static final Logger LOGGER           = LoggerFactory.getLogger(ExportAnalysisDataAction.class);
 
   public ExportAnalysisDataAction() {
     putValue(NAME, TmmResourceBundle.getString("tmm.exportanalysisdata"));
@@ -189,6 +190,7 @@ public class ExportAnalysisDataAction extends TmmAction {
       for (TvShow show : TvShowModuleManager.getInstance().getTvShowList().getTvShows()) {
         Path datasource = Paths.get(show.getDataSource());
         List<MediaFile> mfs = show.getMediaFiles();
+        mfs.addAll(show.getSeasonMediaFiles());
         mfs.addAll(show.getEpisodesMediaFiles());
         for (MediaFile mf : mfs) {
           String rel = Utils.relPath(datasource, mf.getFileAsPath());

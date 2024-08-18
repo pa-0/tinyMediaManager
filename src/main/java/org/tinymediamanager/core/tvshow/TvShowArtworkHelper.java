@@ -381,6 +381,33 @@ public class TvShowArtworkHelper {
     return sortedArtwork;
   }
 
+  public static int getMatchingScoreAccordingPreferences(MediaArtwork ma) {
+
+    List<MediaLanguages> languages = TvShowModuleManager.getInstance().getSettings().getImageScraperLanguages();
+    int size = 0;
+    switch (ma.getType()) {
+      case POSTER:
+      case KEYART:
+      case SEASON_POSTER:
+        size = TvShowModuleManager.getInstance().getSettings().getImagePosterSize().getOrder();
+        break;
+
+      case THUMB:
+      case SEASON_THUMB:
+        size = TvShowModuleManager.getInstance().getSettings().getImageThumbSize().getOrder();
+        break;
+
+      // all other use fanart size (as seen in Fanart.Tv metadata provider imageType mapping
+      default:
+        size = TvShowModuleManager.getInstance().getSettings().getImageFanartSize().getOrder();
+        break;
+    }
+    boolean preferFanartWoText = TvShowModuleManager.getInstance().getSettings().isImageScraperPreferFanartWoText();
+    boolean otherResolutions = TvShowModuleManager.getInstance().getSettings().isImageScraperOtherResolutions();
+    int score = ma.getMatchingScoreAccordingPreferences(size, languages, preferFanartWoText, otherResolutions);
+    return score;
+  }
+
   /**
    * choose the best artwork for this tv show
    *
@@ -600,14 +627,14 @@ public class TvShowArtworkHelper {
    */
   public static void downloadSeasonArtwork(TvShowSeason tvShowSeason, MediaFileType artworkType) {
     switch (artworkType) {
-      case SEASON_POSTER ->
-        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(), artworkType);
-      case SEASON_FANART ->
-        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(), artworkType);
-      case SEASON_BANNER ->
-        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(), artworkType);
-      case SEASON_THUMB ->
-        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(), artworkType);
+      case SEASON_POSTER -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(),
+          artworkType);
+      case SEASON_FANART -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(),
+          artworkType);
+      case SEASON_BANNER -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(),
+          artworkType);
+      case SEASON_THUMB -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(),
+          artworkType);
     }
   }
 

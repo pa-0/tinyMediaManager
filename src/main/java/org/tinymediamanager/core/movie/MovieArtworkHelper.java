@@ -1057,6 +1057,28 @@ public class MovieArtworkHelper {
     return sortedArtwork;
   }
 
+  public static int getMatchingScoreAccordingPreferences(MediaArtwork ma) {
+
+    List<MediaLanguages> languages = MovieModuleManager.getInstance().getSettings().getImageScraperLanguages();
+    int size = 0;
+    switch (ma.getType()) {
+      case POSTER:
+      case KEYART:
+        size = MovieModuleManager.getInstance().getSettings().getImagePosterSize().getOrder();
+        break;
+
+      // all other use fanart size (as seen in Fanart.Tv metadata provider imageType mapping
+      default:
+        size = MovieModuleManager.getInstance().getSettings().getImageFanartSize().getOrder();
+        break;
+    }
+
+    boolean preferFanartWoText = MovieModuleManager.getInstance().getSettings().isImageScraperPreferFanartWoText();
+    boolean otherResolutions = MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions();
+    int score = ma.getMatchingScoreAccordingPreferences(size, languages, preferFanartWoText, otherResolutions);
+    return score;
+  }
+
   /**
    * choose the best artwork for this movie
    * 

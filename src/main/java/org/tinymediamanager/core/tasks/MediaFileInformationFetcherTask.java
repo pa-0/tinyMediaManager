@@ -36,6 +36,7 @@ import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaFileAudioStream;
 import org.tinymediamanager.core.entities.MediaFileSubtitle;
 import org.tinymediamanager.core.entities.MediaStreamInfo;
+import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.core.threading.TmmTaskManager;
 
 /**
@@ -84,8 +85,19 @@ public class MediaFileInformationFetcherTask implements Runnable {
       if (mediaFile.getType() == MediaFileType.SUBTITLE || mediaFile.getType() == MediaFileType.AUDIO) {
         // also re-evaluate language from NAME
         MediaFile mainVideoFile = mediaEntity.getMainFile();
-        if (StringUtils.isNotBlank(mainVideoFile.getBasename()) && mediaFile.getFilename().startsWith(mainVideoFile.getBasename())) {
 
+        boolean goOn = true;
+        if (mediaEntity instanceof Movie && ((Movie) mediaEntity).isMultiMovieDir()) {
+          if (StringUtils.isNotBlank(mainVideoFile.getBasename()) && mediaFile.getFilename().startsWith(mainVideoFile.getBasename())) {
+            // MMD movie MUST start with basename, for all others or TV this is fine w/o
+          }
+          else {
+            // uh-oh - MMD but filename does not match
+            goOn = false;
+          }
+        }
+
+        if (goOn) {
           MediaStreamInfo info = MediaFileHelper.gatherLanguageInformation(mediaFile.getBasename(), mainVideoFile.getBasename());
           if (mediaFile.getType() == MediaFileType.SUBTITLE && !mediaFile.getSubtitles().isEmpty()) {
             MediaFileSubtitle sub = mediaFile.getSubtitles().get(0);

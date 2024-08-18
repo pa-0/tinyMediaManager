@@ -53,9 +53,11 @@ import org.tinymediamanager.core.tvshow.TvShowSearchAndScrapeOptions;
 import org.tinymediamanager.core.tvshow.TvShowSettings;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
+import org.tinymediamanager.core.tvshow.tasks.TvShowARDetectorTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowEpisodeScrapeTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowFetchRatingsTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowMissingArtworkDownloadTask;
+import org.tinymediamanager.core.tvshow.tasks.TvShowReloadMediaInformationTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowRenameTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowScrapeTask;
 import org.tinymediamanager.core.tvshow.tasks.TvShowSubtitleSearchAndDownloadTask;
@@ -92,6 +94,8 @@ class TvShowCommandTask extends TmmThreadPool {
   protected void doInBackground() {
     // 1. update commands
     updateDataSources();
+    reloadMediaInfo();
+    aspectRatioDetection();
 
     // 2. scrape commands
     scrape();
@@ -198,6 +202,49 @@ class TvShowCommandTask extends TmmThreadPool {
     }
 
     return dataSources;
+  }
+
+  public void reloadMediaInfo() {
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("reloadMediaInfo".equals(command.action)) {
+
+        LOGGER.info("reload media info... - {}", command);
+        List<TvShow> tvshows = getTvShowsForScope(command.scope);
+        List<TvShowEpisode> tvShowEpisodes = getEpisodesForScope(command.scope);
+
+        if (!tvshows.isEmpty() && !tvShowEpisodes.isEmpty()) {
+
+          setTaskName(TmmResourceBundle.getString("tvshow.updatemediainfo"));
+          publishState(TmmResourceBundle.getString("tvshow.updatemediainfo"), getProgressDone());
+
+          activeTask = new TvShowReloadMediaInformationTask(tvshows, tvShowEpisodes);
+          activeTask.run();
+
+          activeTask = null;
+        }
+      }
+    }
+  }
+
+  public void aspectRatioDetection() {
+    for (AbstractCommandHandler.Command command : commands) {
+      if ("detectAspectRatio".equals(command.action)) {
+
+        LOGGER.info("detecting aspect ratio... - {}", command);
+        List<TvShowEpisode> tvShowEpisodes = getEpisodesForScope(command.scope);
+
+        if (!tvShowEpisodes.isEmpty()) {
+
+          setTaskName(TmmResourceBundle.getString("tvshow.ard"));
+          publishState(TmmResourceBundle.getString("tvshow.ard"), getProgressDone());
+
+          activeTask = new TvShowARDetectorTask(tvShowEpisodes);
+          activeTask.run();
+
+          activeTask = null;
+        }
+      }
+    }
   }
 
   private List<TvShow> getTvShowFoldersForScope(CommandScope scope) {
