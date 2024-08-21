@@ -15,7 +15,6 @@
  */
 package org.tinymediamanager.scraper.subdl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -27,47 +26,25 @@ import org.slf4j.LoggerFactory;
 import org.tinymediamanager.scraper.MediaProviderInfo;
 import org.tinymediamanager.scraper.SubtitleSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.SubtitleSearchResult;
-import org.tinymediamanager.scraper.exceptions.HttpException;
+import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.NothingFoundException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
-import org.tinymediamanager.scraper.interfaces.IMovieSubtitleProvider;
+import org.tinymediamanager.scraper.interfaces.ITvShowSubtitleProvider;
 import org.tinymediamanager.scraper.subdl.model.SubdlModel;
 import org.tinymediamanager.scraper.subdl.model.Subtitles;
 import org.tinymediamanager.scraper.subdl.model.Type;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
 
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-
 /**
- * The class {@link SubdlMovieSubtitleProvider} offers access to the SubDL service for movies
- * 
+ * The class {@link SubdlTvShowSubtitleProvider} offers access to the SubDL service for movies
+ *
  * @author Wolfgang Janes
  */
-public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements IMovieSubtitleProvider {
+public class SubdlTvShowSubtitleProvider extends SubdlSubtitleProvider implements ITvShowSubtitleProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SubdlMovieSubtitleProvider.class);
-
-  @Override
-  protected String getSubId() {
-    return "movie_subtitle";
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(SubdlTvShowSubtitleProvider.class);
 
   @Override
-  protected Logger getLogger() {
-    return LOGGER;
-  }
-
-  @Override
-  public MediaProviderInfo getProviderInfo() {
-    return providerInfo;
-  }
-
-  @Override
-  public boolean isActive() {
-    return isFeatureEnabled() && StringUtils.isNotBlank(providerInfo.getConfig().getValue("secret_key"));
-  }
-
   public List<SubtitleSearchResult> search(SubtitleSearchAndScrapeOptions options) throws ScrapeException {
 
     initAPI(providerInfo.getConfig().getValue("secret_key"));
@@ -107,7 +84,7 @@ public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements
 
   private @Nullable SubdlModel getSubdlFromQuery(String query, String language) {
     try {
-      return processResponse(controller.getResultsForQuery(query, language.toUpperCase(Locale.ROOT), Type.MOVIE));
+      return processResponse(controller.getResultsForQuery(query, language.toUpperCase(Locale.ROOT), Type.TV));
     }
     catch (Exception e) {
       LOGGER.warn("could not get response from subdl - '{}'", e.getMessage());
@@ -118,7 +95,7 @@ public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements
 
   private @Nullable SubdlModel getSubdlFromImdbID(String imdbID, String language) {
     try {
-      return processResponse(controller.getResultsFromImdbId(imdbID, language.toUpperCase(Locale.ROOT), Type.MOVIE));
+      return processResponse(controller.getResultsFromImdbId(imdbID, language.toUpperCase(Locale.ROOT), Type.TV));
     }
     catch (Exception e) {
       LOGGER.warn("could not get response from subdl - '{}'", e.getMessage());
@@ -129,7 +106,7 @@ public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements
 
   private @Nullable SubdlModel getSubdlFromTmdbID(int tmdbId, String language) {
     try {
-      return processResponse(controller.getResultsFromTmdbId(tmdbId, language.toUpperCase(Locale.ROOT), Type.MOVIE));
+      return processResponse(controller.getResultsFromTmdbId(tmdbId, language.toUpperCase(Locale.ROOT), Type.TV));
     }
     catch (Exception e) {
       LOGGER.warn("could not get response from subdl - '{}'", e.getMessage());
@@ -138,6 +115,23 @@ public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements
     return null;
   }
 
+  @Override
+  protected String getSubId() {
+    return "tvshow_subtitle";
+  }
 
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
+  }
 
+  @Override
+  public boolean isActive() {
+    return isFeatureEnabled() && StringUtils.isNotBlank(providerInfo.getConfig().getValue("secret_key"));
+  }
+
+  @Override
+  public MediaProviderInfo getProviderInfo() {
+    return providerInfo;
+  }
 }

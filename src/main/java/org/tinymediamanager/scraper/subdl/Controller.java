@@ -115,7 +115,8 @@ class Controller {
    *           any {@link IOException} occurred for the request
    */
   Response<SubdlModel> getResultsFromImdbId(String imdbId, String language, Type type) throws IOException {
-    return getService().fetchResultswithImdbId(getSecretKey(), imdbId, type.name().toLowerCase(Locale.ROOT), language).execute();
+    return getService().fetchResultswithImdbId(getSecretKey(), imdbId, type.name().toLowerCase(Locale.ROOT), language)
+        .execute();
   }
 
   /**
@@ -132,7 +133,8 @@ class Controller {
    *           any {@link IOException} occurred for the request
    */
   Response<SubdlModel> getResultsFromTmdbId(int tmdbId, String language, Type type) throws IOException {
-    return getService().fetchResultswithTmdbId(getSecretKey(), tmdbId, type.name().toLowerCase(Locale.ROOT), language).execute();
+    return getService().fetchResultswithTmdbId(getSecretKey(), tmdbId, type.name().toLowerCase(Locale.ROOT), language)
+        .execute();
   }
 
 }

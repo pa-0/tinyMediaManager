@@ -51,6 +51,7 @@ public interface SubdlService {
    *          the video type (`movie` or `tv`)
    * @param languages
    *          the languages to get the response for (separated by comma)
+   *
    * @return the response as {@link Call<SubdlModel>}
    */
   @GET("subtitles")
@@ -67,7 +68,7 @@ public interface SubdlService {
    * @param type
    *          the video type (`movie` or `tv`)
    * @param languages
-   *          the languages to get the response for (separated by comma)
+   *          the languages to get the response for (separated by comma
    * @return the response as {@link Call<SubdlModel>}
    */
   @GET("subtitles")
