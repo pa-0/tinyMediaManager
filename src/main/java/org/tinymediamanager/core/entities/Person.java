@@ -27,9 +27,10 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.tinymediamanager.core.AbstractModelObject;
+import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.core.IPrintable;
+import org.tinymediamanager.core.TmmToStringStyle;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
 import org.tinymediamanager.scraper.util.StrgUtils;
@@ -41,7 +42,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @author Manuel Laggner
  */
-public class Person extends AbstractModelObject implements IPrintable {
+public class Person extends AbstractModelObject implements IPrintable, IJmteDefaultValue {
   public static final String ACTOR_DIR    = ".actors";
   public static final String PRODUCER_DIR = ".producers";
 
@@ -360,11 +361,16 @@ public class Person extends AbstractModelObject implements IPrintable {
    */
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE, false, Person.class);
+    return ToStringBuilder.reflectionToString(this, TmmToStringStyle.TMM_STYLE, false, Person.class);
   }
 
   @Override
   public String toPrintable() {
     return getName();
+  }
+
+  @Override
+  public String toJmteDefaultValue() {
+    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, Person.class);
   }
 }

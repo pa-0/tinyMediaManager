@@ -1,55 +1,55 @@
 package org.tinymediamanager.ui.movies.dialogs;
 
-import static org.tinymediamanager.ui.TmmFontHelper.H2;
-
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.beansbinding.AutoBinding;
-import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.Property;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.tinymediamanager.core.AbstractModelObject;
-import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.TmmResourceBundle;
-import org.tinymediamanager.core.entities.MediaFile;
+import org.tinymediamanager.core.TmmToStringStyle;
+import org.tinymediamanager.core.jmte.JmteUtils;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieRenamer;
-import org.tinymediamanager.core.movie.MovieSettings;
 import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.core.tvshow.TvShowRenamer;
 import org.tinymediamanager.ui.IconManager;
+import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.components.MainTabbedPane;
-import org.tinymediamanager.ui.components.TmmLabel;
+import org.tinymediamanager.ui.components.ReadOnlyTextArea;
 import org.tinymediamanager.ui.components.TmmRoundTextArea;
 import org.tinymediamanager.ui.components.table.TmmTable;
 import org.tinymediamanager.ui.components.table.TmmTableFormat;
 import org.tinymediamanager.ui.components.table.TmmTableModel;
 import org.tinymediamanager.ui.dialogs.TmmDialog;
 import org.tinymediamanager.ui.movies.MovieUIModule;
+
+import com.floreysoft.jmte.Engine;
+import com.floreysoft.jmte.Renderer;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
@@ -58,79 +58,97 @@ import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import net.miginfocom.swing.MigLayout;
 
-public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListener {
+public class MovieTokenPreviewDialog extends TmmDialog {
 
   private JComboBox                         cbMovieForPreview;
-  private final MovieSettings               settings     = MovieModuleManager.getInstance().getSettings();
-  private JTextArea                         tfMovieTokens;
-  JLabel                                    lblExample   = new TmmLabel("", H2);
-  JPanel                                    contentPanel = new JPanel(new MigLayout("wrap,insets 10", "[20%][80%]", "[min!][min!][][][]"));
+
+  private JTextArea                         taMovieTokens;
+  private JTextArea                         taResult;
+  private JLabel                            lblError;
+  private JCheckBox                         chckbxPrettyPrint;
 
   private final EventList<MovieRenamerTab1> movieRenamerTab1EventList;
+  private final EventList<RendererExample>  rendererExampleList;
 
   public MovieTokenPreviewDialog() {
-    super(TmmResourceBundle.getString("movie.edit"), "movieBulkEditor");
+    super(TmmResourceBundle.getString("movie.jmteexplorer"), "moviejmteexplorer");
     this.movieRenamerTab1EventList = GlazedLists
         .threadSafeList(new ObservableElementList<>(new BasicEventList<>(), GlazedLists.beanConnector(MovieRenamerTab1.class)));
+    this.rendererExampleList = GlazedLists
+        .threadSafeList(new ObservableElementList<>(new BasicEventList<>(), GlazedLists.beanConnector(RendererExample.class)));
+
+    setModal(false);
 
     initComponents();
-    initDataBindings();
     setListeners();
 
-  }
-
-  private @NotNull DocumentListener getDocumentListener() {
-    return new DocumentListener() {
-      @Override
-      public void removeUpdate(DocumentEvent arg0) {
-        createRenamerExample();
-      }
-
-      @Override
-      public void insertUpdate(DocumentEvent arg0) {
-        createRenamerExample();
-      }
-
-      @Override
-      public void changedUpdate(DocumentEvent arg0) {
-        createRenamerExample();
-      }
-    };
+    buildAndInstallMovieArray();
   }
 
   private void initComponents() {
+    JPanel headerPanel = new JPanel(new MigLayout("", "[][]", "[][]"));
     {
       // Movie / Pattern Input
       {
-        contentPanel.add(new JLabel(TmmResourceBundle.getString("tmm.movie")));
+        headerPanel.add(new JLabel(TmmResourceBundle.getString("tmm.movie")), "cell 0 0");
+
         cbMovieForPreview = new JComboBox();
-        contentPanel.add(cbMovieForPreview, "grow, wrap");
-        contentPanel.add(new JLabel(TmmResourceBundle.getString("Settings.renamer.folder")));
-        tfMovieTokens = new TmmRoundTextArea();
-        tfMovieTokens.setBorder(UIManager.getBorder("ScrollPane.border"));
-        contentPanel.add(tfMovieTokens, "grow,wrap");
-      }
+        headerPanel.add(cbMovieForPreview, "cell 1 0, growx");
 
-      // Result
-      {
-        contentPanel.add(lblExample, "span, align center");
-      }
+        headerPanel.add(new JLabel(TmmResourceBundle.getString("Settings.jmtepattern")), "cell 0 1");
 
-      // Examples
+        taMovieTokens = new TmmRoundTextArea();
+        headerPanel.add(taMovieTokens, "cell 1 1, grow");
+
+        chckbxPrettyPrint = new JCheckBox("pretty print result");
+        headerPanel.add(chckbxPrettyPrint, "cell 0 2 2 1");
+      }
+    }
+    setTopPanel(headerPanel);
+
+    JSplitPane contentPanel = new JSplitPane();
+    {
+      // left
       {
         JTabbedPane tabbedPane = new MainTabbedPane();
         tabbedPane.add("Props Movies", createPropsMoviePanel());
-        tabbedPane.add("Renderer", createMovieRendererPanel());
-        tabbedPane.add("Props Entities", createPropsEntityPanel());
-        contentPanel.add(tabbedPane, "span, grow, push");
+        tabbedPane.add("Examples", createMovieRendererPanel());
+
+        contentPanel.setLeftComponent(tabbedPane);
       }
 
+      // right
+      {
+        JTabbedPane tabbedPane = new MainTabbedPane();
+        taResult = new ReadOnlyTextArea();
+
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(taResult);
+        tabbedPane.add("Result", scrollPane);
+
+        contentPanel.setRightComponent(tabbedPane);
+      }
+    }
+    add(contentPanel);
+
+    {
       JButton btnDone = new JButton(TmmResourceBundle.getString("Button.close"));
       btnDone.setIcon(IconManager.APPLY_INV);
       btnDone.addActionListener(e -> setVisible(false));
       addDefaultButton(btnDone);
     }
-    add(contentPanel);
+    {
+      JPanel infoPanel = new JPanel();
+      infoPanel.setLayout(new MigLayout("hidemode 3", "[grow]", "[]"));
+
+      lblError = new JLabel("");
+      TmmFontHelper.changeFont(lblError, Font.BOLD);
+      lblError.setForeground(Color.RED);
+      infoPanel.add(lblError, "cell 1 0");
+
+      setBottomInformationPanel(infoPanel);
+    }
+
   }
 
   private void buildAndInstallMovieArray() {
@@ -151,82 +169,94 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
   private void createRenamerExample() {
     Movie movie = null;
 
-    if (cbMovieForPreview.getSelectedItem() instanceof MoviePreviewContainer) {
-      MoviePreviewContainer container = (MoviePreviewContainer) cbMovieForPreview.getSelectedItem();
+    if (cbMovieForPreview.getSelectedItem() instanceof MoviePreviewContainer container) {
       movie = container.movie;
     }
 
     if (movie != null) {
-      String filename = "";
+      String result = "";
 
-      if (StringUtils.isNotBlank(tfMovieTokens.getText())) {
-        List<MediaFile> mediaFiles = movie.getMediaFiles(MediaFileType.VIDEO);
-        if (!mediaFiles.isEmpty()) {
-          String extension = FilenameUtils.getExtension(mediaFiles.get(0).getFilename());
-          filename = MovieRenamer.getTokenValue(movie, tfMovieTokens.getText());
+      if (StringUtils.isNotBlank(taMovieTokens.getText())) {
+        try {
+          Engine engine = MovieRenamer.createEngine();
 
-          if (!filename.endsWith(extension)) {
-            filename += "." + extension;
+          engine.registerRenderer(Collection.class, new CollectionRenderer());
+
+          Map<String, Object> root = new HashMap<>();
+          root.put("movie", movie);
+
+          // only offer movie set for movies with more than 1 movies or if setting is set
+          if (movie.getMovieSet() != null && (movie.getMovieSet().getMovies().size() > 1
+              || MovieModuleManager.getInstance().getSettings().isRenamerCreateMoviesetForSingleMovie())) {
+            root.put("movieSet", movie.getMovieSet());
           }
+
+          result = engine.transform(JmteUtils.morphTemplate(taMovieTokens.getText(), MovieRenamer.getTokenMap()), root);
+          lblError.setText("");
         }
+        catch (Exception e) {
+          lblError.setText(e.getMessage());
+        }
+
       }
       else {
-        filename = movie.getMediaFiles(MediaFileType.VIDEO).get(0).getFilename();
+        result = "";
+        lblError.setText("");
       }
 
       try {
-        lblExample.setText(filename);
-        lblExample.setToolTipText(filename);
+        taResult.setText(result);
         movieRenamerTab1EventList.clear();
         fillEventList(movie);
+        createExamples(movie);
       }
       catch (Exception ignored) {
       }
     }
     else {
-      lblExample.setText(TmmResourceBundle.getString("Settings.movie.renamer.nomovie"));
-      lblExample.setToolTipText(null);
+      taResult.setText(TmmResourceBundle.getString("Settings.movie.renamer.nomovie"));
+      taResult.setToolTipText(null);
     }
   }
 
   private JComponent createPropsMoviePanel() {
-    JPanel panel = new JPanel(new MigLayout("wrap,insets 10", "[]", "[]"));
     TmmTable table = new TmmTable(
         new TmmTableModel<>(GlazedListsSwing.swingThreadProxyList(movieRenamerTab1EventList), new MovieRenamerTab1TableFormat()));
-    panel.add(table, "span, grow, push");
-    return new JScrollPane(panel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+    JScrollPane scrollPane = new JScrollPane();
+    table.configureScrollPane(scrollPane);
+
+    return scrollPane;
   }
 
   private JComponent createMovieRendererPanel() {
-    return new JPanel();
-  }
+    TmmTable table = new TmmTable(new TmmTableModel<>(GlazedListsSwing.swingThreadProxyList(rendererExampleList), new RendererExampleTableFormat()));
 
-  private JComponent createPropsEntityPanel() {
-    return new JPanel();
-  }
+    JScrollPane scrollPane = new JScrollPane();
+    table.configureScrollPane(scrollPane);
 
-  @Override
-  public void hierarchyChanged(HierarchyEvent e) {
-    if (isShowing()) {
-      buildAndInstallMovieArray();
-    }
-  }
-
-  @Override
-  public void addNotify() {
-    super.addNotify();
-    addHierarchyListener(this);
-  }
-
-  @Override
-  public void removeNotify() {
-    removeHierarchyListener(this);
-    super.removeNotify();
+    return scrollPane;
   }
 
   /*****************************************************************************
    * helper classes
    *****************************************************************************/
+  private static class CollectionRenderer implements Renderer<Collection> {
+
+    @Override
+    public String render(Collection o, Locale locale, Map<String, Object> model) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("[");
+
+      for (var entry : o) {
+        sb.append(ToStringBuilder.reflectionToString(entry, TmmToStringStyle.TMM_STYLE, false));
+      }
+
+      sb.append("]");
+      return sb.toString();
+    }
+  }
+
   private static class MoviePreviewContainer {
     Movie movie;
 
@@ -244,14 +274,6 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
     }
   }
 
-  protected void initDataBindings() {
-    Property settingsBeanProperty_1 = BeanProperty.create("renamerToken");
-    Property jTextFieldBeanProperty_1 = BeanProperty.create("text");
-    AutoBinding autoBinding_1 = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, settings, settingsBeanProperty_1, tfMovieTokens,
-        jTextFieldBeanProperty_1);
-    autoBinding_1.bind();
-  }
-
   private static class MovieRenamerTab1 extends AbstractModelObject {
     private final String title;
     private final String shortcut;
@@ -262,7 +284,6 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
       this.shortcut = shortcut;
       this.result = result;
     }
-
   }
 
   private static class MovieRenamerTab1TableFormat extends TmmTableFormat<MovieRenamerTab1> {
@@ -274,6 +295,26 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
       addColumn(shortcut);
 
       Column result = new Column(TmmResourceBundle.getString("Result"), "result", movieRenamerTab1 -> movieRenamerTab1.result, String.class);
+      addColumn(result);
+    }
+  }
+
+  private static class RendererExample extends AbstractModelObject {
+    private final String token;
+    private final String result;
+
+    private RendererExample(String token, String result) {
+      this.token = token;
+      this.result = result;
+    }
+  }
+
+  private static class RendererExampleTableFormat extends TmmTableFormat<RendererExample> {
+    public RendererExampleTableFormat() {
+      Column title = new Column(TmmResourceBundle.getString(""), "token", example -> example.token, String.class);
+      addColumn(title);
+
+      Column result = new Column(TmmResourceBundle.getString(""), "result", example -> example.result, String.class);
       addColumn(result);
     }
   }
@@ -319,15 +360,30 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
   }
 
   private void setListeners() {
-    DocumentListener documentListener = getDocumentListener();
+    DocumentListener documentListener = new DocumentListener() {
+      @Override
+      public void removeUpdate(DocumentEvent arg0) {
+        createRenamerExample();
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent arg0) {
+        createRenamerExample();
+      }
+
+      @Override
+      public void changedUpdate(DocumentEvent arg0) {
+        createRenamerExample();
+      }
+    };
+
     ActionListener actionCreateRenamerExample = e -> createRenamerExample();
-    tfMovieTokens.getDocument().addDocumentListener(documentListener);
+    taMovieTokens.getDocument().addDocumentListener(documentListener);
     cbMovieForPreview.addActionListener(actionCreateRenamerExample);
   }
 
   private void fillEventList(Movie movie) throws IntrospectionException {
-    PropertyDescriptor[] pds;
-    pds = Introspector.getBeanInfo(Movie.class).getPropertyDescriptors();
+    PropertyDescriptor[] pds = Introspector.getBeanInfo(Movie.class).getPropertyDescriptors();
     movieRenamerTab1EventList.clear();
     for (PropertyDescriptor descriptor : pds) {
 
@@ -347,6 +403,34 @@ public class MovieTokenPreviewDialog extends TmmDialog implements HierarchyListe
 
         movieRenamerTab1EventList.add(new MovieRenamerTab1(title, shortcut, result));
       }
+    }
+  }
+
+  private void createExamples(Movie movie) {
+    rendererExampleList.clear();
+
+    // case renderers
+    rendererExampleList.add(createRendererExample("--- case renderers ---", null));
+    rendererExampleList.add(createRendererExample("${movie.title;upper}", movie));
+    rendererExampleList.add(createRendererExample("${movie.title;lower}", movie));
+    rendererExampleList.add(createRendererExample("${movie.title;first}", movie));
+
+    // array handling
+    rendererExampleList.add(createRendererExample("--- arrays ---", null));
+    rendererExampleList.add(createRendererExample("${movie.genres}", movie));
+    rendererExampleList.add(createRendererExample("${movie.genres;array}", movie));
+    rendererExampleList.add(createRendererExample("${movie.genres[0]}", movie));
+    rendererExampleList.add(createRendererExample("${movie.genres;split(0,2)}", movie));
+    rendererExampleList.add(createRendererExample("${movie.mediaInfoAudioLanguageList;uniqueArray}", movie));
+
+  }
+
+  private RendererExample createRendererExample(String token, Movie movie) {
+    if (movie == null) {
+      return new RendererExample(token, "");
+    }
+    else {
+      return new RendererExample(token, MovieRenamer.createDestination(token, movie, true));
     }
   }
 }

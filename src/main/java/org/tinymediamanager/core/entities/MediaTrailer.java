@@ -19,9 +19,11 @@ import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.AbstractModelObject;
+import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.scraper.util.StrgUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @author Manuel Laggner
  */
-public class MediaTrailer extends AbstractModelObject implements Comparable<MediaTrailer> {
+public class MediaTrailer extends AbstractModelObject implements Comparable<MediaTrailer>, IJmteDefaultValue {
   private static final Logger LOGGER    = LoggerFactory.getLogger(MediaTrailer.class);
 
   @JsonProperty
@@ -190,5 +192,10 @@ public class MediaTrailer extends AbstractModelObject implements Comparable<Medi
       }
       return quality2 - quality1;
     }
+  }
+
+  @Override
+  public String toJmteDefaultValue() {
+    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaTrailer.class);
   }
 }

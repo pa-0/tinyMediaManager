@@ -353,7 +353,7 @@ public class MovieRenamerSettingsPanel extends JPanel implements HierarchyListen
           MovieTokenPreviewDialog movieTokenPreviewDialog = new MovieTokenPreviewDialog();
           movieTokenPreviewDialog.setVisible(true);
         });
-        panelPatterns.add(btnTokenPreview,"cell 0 5");
+        panelPatterns.add(btnTokenPreview, "cell 0 5");
       }
       {
         taWarning = new ReadOnlyTextArea();
@@ -495,8 +495,7 @@ public class MovieRenamerSettingsPanel extends JPanel implements HierarchyListen
       taWarning.setVisible(false);
     }
 
-    if (cbMovieForPreview.getSelectedItem() instanceof MoviePreviewContainer) {
-      MoviePreviewContainer container = (MoviePreviewContainer) cbMovieForPreview.getSelectedItem();
+    if (cbMovieForPreview.getSelectedItem() instanceof MoviePreviewContainer container) {
       movie = container.movie;
     }
 

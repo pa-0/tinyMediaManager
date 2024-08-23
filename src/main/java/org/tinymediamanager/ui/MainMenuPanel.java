@@ -76,6 +76,7 @@ import org.tinymediamanager.ui.dialogs.LogDialog;
 import org.tinymediamanager.ui.dialogs.MessageHistoryDialog;
 import org.tinymediamanager.ui.dialogs.SettingsDialog;
 import org.tinymediamanager.ui.movies.MovieUIModule;
+import org.tinymediamanager.ui.movies.dialogs.MovieTokenPreviewDialog;
 import org.tinymediamanager.ui.thirdparty.KodiRPCMenu;
 
 import net.miginfocom.swing.MigLayout;
@@ -105,6 +106,13 @@ public class MainMenuPanel extends JPanel {
     JPanel bottomPanel = new JPanel(new MigLayout("insets 0, gapy 15lp, wrap", "[center, grow]", "[]10lp"));
     bottomPanel.setOpaque(false);
     add(bottomPanel, BorderLayout.SOUTH);
+
+    JButton btnJmteExplorer = new JButton();
+    btnJmteExplorer.addActionListener(e -> {
+      MovieTokenPreviewDialog movieTokenPreviewDialog = new MovieTokenPreviewDialog();
+      movieTokenPreviewDialog.setVisible(true);
+    });
+    bottomPanel.add(btnJmteExplorer, "growx");
 
     menuTools = buildToolsMenu();
     JButton btnTools = new ToolbarButton(IconManager.TOOLBAR_TOOLS, IconManager.TOOLBAR_TOOLS_HOVER, menuTools);

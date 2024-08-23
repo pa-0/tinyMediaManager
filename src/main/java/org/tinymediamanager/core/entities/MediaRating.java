@@ -16,6 +16,8 @@
 
 package org.tinymediamanager.core.entities;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.scraper.util.StrgUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Manuel Laggner
  */
-public class MediaRating {
+public class MediaRating implements IJmteDefaultValue {
   public static final String NFO      = "NFO";
   public static final String DEFAULT  = "default";
   public static final String USER     = "user";
@@ -178,5 +180,10 @@ public class MediaRating {
     else {
       return id.equals(other.id);
     }
+  }
+
+  @Override
+  public String toJmteDefaultValue() {
+    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaRating.class);
   }
 }
