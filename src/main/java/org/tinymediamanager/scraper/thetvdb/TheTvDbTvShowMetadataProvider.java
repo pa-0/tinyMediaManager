@@ -16,9 +16,9 @@
 package org.tinymediamanager.scraper.thetvdb;
 
 import static org.tinymediamanager.scraper.MediaMetadata.TVDB;
-import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.ABSOLUTE;
-import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.AIRED;
-import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroup.DVD;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.ABSOLUTE;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.AIRED;
+import static org.tinymediamanager.scraper.entities.MediaEpisodeGroup.EpisodeGroupType.DVD;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -101,7 +101,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
   private static final CacheMap<String, List<MediaMetadata>> EPISODE_LIST_CACHE_MAP = new CacheMap<>(600, 5);
   private static final CacheMap<String, MediaMetadata>       EPISODE_CACHE_MAP      = new CacheMap<>(600, 5);
 
-  private static final MediaEpisodeGroup                     ALTERNATE              = new MediaEpisodeGroup(MediaEpisodeGroup.EpisodeGroup.ALTERNATE);
+  private static final MediaEpisodeGroup                     ALTERNATE              = new MediaEpisodeGroup(MediaEpisodeGroup.EpisodeGroupType.ALTERNATE);
 
   @Override
   protected MediaProviderInfo createMediaProviderInfo() {
@@ -284,46 +284,51 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     }
 
     // season names/plot
-    for (SeasonBaseRecord season : show.seasons) {
-      baseTranslation = null;
+    for (SeasonBaseRecord seasonBaseRecord : show.seasons) {
+      MediaEpisodeGroup.EpisodeGroupType episodeGroupType = mapEpisodeGroup(seasonBaseRecord.type.type);
+      if (episodeGroupType != null) {
+        MediaEpisodeGroup mediaEpisodeGroup = new MediaEpisodeGroup(episodeGroupType, seasonBaseRecord.type.name);
+        md.addEpisodeGroup(mediaEpisodeGroup);
+
+        // season names/plotbaseTranslation = null;
       fallbackTranslation = null;
       try {
         Response<TranslationResponse> translationResponse = null;
-        if (fakeListToList(season.nameTranslations).contains(baseLanguage) || fakeListToList(season.overviewTranslations).contains(baseLanguage)) {
-          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(season.id, baseLanguage).execute();
+        if (fakeListToList(seasonBaseRecord.nameTranslations).contains(baseLanguage) || fakeListToList(seasonBaseRecord.overviewTranslations).contains(baseLanguage)) {
+          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(seasonBaseRecord.id, baseLanguage).execute();
           if (translationResponse.isSuccessful()) {
             baseTranslation = translationResponse.body().data;
           }
         }
         // also get fallback is either title or overview of the base translation is missing
         if ((baseTranslation == null || StringUtils.isAnyBlank(baseTranslation.name, baseTranslation.overview))
-            && (fakeListToList(season.nameTranslations).contains(fallbackLanguage)
-                || fakeListToList(season.overviewTranslations).contains(fallbackLanguage))) {
-          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(season.id, fallbackLanguage).execute();
+            && (fakeListToList(seasonBaseRecord.nameTranslations).contains(fallbackLanguage)
+                || fakeListToList(seasonBaseRecord.overviewTranslations).contains(fallbackLanguage))) {
+          translationResponse = tvdb.getSeasonsService().getSeasonTranslation(seasonBaseRecord.id, fallbackLanguage).execute();
           if (translationResponse.isSuccessful()) {
             fallbackTranslation = translationResponse.body().data;
           }
         }
         // season title
         if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.name)) {
-          md.addSeasonName(season.number, baseTranslation.name);
+          md.addSeasonName(mediaEpisodeGroup, seasonBaseRecord.number, baseTranslation.name);
         }
         else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.overview)) {
-          md.addSeasonName(season.number, fallbackTranslation.name);
+          md.addSeasonName(mediaEpisodeGroup, seasonBaseRecord.number, fallbackTranslation.name);
         }
         // season overview
         if (baseTranslation != null && StringUtils.isNotBlank(baseTranslation.overview)) {
-          md.addSeasonOverview(season.number, baseTranslation.overview);
+          md.addSeasonOverview(mediaEpisodeGroup, seasonBaseRecord.number, baseTranslation.overview);
         }
         else if (fallbackTranslation != null && StringUtils.isNotBlank(fallbackTranslation.overview)) {
-          md.addSeasonOverview(season.number, fallbackTranslation.overview);
+          md.addSeasonOverview(mediaEpisodeGroup, seasonBaseRecord.number, fallbackTranslation.overview);
         }
       }
       catch (IOException e) {
         LOGGER.error("failed to get season meta data: {}", e.getMessage());
         throw new ScrapeException(e);
       }
-
+    }
     }
 
     // episode groups
@@ -339,7 +344,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
       }
 
       if (seasonAvailable) {
-        MediaEpisodeGroup.EpisodeGroup episodeGroup = mapEpisodeGroup(seasonTypeRecord.type);
+        MediaEpisodeGroup.EpisodeGroupType episodeGroup = mapEpisodeGroup(seasonTypeRecord.type);
         if (episodeGroup != null) {
           md.addEpisodeGroup(new MediaEpisodeGroup(episodeGroup, seasonTypeRecord.name));
         }
@@ -424,7 +429,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     if (foundEpisode == null) {
       for (MediaMetadata episode : episodes) {
         MediaEpisodeNumber episodeNumber = episode.getEpisodeNumber(episodeGroup);
-        if (episodeNumber == null && episodeGroup.getEpisodeGroup() == AIRED) {
+        if (episodeNumber == null && episodeGroup.getEpisodeGroupType() == AIRED) {
           // legacy
           episodeNumber = episode.getEpisodeNumber(AIRED);
         }
@@ -1019,12 +1024,12 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     }
   }
 
-  private MediaEpisodeGroup.EpisodeGroup mapEpisodeGroup(SeasonType type) {
+  private MediaEpisodeGroup.EpisodeGroupType mapEpisodeGroup(SeasonType type) {
     return switch (type) {
-      case DEFAULT, OFFICIAL -> MediaEpisodeGroup.EpisodeGroup.AIRED;
-      case ABSOLUTE -> MediaEpisodeGroup.EpisodeGroup.ABSOLUTE;
-      case DVD -> MediaEpisodeGroup.EpisodeGroup.DVD;
-      case ALTERNATE, REGIONAL -> MediaEpisodeGroup.EpisodeGroup.ALTERNATE;
+      case DEFAULT, OFFICIAL -> MediaEpisodeGroup.EpisodeGroupType.AIRED;
+      case ABSOLUTE -> MediaEpisodeGroup.EpisodeGroupType.ABSOLUTE;
+      case DVD -> MediaEpisodeGroup.EpisodeGroupType.DVD;
+      case ALTERNATE, REGIONAL -> MediaEpisodeGroup.EpisodeGroupType.ALTERNATE;
     };
   }
 }
