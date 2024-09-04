@@ -1,25 +1,16 @@
 package org.tinymediamanager.scraper.imdb.entities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.tinymediamanager.core.entities.Person;
 import org.tinymediamanager.scraper.MediaMetadata;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+public class ImdbCast extends ImdbAll {
 
-public class ImdbCast {
-
-  public ImdbName             name                 = null;
-  public List<ImdbCharacter>  characters           = new ArrayList<>();
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<>();
+  public ImdbName            name       = null;
+  public List<ImdbCharacter> characters = new ArrayList<>();
 
   public Person toTmm(Person.Type type) {
     if (name == null || name.nameText == null || name.nameText.text.isEmpty()) {
@@ -40,14 +31,5 @@ public class ImdbCast {
 
     p.setProfileUrl("https://www.imdb.com/name/" + name.id);
     return p;
-  }
-
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
-
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }
