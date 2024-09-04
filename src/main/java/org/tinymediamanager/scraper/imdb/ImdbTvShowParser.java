@@ -56,7 +56,6 @@ import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.http.OnDiskCachedUrl;
 import org.tinymediamanager.scraper.http.Url;
 import org.tinymediamanager.scraper.imdb.entities.ImdbEpisodeList;
-import org.tinymediamanager.scraper.imdb.entities.ImdbIdValueType;
 import org.tinymediamanager.scraper.interfaces.IMediaProvider;
 import org.tinymediamanager.scraper.util.CacheMap;
 import org.tinymediamanager.scraper.util.JsonUtils;
@@ -451,73 +450,113 @@ public class ImdbTvShowParser extends ImdbParser {
 
     episodes = new ArrayList<>();
 
-    // we need to parse every season for its own _._
-    // get the page for the first season (this is available in 99,9% of all cases)
+    // NEW WORKFLOW:
+    // 1.) use dataset for getting them fast
+    ImdbDatasetUtils du = new ImdbDatasetUtils();
+    episodes.addAll(du.getEpisodesByShowId(imdbId));
 
-    Document doc;
+    // 2.) for every episode NOT already in list, just scrape the LAST season page...
+    // get episodes from show (should be already cached - fast to call again)
+    Document doc = null;
     Url url;
+    MediaMetadata show = new MediaMetadata(ImdbMetadataProvider.ID);
     try {
-      // cache this on disk because that may be called multiple times
-      url = new OnDiskCachedUrl(constructUrl("/title/", imdbId, "/episodes?season=1"), 1, TimeUnit.DAYS);
+      url = new OnDiskCachedUrl(constructUrl("/title/", imdbId), 1, TimeUnit.DAYS);
       url.addHeader("Accept-Language", getAcceptLanguage(options.getLanguage().getLanguage(), options.getCertificationCountry().getAlpha2()));
+      try (InputStream is = url.getInputStream()) {
+        doc = Jsoup.parse(is, "UTF-8", "");
+      } // recycle catch, just for try-with-resources ;)
     }
     catch (Exception e) {
       LOGGER.error("problem scraping: {}", e.getMessage());
       throw new ScrapeException(e);
     }
 
-    List<String> availableSeasons = new ArrayList<>();
-
-    try (InputStream is = url.getInputStream()) {
-      doc = Jsoup.parse(is, "UTF-8", "");
-      if (doc != null) {
-        ImdbEpisodeList epList = parseEpisodeListJSON(doc);
-        if (epList != null) {
-          // JSON parsing worked
-          episodes.addAll(epList.getEpisodes());
-          for (ImdbIdValueType season : ListUtils.nullSafe(epList.seasons)) {
-            if (!"1".equals(season.value)) {
-              availableSeasons.add(season.value);
-            }
-          }
-        }
-
-        // no results via JSON? use old style...
-        if (availableSeasons.isEmpty() || episodes.isEmpty()) {
-          parseEpisodeList(1, episodes, doc);
-          // get the other seasons out of the select option
-          Element select = doc.getElementById("bySeason");
-          if (select != null) {
-            for (Element option : select.getElementsByTag("option")) {
-              String value = option.attr("value");
-              if (StringUtils.isNotBlank(value) && !"1".equals(value)) {
-                availableSeasons.add(value);
-              }
-            }
+    // get all available seasons
+    List<Integer> availableSeasons = new ArrayList<>();
+    try {
+      parseDetailPageJson(doc, options, show);
+      availableSeasons.addAll((List<Integer>) show.getExtraData("seasons"));
+    }
+    catch (Exception e) {
+      LOGGER.error("problem parsing details page: '{}', trying fallback...", e.getMessage());
+      // parse fallback HTML
+      Element select = doc.getElementById("browse-episodes-season");
+      if (select != null) {
+        for (Element option : select.getElementsByTag("option")) {
+          String value = option.attr("value");
+          if (StringUtils.isNotBlank(value) && !"SEE_ALL".equals(value)) {
+            int s = MetadataUtil.parseInt(value, -1);
+            if (s >= 0) // does IMDB carry season 0? guess not...
+              availableSeasons.add(s);
           }
         }
       }
     }
-    catch (InterruptedException | InterruptedIOException e) {
-      // do not swallow these Exceptions
-      Thread.currentThread().interrupt();
+    Collections.sort(availableSeasons);
+    int lastSeason = -1;
+    if (availableSeasons != null && !availableSeasons.isEmpty()) {
+      lastSeason = availableSeasons.get(availableSeasons.size() - 1).intValue();
     }
-    catch (Exception e) {
-      LOGGER.error("problem scraping: {}", e.getMessage());
-      throw new ScrapeException(e);
+
+    if (lastSeason > 0) {
+      try {
+        url = new OnDiskCachedUrl(constructUrl("/title/", imdbId, "/episodes?season=" + lastSeason), 1, TimeUnit.DAYS);
+        url.addHeader("Accept-Language", getAcceptLanguage(options.getLanguage().getLanguage(), options.getCertificationCountry().getAlpha2()));
+        try (InputStream is = url.getInputStream()) {
+          doc = Jsoup.parse(is, "UTF-8", "");
+        }
+      }
+      catch (Exception e) {
+        LOGGER.error("problem scraping: {}", e.getMessage());
+        throw new ScrapeException(e);
+      }
     }
+
+    // try (InputStream is = url.getInputStream()) {
+    // doc = Jsoup.parse(is, "UTF-8", "");
+    // if (doc != null) {
+    // ImdbEpisodeList epList = parseEpisodeListJSON(doc);
+    // if (epList != null) {
+    // // JSON parsing worked
+    // episodes.addAll(epList.getEpisodes());
+    // for (ImdbIdValueType season : ListUtils.nullSafe(epList.seasons)) {
+    // if (!"1".equals(season.value)) {
+    // availableSeasons.add(season.value);
+    // }
+    // }
+    // }
+    //
+    // // no results via JSON? use old style...
+    // if (availableSeasons.isEmpty() || episodes.isEmpty()) {
+    // parseEpisodeList(1, episodes, doc);
+    // // get the other seasons out of the select option
+    // Element select = doc.getElementById("bySeason");
+    // if (select != null) {
+    // for (Element option : select.getElementsByTag("option")) {
+    // String value = option.attr("value");
+    // if (StringUtils.isNotBlank(value) && !"1".equals(value)) {
+    // availableSeasons.add(value);
+    // }
+    // }
+    // }
+    // }
+    // }
+    // }
+    // catch (InterruptedException | InterruptedIOException e) {
+    // // do not swallow these Exceptions
+    // Thread.currentThread().interrupt();
+    // }
+    // catch (Exception e) {
+    // LOGGER.error("problem scraping: {}", e.getMessage());
+    // throw new ScrapeException(e);
+    // }
 
     // then parse every season
-    for (String seasonAsString : availableSeasons) {
-      int season = MetadataUtil.parseInt(seasonAsString, -1);
-      if (season < 0) {
-        LOGGER.debug("could not parse season number - {}", seasonAsString);
-        continue;
-      }
-
+    for (int season : availableSeasons) {
       Url seasonUrl;
       try {
-        seasonUrl = new OnDiskCachedUrl(constructUrl("/title/", imdbId, "/epdate?season=" + season), 1, TimeUnit.DAYS);
+        seasonUrl = new OnDiskCachedUrl(constructUrl("/title/", imdbId, "/episodes?season=" + season), 1, TimeUnit.DAYS);
         seasonUrl.addHeader("Accept-Language", getAcceptLanguage(options.getLanguage().getLanguage(), options.getCertificationCountry().getAlpha2()));
       }
       catch (Exception e) {

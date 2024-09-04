@@ -86,6 +86,7 @@ import org.tinymediamanager.scraper.imdb.entities.ImdbPlaybackUrl;
 import org.tinymediamanager.scraper.imdb.entities.ImdbReleaseDate;
 import org.tinymediamanager.scraper.imdb.entities.ImdbSearchResult;
 import org.tinymediamanager.scraper.imdb.entities.ImdbSectionItem;
+import org.tinymediamanager.scraper.imdb.entities.ImdbShowEpisodes;
 import org.tinymediamanager.scraper.imdb.entities.ImdbTitleKeyword;
 import org.tinymediamanager.scraper.imdb.entities.ImdbTitleType;
 import org.tinymediamanager.scraper.imdb.entities.ImdbVideo;
@@ -628,7 +629,7 @@ public abstract class ImdbParser {
   private MediaSearchResult parseJsonSearchResults(ImdbSearchResult result, MediaSearchAndScrapeOptions options) {
     MediaSearchResult sr = new MediaSearchResult(ImdbMetadataProvider.ID, options.getMediaType());
 
-    sr.setIMDBId(result.getId());
+    sr.setIMDBId(result.id);
     sr.setTitle(result.titleNameText);
     String year = result.titleReleaseText;
     if (!year.isEmpty()) {
@@ -1169,6 +1170,15 @@ public abstract class ImdbParser {
       JsonNode prods = JsonUtils.at(node, "/props/pageProps/mainColumnData/production/edges");
       for (JsonNode p : ListUtils.nullSafe(prods)) {
         md.addProductionCompany(p.at("/node/company/companyText/text").asText());
+      }
+
+      // available episodes & seasons
+      JsonNode episodesNode = JsonUtils.at(node, "/props/pageProps/mainColumnData/episodes");
+      ImdbShowEpisodes eps = JsonUtils.parseObject(mapper, episodesNode, ImdbShowEpisodes.class);
+      if (eps != null) {
+        md.addExtraData("episodeCount", eps.episodes.total);
+        md.addExtraData("seasons", eps.getSeasons());
+        md.addExtraData("years", eps.getYears());
       }
     }
     catch (Exception e) {
