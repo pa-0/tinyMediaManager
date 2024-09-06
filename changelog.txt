@@ -2,10 +2,11 @@ Version 5.0.11
 =======================
 + [UI] able to sort TvShows by "dateAdded of episodes" #2677
 + [UI] added the hotkey CTRL+ENTER for direct saving/closing in the editors #2693
-x [UDS] fixed reading file creation date #2691
 x [UI] do not store the window size bigger than visible #2688
+x [MediaInfo] remove false HDR fallback detection (thx u/Casual_Tea_94) 
+x [UDS] fixed reading file creation date #2691
 x [NFO] do not write unset (-1) display episode/season tags
-x [IMDB] try second search on error
+x [IMDB] fix search, implement fallbackm error handling 
 x [MDBList] do not create empty rating entries
 x [macOS] added a fix for reading file/folder names with Umlauts #2687
 
