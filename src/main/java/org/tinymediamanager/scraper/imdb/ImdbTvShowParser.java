@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -451,12 +452,17 @@ public class ImdbTvShowParser extends ImdbParser {
     episodes = new ArrayList<>();
 
     // NEW WORKFLOW:
-    // 1.) use dataset for getting them fast
+    // 1.) use dataset for getting them fast, and also for more-than-fifty-per-season
     ImdbDatasetUtils du = new ImdbDatasetUtils();
-    episodes.addAll(du.getEpisodesByShowId(imdbId));
+    Map<String, MediaMetadata> datasetMetadata = new HashMap<>();
+    List<MediaMetadata> datasetEPs = du.getEpisodesByShowId(imdbId);
+    if (datasetEPs != null && datasetEPs.size() > 0) {
+      datasetEPs.stream().forEach(ep -> datasetMetadata.put(ep.getIdAsString(MediaMetadata.IMDB), ep));
+      datasetEPs.clear();
+    }
 
-    // 2.) for every episode NOT already in list, just scrape the LAST season page...
-    // get episodes from show (should be already cached - fast to call again)
+    // 2.) scrape every season as before
+    // get episodes from show detail page (should be already cached - fast to call again)
     Document doc = null;
     Url url;
     MediaMetadata show = new MediaMetadata(ImdbMetadataProvider.ID);
@@ -494,63 +500,6 @@ public class ImdbTvShowParser extends ImdbParser {
       }
     }
     Collections.sort(availableSeasons);
-    int lastSeason = -1;
-    if (availableSeasons != null && !availableSeasons.isEmpty()) {
-      lastSeason = availableSeasons.get(availableSeasons.size() - 1).intValue();
-    }
-
-    if (lastSeason > 0) {
-      try {
-        url = new OnDiskCachedUrl(constructUrl("/title/", imdbId, "/episodes?season=" + lastSeason), 1, TimeUnit.DAYS);
-        url.addHeader("Accept-Language", getAcceptLanguage(options.getLanguage().getLanguage(), options.getCertificationCountry().getAlpha2()));
-        try (InputStream is = url.getInputStream()) {
-          doc = Jsoup.parse(is, "UTF-8", "");
-        }
-      }
-      catch (Exception e) {
-        LOGGER.error("problem scraping: {}", e.getMessage());
-        throw new ScrapeException(e);
-      }
-    }
-
-    // try (InputStream is = url.getInputStream()) {
-    // doc = Jsoup.parse(is, "UTF-8", "");
-    // if (doc != null) {
-    // ImdbEpisodeList epList = parseEpisodeListJSON(doc);
-    // if (epList != null) {
-    // // JSON parsing worked
-    // episodes.addAll(epList.getEpisodes());
-    // for (ImdbIdValueType season : ListUtils.nullSafe(epList.seasons)) {
-    // if (!"1".equals(season.value)) {
-    // availableSeasons.add(season.value);
-    // }
-    // }
-    // }
-    //
-    // // no results via JSON? use old style...
-    // if (availableSeasons.isEmpty() || episodes.isEmpty()) {
-    // parseEpisodeList(1, episodes, doc);
-    // // get the other seasons out of the select option
-    // Element select = doc.getElementById("bySeason");
-    // if (select != null) {
-    // for (Element option : select.getElementsByTag("option")) {
-    // String value = option.attr("value");
-    // if (StringUtils.isNotBlank(value) && !"1".equals(value)) {
-    // availableSeasons.add(value);
-    // }
-    // }
-    // }
-    // }
-    // }
-    // }
-    // catch (InterruptedException | InterruptedIOException e) {
-    // // do not swallow these Exceptions
-    // Thread.currentThread().interrupt();
-    // }
-    // catch (Exception e) {
-    // LOGGER.error("problem scraping: {}", e.getMessage());
-    // throw new ScrapeException(e);
-    // }
 
     // then parse every season
     for (int season : availableSeasons) {
@@ -589,6 +538,14 @@ public class ImdbTvShowParser extends ImdbParser {
 
     // cache for further fast access
     if (!episodes.isEmpty()) {
+      // 3. since IMDB lists only first 50 EPs per season, add all the remaining ones from dataset
+      // remove all scraped EPs from dataset cache
+      for (MediaMetadata ep : episodes) {
+        datasetMetadata.remove(ep.getIdAsString(MediaMetadata.IMDB));
+      }
+      // add few remainders
+      episodes.addAll(datasetMetadata.values());
+
       EPISODE_LIST_CACHE_MAP.put(imdbId + "_" + options.getLanguage().getLanguage(), episodes);
     }
 

@@ -39,22 +39,22 @@ import org.tinymediamanager.scraper.http.Url;
  */
 public class ImdbDatasetUtils {
 
-  private static final Logger                        LOGGER                        = LoggerFactory.getLogger(ImdbDatasetUtils.class);
+  private static final Logger                LOGGER                        = LoggerFactory.getLogger(ImdbDatasetUtils.class);
 
-  static final String                                IMDB_DATASET_NAME_BASICS      = "name.basics.tsv";
-  static final String                                IMDB_DATASET_TITLE_AKAS       = "title.akas.tsv";
-  static final String                                IMDB_DATASET_TITLE_BASICS     = "title.basics.tsv";
-  static final String                                IMDB_DATASET_TITLE_CREW       = "title.crew.tsv";
-  static final String                                IMDB_DATASET_TITLE_EPISODE    = "title.episode.tsv";
-  static final String                                IMDB_DATASET_TITLE_PRINCIPALS = "title.principals.tsv";
-  static final String                                IMDB_DATASET_TITLE_RATINGS    = "title.ratings.tsv";
+  static final String                        IMDB_DATASET_NAME_BASICS      = "name.basics.tsv";
+  static final String                        IMDB_DATASET_TITLE_AKAS       = "title.akas.tsv";
+  static final String                        IMDB_DATASET_TITLE_BASICS     = "title.basics.tsv";
+  static final String                        IMDB_DATASET_TITLE_CREW       = "title.crew.tsv";
+  static final String                        IMDB_DATASET_TITLE_EPISODE    = "title.episode.tsv";
+  static final String                        IMDB_DATASET_TITLE_PRINCIPALS = "title.principals.tsv";
+  static final String                        IMDB_DATASET_TITLE_RATINGS    = "title.ratings.tsv";
 
-  private static MVStore                             mvStore;
+  private static MVStore                     mvStore;
   // map inside DB
-  private static MVMap<String, List<DatasetEpisode>> dbEpisodeMap;
-  // java map for adding/updating list of episodes per showId key
+  private static MVMap<String, List<String>> dbEpisodeMap;
+  // java shadow map for adding/updating list of episodes per showId key
   // doing that directly inside M2 map is waaay to slow...
-  private static Map<String, List<DatasetEpisode>>   javaEpisodeMap;
+  private static Map<String, List<String>>   javaEpisodeMap;
 
   static class DatasetEpisode implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -83,11 +83,11 @@ public class ImdbDatasetUtils {
     }
   }
 
-  private static boolean downloadDataset(String dataset) throws MalformedURLException {
+  private static boolean downloadDataset(String dataset, int cacheDays) throws MalformedURLException {
     LOGGER.debug("Downloading dataset {}", dataset);
     Path downloadedFile = Paths.get(Globals.CACHE_FOLDER, dataset + ".gz");
     Utils.deleteFileSafely(downloadedFile);
-    Url imdbUrl = new OnDiskCachedUrl("https://datasets.imdbws.com/" + dataset + ".gz", 90, TimeUnit.DAYS);
+    Url imdbUrl = new OnDiskCachedUrl("https://datasets.imdbws.com/" + dataset + ".gz", cacheDays, TimeUnit.DAYS);
     return imdbUrl.download(downloadedFile);
   }
 
@@ -113,12 +113,15 @@ public class ImdbDatasetUtils {
   public List<MediaMetadata> getEpisodesByShowId(String showId) {
     initMap();
     try {
-      List<DatasetEpisode> eps = dbEpisodeMap.get(showId);
-      if (eps == null) {
+      List<String> epsTsv = dbEpisodeMap.get(showId);
+      if (epsTsv == null || epsTsv.isEmpty()) {
         return Collections.emptyList();
       }
       List<MediaMetadata> ret = new ArrayList<>();
-      eps.forEach(data -> {
+      epsTsv.forEach(ep -> {
+        // EP, show, S, E
+        String[] tsv = ep.split("\t");
+        DatasetEpisode data = new DatasetEpisode(tsv[0], tsv[2], tsv[3]);
         MediaMetadata md = new MediaMetadata(MediaMetadata.IMDB);
         md.setId(MediaMetadata.IMDB, data.id);
         MediaEpisodeNumber see = new MediaEpisodeNumber(MediaEpisodeGroup.DEFAULT_AIRED, data.s, data.e);
@@ -144,17 +147,17 @@ public class ImdbDatasetUtils {
       if (!Files.exists(databaseFile) || Files.getLastModifiedTime(databaseFile).to(TimeUnit.SECONDS) < cut) {
         LOGGER.info("Preparing IMDB episode dataset...");
 
-        boolean ok = downloadDataset(IMDB_DATASET_TITLE_EPISODE);
+        boolean ok = downloadDataset(IMDB_DATASET_TITLE_EPISODE, 90);
         if (ok) {
           Path extractedFile = unpackDataset(IMDB_DATASET_TITLE_EPISODE);
 
           LOGGER.debug("Parsing dataset..."); // ~10 sec
-          javaEpisodeMap = new TreeMap<String, List<DatasetEpisode>>(); // HashMap slooow
+          javaEpisodeMap = new TreeMap<String, List<String>>(); // HashMap slooow
           try (var stream = Files.lines(extractedFile, StandardCharsets.UTF_8)) {
             stream.skip(1).forEach(line -> {
               // EP, show, S, E
               String[] data = line.split("\t");
-              javaEpisodeMap.computeIfAbsent(data[1], k -> new ArrayList<DatasetEpisode>()).add(new DatasetEpisode(data[0], data[2], data[3]));
+              javaEpisodeMap.computeIfAbsent(data[1], k -> new ArrayList<String>()).add(line);
             });
           }
           catch (Exception e) {

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * BASE class to get all unknown entries und toString() method.<br>
+ * BASE class to get all unknown entries and toString() method.<br>
  * Needs to be extended by ANY IMDB entity!
  * 
  * @author Myron Boyle
