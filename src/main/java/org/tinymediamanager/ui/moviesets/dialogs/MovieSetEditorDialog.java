@@ -635,6 +635,9 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
         return;
       }
 
+      // commit all pending changes in this dialog
+      commitChanges();
+
       movieSetToEdit.setTitle(tfName.getText());
       movieSetToEdit.setPlot(taPlot.getText());
       movieSetToEdit.setNote(taNote.getText());

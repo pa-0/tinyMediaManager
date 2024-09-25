@@ -77,7 +77,6 @@ import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.IMediaInformation;
-import org.tinymediamanager.core.ImageCache;
 import org.tinymediamanager.core.MediaFileHelper;
 import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.ScraperMetadataConfig;
@@ -1836,7 +1835,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
     // image files
     List<MediaFile> filesToCache = new ArrayList<>();
     for (MediaFile mf : getMediaFiles()) {
-      if (mf.isGraphic() && !ImageCache.isImageCached(mf.getFileAsPath())) {
+      if (mf.isGraphic()) {
         filesToCache.add(mf);
       }
     }
@@ -1848,7 +1847,7 @@ public class Movie extends MediaEntity implements IMediaInformation {
     if (MovieModuleManager.getInstance().getSettings().isWriteActorImages() && !isMultiMovieDir()) {
       // and only for normal movies - MMD should not have .actors folder!
       for (MediaFile mf : listActorFiles()) {
-        if (mf.isGraphic() && !ImageCache.isImageCached(mf.getFileAsPath())) {
+        if (mf.isGraphic()) {
           filesToCache.add(mf);
         }
       }

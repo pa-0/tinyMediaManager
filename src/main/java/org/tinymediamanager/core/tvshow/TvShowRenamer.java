@@ -167,6 +167,7 @@ public class TvShowRenamer {
     tokenMap.put("title", "episode.title");
     tokenMap.put("originalTitle", "episode.originalTitle");
     tokenMap.put("originalFilename", "episode.originalFilename");
+    tokenMap.put("originalBasename", "episode.originalBasename");
     tokenMap.put("titleSortable", "episode.titleSortable");
     tokenMap.put("year", "episode.year");
     tokenMap.put("airedDate", "episode.firstAired;date(yyyy-MM-dd)");

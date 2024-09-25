@@ -122,6 +122,7 @@ public class MovieRenamer {
     tokenMap.put("title", "movie.title");
     tokenMap.put("originalTitle", "movie.originalTitle");
     tokenMap.put("originalFilename", "movie.originalFilename");
+    tokenMap.put("originalBasename", "movie.originalBasename");
     tokenMap.put("sorttitle", "movie.sortTitle");
     tokenMap.put("year", "movie.year");
     tokenMap.put("releaseDate", "movie.releaseDate;date(yyyy-MM-dd)");

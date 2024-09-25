@@ -99,33 +99,6 @@ deploy:RELEASE:
     strategy: depend
 
 ##########################################
-# DOCKER - RELEASE
-##########################################
-deploy:DOCKER-RELEASE:
-  stage: deploy
-  image: docker:latest
-  only:
-    - main@tinyMediaManager/tinyMediaManager
-  when: manual
-  services:
-    - name: docker:dind
-  variables:
-    TMM_VERSION: "5.0.0"
-    IMAGE_NAME: tinymediamanager/tinymediamanager:${TMM_VERSION}
-  script:
-    # login
-    - docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-
-    # build
-    - cd docker
-    - docker build -f Dockerfile -t $IMAGE_NAME .
-    - docker tag $IMAGE_NAME tinymediamanager/tinymediamanager:latest
-
-    # push to the registry
-    - docker push $IMAGE_NAME
-    - docker push tinymediamanager/tinymediamanager:latest
-
-##########################################
 # TEST
 ##########################################
 deploy:test:

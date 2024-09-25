@@ -1151,6 +1151,9 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
         return;
       }
 
+      // commit all pending changes in this dialog
+      commitChanges();
+
       tvShowToEdit.setTitle(tfTitle.getText());
       tvShowToEdit.setOriginalTitle(tfOriginalTitle.getText());
       tvShowToEdit.setSortTitle(tfSorttitle.getText());

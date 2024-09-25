@@ -1,0 +1,4 @@
+sep=,${-- first line defines fixed separator char; US defaults to "," non-US to ";" }
+"Season","Episode","Title","Missing"
+${foreach tvShow.episodesForDisplay episode}${episode.season},${episode.episode},"${episode.title}",${episode.dummy}
+${end}

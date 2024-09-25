@@ -74,6 +74,7 @@ import org.tinymediamanager.updater.UpdateCheck;
 import org.tinymediamanager.updater.UpdaterTask;
 
 import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.fonts.inter.FlatInterFont;
 
 /**
  * The Class TmmUIHelper.
@@ -91,6 +92,8 @@ public class TmmUIHelper {
   public static void setLookAndFeel() {
     // load font settings
     try {
+      FlatInterFont.install();
+
       // sanity check
       Font font = Font.decode(Settings.getInstance().getFontFamily());
       Font savedFont = new Font(font.getFamily(), font.getStyle(), Settings.getInstance().getFontSize());

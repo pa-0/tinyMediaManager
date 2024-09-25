@@ -367,6 +367,15 @@ public class TvShowArtworkHelper {
       }
     }
 
+    // FFmpeg - is there has been no hit, use FFmpeg when available
+    if (sortedArtwork.isEmpty()) {
+      for (MediaArtwork art : artworkForType) {
+        if ("ffmpeg".equalsIgnoreCase(art.getProviderId())) {
+          sortedArtwork.addAll(art.getImageSizes());
+        }
+      }
+    }
+
     // should we fall back to _any_ artwork?
     if (TvShowModuleManager.getInstance().getSettings().isImageScraperFallback()) {
       for (MediaArtwork art : artworkForType) {
@@ -627,14 +636,14 @@ public class TvShowArtworkHelper {
    */
   public static void downloadSeasonArtwork(TvShowSeason tvShowSeason, MediaFileType artworkType) {
     switch (artworkType) {
-      case SEASON_POSTER -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(),
-          artworkType);
-      case SEASON_FANART -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(),
-          artworkType);
-      case SEASON_BANNER -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(),
-          artworkType);
-      case SEASON_THUMB -> downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(),
-          artworkType);
+      case SEASON_POSTER ->
+        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(), artworkType);
+      case SEASON_FANART ->
+        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(), artworkType);
+      case SEASON_BANNER ->
+        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(), artworkType);
+      case SEASON_THUMB ->
+        downloadSeasonArtwork(tvShowSeason, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(), artworkType);
     }
   }
 

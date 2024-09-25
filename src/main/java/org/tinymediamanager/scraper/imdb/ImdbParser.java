@@ -380,7 +380,7 @@ public abstract class ImdbParser {
     String language = options.getLanguage().getLanguage();
     String country = options.getCertificationCountry().getAlpha2(); // for passing the country to the scrape
 
-    searchTerm = MetadataUtil.removeNonSearchCharacters(searchTerm);
+    searchTerm = MetadataUtil.removeNonSearchCharacters(searchTerm).strip();
 
     getLogger().debug("========= BEGIN IMDB Scraper Search for: {}", searchTerm);
     Document doc = null;
@@ -388,6 +388,10 @@ public abstract class ImdbParser {
     boolean advancedSearch = false;
     if (isIncludeShortResults() || isIncludeTvMovieResults() || isIncludeVideogameResults() || isIncludeAdultResults()) {
       advancedSearch = true;
+    }
+    // if we enter just an ID as search term, this only works via basic find url!
+    if (MediaIdUtil.isValidImdbId(searchTerm)) {
+      advancedSearch = false;
     }
 
     Url advUrl;
@@ -2132,7 +2136,7 @@ public abstract class ImdbParser {
         String extension = FilenameUtils.getExtension(image);
         // https://stackoverflow.com/a/73501833
         String defaultUrl = image.replace("." + extension, "_UX" + width + "." + extension);
-        artwork.setLanguage("?"); // since we do not know which language the artwork is in, set it to a value which will never match
+        artwork.setLanguage("");
         artwork.addImageSize(width, height, defaultUrl, sizeOrder);
       }
     }

@@ -265,21 +265,25 @@ public abstract class ARDetectorTask extends TmmTask {
 
         LOGGER.trace("Multi format:      disabled");
       }
-      videoInfo.arPrimary = roundAR(videoInfo.arPrimaryRaw);
-      mediaFile.setAspectRatio(videoInfo.arPrimary);
-      LOGGER.trace("AR_Primary:        {}", String.format("%.2f", videoInfo.arPrimary));
 
-      if (videoInfo.arSecondary > 0f && ArdSettings.Mode.ACCURATE.equals(this.mode)) {
-        videoInfo.arSecondary = roundAR(videoInfo.arSecondary);
-        mediaFile.setAspectRatio2(videoInfo.arSecondary);
-        LOGGER.trace("AR_Secondary:      {}", String.format("%.2f", videoInfo.arSecondary));
+      // validation - only set AR when the width & height <= width/height from the mediafile itself
+      if (videoInfo.width <= mediaFile.getVideoWidth() && videoInfo.height <= mediaFile.getVideoHeight()) {
+        videoInfo.arPrimary = roundAR(videoInfo.arPrimaryRaw);
+        mediaFile.setAspectRatio(videoInfo.arPrimary);
+        LOGGER.trace("AR_Primary:        {}", String.format("%.2f", videoInfo.arPrimary));
+
+        if (videoInfo.arSecondary > 0f && ArdSettings.Mode.ACCURATE.equals(this.mode)) {
+          videoInfo.arSecondary = roundAR(videoInfo.arSecondary);
+          mediaFile.setAspectRatio2(videoInfo.arSecondary);
+          LOGGER.trace("AR_Secondary:      {}", String.format("%.2f", videoInfo.arSecondary));
+        }
+
+        LOGGER.info("Detected: {}x{} AR: {}{}", videoInfo.width, videoInfo.height, String.format("%.2f", videoInfo.arPrimary),
+            videoInfo.arSecondary > 0f ? (" (AR2: " + String.format("%.2f", videoInfo.arSecondary)) + ")" : "");
       }
-
-      mediaFile.setVideoHeight(videoInfo.height);
-      mediaFile.setVideoWidth(videoInfo.width);
-
-      LOGGER.info("Detected: {}x{} AR: {}{}", videoInfo.width, videoInfo.height, String.format("%.2f", videoInfo.arPrimary),
-          videoInfo.arSecondary > 0f ? (" (AR2: " + String.format("%.2f", videoInfo.arSecondary)) + ")" : "");
+      else {
+        LOGGER.debug("ARD detected a higher width/height than libmediainfo did!");
+      }
     }
     catch (Exception ex) {
       LOGGER.error("Error detecting aspect ratio", ex);

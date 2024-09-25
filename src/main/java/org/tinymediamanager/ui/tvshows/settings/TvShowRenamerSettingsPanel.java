@@ -89,7 +89,6 @@ import org.tinymediamanager.ui.components.TmmRoundTextArea;
 import org.tinymediamanager.ui.components.table.TmmTable;
 import org.tinymediamanager.ui.components.table.TmmTableFormat;
 import org.tinymediamanager.ui.components.table.TmmTableModel;
-import org.tinymediamanager.ui.movies.settings.MovieRenamerSettingsPanel;
 import org.tinymediamanager.ui.renderer.MultilineTableCellRenderer;
 import org.tinymediamanager.ui.tvshows.TvShowUIModule;
 
@@ -206,6 +205,7 @@ public class TvShowRenamerSettingsPanel extends JPanel implements HierarchyListe
     exampleEventList.add(new TvShowRenamerExample("${title}"));
     exampleEventList.add(new TvShowRenamerExample("${originalTitle}"));
     exampleEventList.add(new TvShowRenamerExample("${originalFilename}"));
+    exampleEventList.add(new TvShowRenamerExample("${originalBasename}"));
     exampleEventList.add(new TvShowRenamerExample("${titleSortable}"));
     exampleEventList.add(new TvShowRenamerExample("${seasonNr}"));
     exampleEventList.add(new TvShowRenamerExample("${seasonNr2}"));

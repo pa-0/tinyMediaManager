@@ -725,6 +725,7 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
   protected void addTinyMediaManagerTags(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
     root.appendChild(document.createComment("tinyMediaManager meta data"));
     addSource(episode, parser);
+    addEdition(episode, parser);
     addOriginalFilename(episode, parser);
     addUserNote(episode, parser);
     addEpisodeGroups(episode, parser);
@@ -737,6 +738,15 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
     Element source = document.createElement("source");
     source.setTextContent(episode.getMediaSource().name());
     root.appendChild(source);
+  }
+
+  /**
+   * add the edition in <edition>xxx</edition>
+   */
+  protected void addEdition(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
+    Element edition = document.createElement("edition");
+    edition.setTextContent(episode.getEdition().name());
+    root.appendChild(edition);
   }
 
   /**

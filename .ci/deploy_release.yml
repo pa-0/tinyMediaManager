@@ -5,7 +5,7 @@ stages:
 variables:
   MAVEN_CLI_OPTS: "-s .ci/settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-  TMM_VERSION: "5.0.11"
+  TMM_VERSION: "5.0.12"
 
 build:
   stage: build

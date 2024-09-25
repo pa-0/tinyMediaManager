@@ -238,7 +238,8 @@ public class MovieSetExporter extends MediaEntityExporter {
           try {
             filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
 
@@ -360,7 +361,8 @@ public class MovieSetExporter extends MediaEntityExporter {
           try {
             filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
 

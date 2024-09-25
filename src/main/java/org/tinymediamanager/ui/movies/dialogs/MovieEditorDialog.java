@@ -1289,6 +1289,9 @@ public class MovieEditorDialog extends AbstractEditorDialog {
         return;
       }
 
+      // commit all pending changes in this dialog
+      commitChanges();
+
       movieToEdit.setTitle(tfTitle.getText());
       movieToEdit.setOriginalTitle(tfOriginalTitle.getText());
       movieToEdit.setTagline(tfTagline.getText());

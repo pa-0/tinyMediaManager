@@ -350,6 +350,10 @@ public abstract class MediaEntity extends AbstractModelObject implements IPrinta
     return this.originalFilename;
   }
 
+  public String getOriginalBasename() {
+    return FilenameUtils.getBaseName(this.originalFilename);
+  }
+
   /**
    * @return filesystem path or NULL
    */

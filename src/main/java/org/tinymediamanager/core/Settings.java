@@ -108,7 +108,7 @@ public final class Settings extends AbstractSettings {
 
   private String                                           theme                        = "Light";
   private int                                              fontSize                     = 12;
-  private String                                           fontFamily                   = "Dialog";
+  private String                                           fontFamily                   = "Inter";
 
   private boolean                                          imageChooserUseEntityFolder  = false;
   private boolean                                          storeWindowPreferences       = true;

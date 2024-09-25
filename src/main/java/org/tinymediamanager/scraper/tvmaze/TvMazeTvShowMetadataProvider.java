@@ -118,7 +118,9 @@ public class TvMazeTvShowMetadataProvider extends TvMazeMetadataProvider impleme
       md.addGenre(genre);
     }
 
-    md.setPlot(Jsoup.parse(show.summary).text());
+    if (StringUtils.isNotBlank(show.summary)) {
+      md.setPlot(Jsoup.parse(show.summary).text());
+    }
     md.setOriginalLanguage(show.language);
 
     MediaRating rating = new MediaRating(MediaMetadata.TVMAZE);
@@ -187,7 +189,9 @@ public class TvMazeTvShowMetadataProvider extends TvMazeMetadataProvider impleme
     // found the correct episode
     md.setId(MediaMetadata.TVMAZE, episode.id);
     md.setTitle(episode.name);
-    md.setPlot(Jsoup.parse(episode.summary).text());
+    if (StringUtils.isNotBlank(episode.summary)) {
+      md.setPlot(Jsoup.parse(episode.summary).text());
+    }
     md.setEpisodeNumber(MediaEpisodeGroup.DEFAULT_AIRED, episode.season, episode.episode);
     md.setRuntime(episode.runtime);
     try {
@@ -342,7 +346,9 @@ public class TvMazeTvShowMetadataProvider extends TvMazeMetadataProvider impleme
 
       // found the correct episode
       md.setTitle(episode.name);
-      md.setPlot(Jsoup.parse(episode.summary).text());
+      if (StringUtils.isNotBlank(episode.summary)) {
+        md.setPlot(Jsoup.parse(episode.summary).text());
+      }
       md.setEpisodeNumber(MediaEpisodeGroup.DEFAULT_AIRED, episode.season, episode.episode);
       md.setRuntime(episode.runtime);
       try {

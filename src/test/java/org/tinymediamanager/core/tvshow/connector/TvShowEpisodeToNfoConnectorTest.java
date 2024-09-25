@@ -36,8 +36,10 @@ import org.tinymediamanager.core.entities.MediaFileAudioStream;
 import org.tinymediamanager.core.entities.MediaFileSubtitle;
 import org.tinymediamanager.core.entities.MediaGenres;
 import org.tinymediamanager.core.entities.MediaRating;
+import org.tinymediamanager.core.entities.MediaSource;
 import org.tinymediamanager.core.entities.Person;
 import org.tinymediamanager.core.tvshow.BasicTvShowTest;
+import org.tinymediamanager.core.tvshow.TvShowEpisodeEdition;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
@@ -165,6 +167,8 @@ public class TvShowEpisodeToNfoConnectorTest extends BasicTvShowTest {
       assertThat(newEpisode.getArtworkUrl(MediaFileType.THUMB)).isEqualTo(episode.getArtworkUrl(MediaFileType.THUMB));
       assertThat(newEpisode.isWatched()).isEqualTo(episode.isWatched());
       assertThat(newEpisode.getFirstAired()).isEqualTo(episode.getFirstAired());
+      assertThat(newEpisode.getMediaSource()).isEqualTo(episode.getMediaSource());
+      assertThat(newEpisode.getEdition()).isEqualTo(episode.getEdition());
       assertThat(newEpisode.getTags()).isEqualTo(episode.getTags());
 
       // since we do not write show actors to the episodes, we need to adopt this test
@@ -195,6 +199,9 @@ public class TvShowEpisodeToNfoConnectorTest extends BasicTvShowTest {
     episode1.setRating(new MediaRating(MediaRating.NFO, 9.0f, 8));
     episode1.setArtworkUrl("http://thumb1", MediaFileType.THUMB);
     episode1.setWatched(true);
+
+    episode1.setMediaSource(MediaSource.BLURAY);
+    episode1.setEdition(TvShowEpisodeEdition.DIRECTORS_CUT);
 
     episode1.addToTags(Collections.singletonList("Pilot"));
 

@@ -51,6 +51,7 @@ import org.tinymediamanager.core.entities.MediaGenres;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.entities.MediaSource;
 import org.tinymediamanager.core.movie.MovieHelpers;
+import org.tinymediamanager.core.tvshow.TvShowEpisodeEdition;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.entities.MediaCertification;
@@ -189,6 +190,7 @@ public class TvShowEpisodeNfoParser {
     public boolean                    watched             = false;
     public int                        playcount           = 0;
     public MediaSource                source              = MediaSource.UNKNOWN;
+    public TvShowEpisodeEdition       edition             = TvShowEpisodeEdition.NONE;
     public String                     userNote            = "";
     public String                     originalFileName    = "";
 
@@ -259,6 +261,7 @@ public class TvShowEpisodeNfoParser {
       parseTag(Episode::parseActors);
       parseTag(Episode::parseFileinfo);
       parseTag(Episode::parseSource);
+      parseTag(Episode::parseEdition);
       parseTag(Episode::parseTrailer);
 
       parseTag(Episode::parseEpbookmark);
@@ -1390,6 +1393,20 @@ public class TvShowEpisodeNfoParser {
       return null;
     }
 
+    /**
+     * the edition is usually in the edition tag
+     */
+    private Void parseEdition() {
+      supportedElements.add("edition");
+
+      Element element = getSingleElement(root, "edition");
+      if (element != null && StringUtils.isNotBlank(element.ownText())) {
+        edition = TvShowEpisodeEdition.getTvShowEpisodeEditionStrict(element.ownText());
+      }
+
+      return null;
+    }
+
     private Void parseOriginalFilename() {
       supportedElements.add("original_filename");
 
@@ -1645,6 +1662,7 @@ public class TvShowEpisodeNfoParser {
       episode.setPlaycount(playcount);
       episode.setLastWatched(lastplayed);
       episode.setMediaSource(source);
+      episode.setEdition(edition);
 
       List<org.tinymediamanager.core.entities.Person> newActors = new ArrayList<>();
       for (Person actor : actors) {

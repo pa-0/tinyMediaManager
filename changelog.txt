@@ -1,3 +1,20 @@
+Version 5.0.12
+=======================
++ [TV shows] added editions for episodes #2674
++ [TV shows] added a new CSV export template for TV shows
++ [UI] added new font Inter (default for new installations)
++ [Renamer] added the token ${originalBasename} to get the original filename w/o extension
+x [Movies] fixed rebuilding the image cache #2704
+x [TV shows] do not trigger automatic renaming when only download missing episodes
+x [UI] re-designed filter dialogs to avoid resizing problems
+x [UI] trigger updates from spinner when closing via hotkeys #2705
+x [IMDB] fix searching for IDs in some cases (thx u/Baltic-Fan)
+x [IMDB] fix language detection for artwork downloading (thx Noah)
+x [TVMAZE] better error handling on empty responses (thx u/No_Poem7057)
+x [FFmpeg] use FFmpeg generated thumb without checking for language/resolution
+x [ARD] do not set incorrect video width/height from aspect ratio detection (detected via FFmpeg)
+
+
 Version 5.0.11
 =======================
 + [UI] able to sort TvShows by "dateAdded of episodes" #2677
@@ -6,7 +23,7 @@ x [UI] do not store the window size bigger than visible #2688
 x [MediaInfo] remove false HDR fallback detection (thx u/Casual_Tea_94) 
 x [UDS] fixed reading file creation date #2691
 x [NFO] do not write unset (-1) display episode/season tags
-x [IMDB] fix search, implement fallbackm error handling 
+x [IMDB] fix search, implement fallback error handling
 x [MDBList] do not create empty rating entries
 x [macOS] added a fix for reading file/folder names with Umlauts #2687
 

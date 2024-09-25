@@ -1043,6 +1043,15 @@ public class MovieArtworkHelper {
       }
     }
 
+    // FFmpeg - is there has been no hit, use FFmpeg when available
+    if (sortedArtwork.isEmpty()) {
+      for (MediaArtwork art : artworkForType) {
+        if ("ffmpeg".equalsIgnoreCase(art.getProviderId())) {
+          sortedArtwork.addAll(art.getImageSizes());
+        }
+      }
+    }
+
     // should we fall back to _any_ artwork?
     if (MovieModuleManager.getInstance().getSettings().isImageScraperFallback()) {
       for (MediaArtwork art : artworkForType) {

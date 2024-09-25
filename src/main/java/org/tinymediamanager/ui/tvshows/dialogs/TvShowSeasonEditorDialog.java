@@ -425,6 +425,9 @@ public class TvShowSeasonEditorDialog extends AbstractEditorDialog {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+      // commit all pending changes in this dialog
+      commitChanges();
+
       tvShowSeasonToEdit.setTitle(tfTitle.getText());
       tvShowSeasonToEdit.setPlot(taPlot.getText());
 

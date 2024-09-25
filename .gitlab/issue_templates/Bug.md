@@ -1,6 +1,6 @@
 ## What tinyMediaManager version are you using?  
 (if not automatically attached at end)  
-Version 4.xxx  release (or nightly/prerelease)
+Version 5.xxx  release (or nightly/prerelease)
 
 
 ## What is the actual behavior?
