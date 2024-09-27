@@ -742,7 +742,12 @@ public class ImageChooserDialog extends TmmDialog {
       }
       if (result == 0) {
         // last resort
-        result = artwork2.getBiggestArtwork().compareTo(artwork1.getBiggestArtwork());
+        if (artwork1.getBiggestArtwork() == null || artwork2.getBiggestArtwork() == null) {
+          result = 0; // cannot compare!
+        }
+        else {
+          result = artwork2.getBiggestArtwork().compareTo(artwork1.getBiggestArtwork());
+        }
       }
 
       return result;

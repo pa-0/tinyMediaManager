@@ -18,14 +18,12 @@ package org.tinymediamanager.scraper.tvmaze.service;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.tinymediamanager.scraper.http.TmmHttpClient;
-import org.tinymediamanager.scraper.tvmaze.entities.Cast;
 import org.tinymediamanager.scraper.tvmaze.entities.Episode;
-import org.tinymediamanager.scraper.tvmaze.entities.Image;
-import org.tinymediamanager.scraper.tvmaze.entities.Season;
+import org.tinymediamanager.scraper.tvmaze.entities.SearchResult;
 import org.tinymediamanager.scraper.tvmaze.entities.Show;
-import org.tinymediamanager.scraper.tvmaze.entities.Shows;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -48,7 +46,7 @@ public class Controller {
    */
   public Controller(String apiKey) {
     this.apiKey = apiKey;
-    OkHttpClient.Builder builder = TmmHttpClient.newBuilder();
+    OkHttpClient.Builder builder = TmmHttpClient.newBuilderWithForcedCache(15, TimeUnit.MINUTES);
     retrofit = buildRetrofitInstance(builder.build());
   }
 
@@ -87,32 +85,23 @@ public class Controller {
     return retrofit.create(TvMazeService.class);
   }
 
-  public List<Shows> getTvShowSearchResults(String query) throws IOException {
+  public List<SearchResult> getTvShowSearchResults(String query) throws IOException {
     return getService().showSearch(query).execute().body();
   }
 
-  public Show getMainInformation(int id) throws IOException {
-    return getService().show_main_information(id).execute().body();
+  public Show getMainInformation(int showId) throws IOException {
+    return getService().show_main_information(showId).execute().body();
   }
 
-  public List<Season> getSeasons(int id) throws IOException {
-    return getService().seasonList(id).execute().body();
+  public Show getAlternativeLists(int showId) throws IOException {
+    return getService().alternativeLists(showId).execute().body();
   }
 
-  public List<Episode> getEpisodes(int id) throws IOException {
-    return getService().episodeList(id).execute().body();
+  public List<Episode> getEpisodes(int showId) throws IOException {
+    return getService().episodeList(showId).execute().body();
   }
 
-  public Episode getEpisode(int showId, int seasonNr, int episodeNr) throws Exception {
-    return getService().episode(showId, seasonNr, episodeNr).execute().body();
+  public List<Episode> getSeasonEpisodes(int seasonId) throws IOException {
+    return getService().seasonEpisodes(seasonId).execute().body();
   }
-
-  public List<Image> getImages(int id) throws IOException {
-    return getService().imagesList(id).execute().body();
-  }
-
-  public List<Cast> getCast(int id) throws IOException {
-    return getService().castList(id).execute().body();
-  }
-
 }

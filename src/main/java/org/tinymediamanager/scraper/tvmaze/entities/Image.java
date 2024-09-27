@@ -15,40 +15,20 @@
  */
 package org.tinymediamanager.scraper.tvmaze.entities;
 
-import com.google.gson.annotations.SerializedName;
-
 public class Image {
-  @SerializedName("id")
   public int         id;
-  @SerializedName("type")
   public String      type;
-  @SerializedName("resolutions")
+  boolean            main = false;
   public Resolutions resolutions;
 
   public static class Resolutions {
-
-    @SerializedName("original")
-    public Original original;
-    @SerializedName("medium")
-    public Medium   medium;
-
+    public Resolution original;
+    public Resolution medium;
   }
 
-  public static class Original {
-    @SerializedName("url")
+  public static class Resolution {
     public String url;
-    @SerializedName("width")
     public int    width;
-    @SerializedName("height")
-    public int    height;
-  }
-
-  public static class Medium {
-    @SerializedName("url")
-    public String url;
-    @SerializedName("width")
-    public int    width;
-    @SerializedName("height")
     public int    height;
   }
 }

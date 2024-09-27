@@ -15,16 +15,7 @@
  */
 package org.tinymediamanager.scraper.tvmaze.entities;
 
-public class Season {
-  public int       id;
-  public String    url;
-  public int       number;
-  public String    name;
-  public int       episodeOrder;
-  public String    premiereDate;
-  public String    endDate;
-  public Network   network;
-  public ImageUrls image;
-  public String    summary;
-  public Embed     _embedded;
+public class Crew {
+  public String type;
+  public Person person;
 }

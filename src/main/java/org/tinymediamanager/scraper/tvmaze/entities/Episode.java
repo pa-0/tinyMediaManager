@@ -15,28 +15,18 @@
  */
 package org.tinymediamanager.scraper.tvmaze.entities;
 
-import com.google.gson.annotations.SerializedName;
-
 public class Episode {
-  @SerializedName("id")
-  public int    id;
-  @SerializedName("url")
-  public String url;
-  @SerializedName("name")
-  public String name;
-  @SerializedName("season")
-  public int    season;
-  @SerializedName("number")
-  public int    episode;
-  @SerializedName("airdate")
-  public String airdate;
-  @SerializedName("airtime")
-  public String airtime;
-  @SerializedName("airstamp")
-  public String airstamp;
-  @SerializedName("runtime")
-  public int    runtime;
-  @SerializedName("summary")
-  public String summary;
-
+  public int       id;
+  public String    url;
+  public String    name;
+  public int       season;
+  public int       number;
+  public String    type;
+  public String    airdate;
+  public String    airtime;
+  public String    airstamp;
+  public int       runtime;
+  public ImageUrls image;
+  public String    summary;
+  public Embed     _embedded;
 }

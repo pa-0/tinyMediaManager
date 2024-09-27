@@ -401,7 +401,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     // new style
     if (options.getIds().get(MediaMetadata.EPISODE_NR) instanceof List<?> episodeNumbers) {
       for (Object obj : episodeNumbers) {
-        if (obj instanceof MediaEpisodeNumber episodeNumber && episodeNumber.episodeGroup() == episodeGroup) {
+        if (obj instanceof MediaEpisodeNumber episodeNumber && episodeNumber.episodeGroup().equals(episodeGroup)) {
           episodeNr = episodeNumber.episode();
           seasonNr = episodeNumber.season();
           break;
