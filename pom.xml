@@ -340,7 +340,7 @@
         <dependency>
             <groupId>org.tinymediamanager</groupId>
             <artifactId>yt</artifactId>
-            <version>3.0.2-tmm10</version>
+            <version>3.2.4-tmm1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

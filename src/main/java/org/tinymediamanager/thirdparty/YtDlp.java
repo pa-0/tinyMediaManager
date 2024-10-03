@@ -44,8 +44,8 @@ public class YtDlp {
    *
    * @param url
    *          the url to the trailer
-   * @param width
-   *          the desired with
+   * @param height
+   *          the desired height
    * @param trailerFile
    *          the path to the trailer file which should be written (without extension)
    * @throws IOException
@@ -53,8 +53,8 @@ public class YtDlp {
    * @throws InterruptedException
    *           being thrown if the thread has been interrupted
    */
-  public static void downloadTrailer(String url, int width, Path trailerFile) throws IOException, InterruptedException {
-    executeCommand(createCommandForDownload(url, width, trailerFile));
+  public static void downloadTrailer(String url, int height, Path trailerFile) throws IOException, InterruptedException {
+    executeCommand(createCommandForDownload(url, height, trailerFile));
   }
 
   /**
@@ -62,14 +62,14 @@ public class YtDlp {
    *
    * @param url
    *          the url to the trailer
-   * @param width
-   *          the desired with
+   * @param height
+   *          the desired height
    * @param trailerFile
    *          the path to the trailer file which should be written (without extension)
    * @throws IOException
    *           any {@link IOException} occurred
    */
-  private static List<String> createCommandForDownload(String url, int width, Path trailerFile) throws IOException {
+  private static List<String> createCommandForDownload(String url, int height, Path trailerFile) throws IOException {
     List<String> cmdList = new ArrayList<>();
     cmdList.add(getYtDlpExecutable());
 
@@ -81,9 +81,9 @@ public class YtDlp {
     cmdList.add("-f");
     cmdList.add("bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b");
 
-    if (width > 0) {
+    if (height > 0) {
       cmdList.add("-S");
-      cmdList.add("res:" + width);
+      cmdList.add("res:" + height);
     }
 
     cmdList.add("--concurrent-fragments");
