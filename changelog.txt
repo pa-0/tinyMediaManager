@@ -8,13 +8,15 @@ x [TV shows] do not trigger automatic renaming when only download missing episod
 x [UI] re-designed filter dialogs to avoid resizing problems
 x [UI] trigger updates from spinner when closing via hotkeys #2705
 x [UI] force repaint of the media logos when changing values #2719
+x [UI] display un-/not rated in camel case
 x [IMDB] fix searching for IDs in some cases (thx u/Baltic-Fan)
 x [IMDB] fix language detection for artwork downloading (thx Noah)
 x [TVDB] fixed links to the actor profile for episode guests #2715
-x [TVMAZE] better error handling on empty responses (thx u/No_Poem7057)
-x [TVMAZE] complete rework of the scraper
+x [TVmaze] better error handling on empty responses (thx u/No_Poem7057)
+x [TVmaze] complete rework of the scraper
 x [Trailer] added 2160p trailer format #2708
 x [Trailer] improved download algorithm for YT #2708
+x [Trailer] fixed execution command of yt-dlp
 x [FFmpeg] use FFmpeg generated thumb without checking for language/resolution
 x [ARD] do not set incorrect video width/height from aspect ratio detection (detected via FFmpeg)
 
