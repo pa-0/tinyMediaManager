@@ -28,6 +28,7 @@ public class MovieSettingsNode extends TmmSettingsNode {
 
   public MovieSettingsNode() {
     super(TmmResourceBundle.getString("Settings.movies"), new MovieSettingsPanel());
+    setBoldText(true);
 
     addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.ui"), new MovieUiSettingsPanel()));
     addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.source"), new MovieDatasourceSettingsPanel()));
@@ -44,8 +45,16 @@ public class MovieSettingsNode extends TmmSettingsNode {
     imageSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.extraartwork"), new MovieImageExtraPanel()));
     addChild(imageSettingsNode);
 
-    addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.trailer"), new MovieTrailerSettingsPanel()));
-    addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.subtitle"), new MovieSubtitleSettingsPanel()));
+    TmmSettingsNode trailerSettingsNode = new TmmSettingsNode(TmmResourceBundle.getString("Settings.trailer"), new MovieTrailerSettingsPanel());
+    trailerSettingsNode
+        .addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.scraper.options"), new MovieTrailerOptionsSettingsPanel()));
+    addChild(trailerSettingsNode);
+
+    TmmSettingsNode subtitleSettingsNode = new TmmSettingsNode(TmmResourceBundle.getString("Settings.subtitle"), new MovieSubtitleSettingsPanel());
+    subtitleSettingsNode
+        .addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.scraper.options"), new MovieSubtitleOptionsSettingsPanel()));
+    addChild(subtitleSettingsNode);
+
     addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.renamer"), new MovieRenamerSettingsPanel()));
     addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.postprocessing"), new MoviePostProcessingSettingsPanel()));
   }

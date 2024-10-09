@@ -184,7 +184,14 @@ public class TmmUILayoutStore {
     long coveredArea = 0;
 
     for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-      coveredArea += square(device.getDefaultConfiguration().getBounds().intersection(rect));
+      Rectangle screenBounds = device.getDefaultConfiguration().getBounds();
+      Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(device.getDefaultConfiguration());
+      screenBounds.x += screenInsets.left;
+      screenBounds.y += screenInsets.top;
+      screenBounds.width = screenBounds.width - screenInsets.left - screenInsets.right;
+      screenBounds.height = screenBounds.height - screenInsets.top - screenInsets.bottom;
+
+      coveredArea += square(screenBounds.intersection(rect));
 
       if (coveredArea >= rectArea) {
         return true;
@@ -284,12 +291,11 @@ public class TmmUILayoutStore {
     if ("mainWindow".equals(frame.getName()) && frame instanceof MainWindow) {
 
       // if the frame is maximized, we simply take the screen coordinates
+      storeWindowBounds("mainWindow", frame.getBounds());
       if ((frame.getExtendedState() & MAXIMIZED_BOTH) == MAXIMIZED_BOTH) {
-        storeWindowBounds("mainWindow", frame.getGraphicsConfiguration().getBounds());
         addParam("mainWindowMaximized", true);
       }
       else {
-        storeWindowBounds("mainWindow", frame.getBounds());
         addParam("mainWindowMaximized", false);
       }
     }

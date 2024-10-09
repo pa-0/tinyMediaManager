@@ -547,33 +547,37 @@ public class TvShowEpisodeAndSeasonParser {
       int s = -1;
       try {
         // for the case of name.1x02x03.ext
-        if (m.group(2) != null && result.season == -1) {
-          s = Integer.parseInt(m.group(1));
+        s = Integer.parseInt(m.group(1));
+        if (m.group(2) != null && result.season < 0) {
+          result.season = s;
+          LOGGER.trace("add found season '{}", s);
         }
-        String eps = m.group(2); // name.s01"ep02-02-04".ext
-        // now we have a string of 1-N episodes - parse them
-        Pattern regex2 = EPISODE_PATTERN; // episode fixed to 1-2 chars
-        Matcher m2 = regex2.matcher(eps);
-        while (m2.find()) {
-          int ep = 0;
-          try {
-            ep = Integer.parseInt(m2.group(1));
+        // multiSE pattern MUST have always same (first) season - mixing not possible!
+        if (result.season == s) {
+          String eps = m.group(2); // name.s01"ep02-02-04".ext
+          // now we have a string of 1-N episodes - parse them
+          Pattern regex2 = EPISODE_PATTERN; // episode fixed to 1-2 chars
+          Matcher m2 = regex2.matcher(eps);
+          while (m2.find()) {
+            int ep = 0;
+            try {
+              ep = Integer.parseInt(m2.group(1));
+            }
+            catch (NumberFormatException nfe) {
+              // can not happen from regex since we only come here with max 2 numeric chars
+            }
+            if (ep > 0 && !result.episodes.contains(ep)) {
+              result.episodes.add(ep);
+              LOGGER.trace("add found EP '{}'", ep);
+            }
           }
-          catch (NumberFormatException nfe) {
-            // can not happen from regex since we only come here with max 2 numeric chars
-          }
-          if (ep > 0 && !result.episodes.contains(ep)) {
-            result.episodes.add(ep);
-            LOGGER.trace("add found EP '{}'", ep);
-          }
+        }
+        else {
+          LOGGER.trace("also found season {}, but we already have a season {} - ignoring", s, result.season);
         }
       }
       catch (NumberFormatException nfe) {
         // can not happen from regex since we only come here with max 2 numeric chars
-      }
-      if (s >= 0) {
-        result.season = s;
-        LOGGER.trace("add found season '{}'", s);
       }
     }
     return result;
@@ -589,31 +593,38 @@ public class TvShowEpisodeAndSeasonParser {
       int s = -1;
       try {
         s = Integer.parseInt(m.group(1));
-        String eps = m.group(2); // name.s01"ep02-02-04".ext
-        // now we have a string of 1-N episodes - parse them
-        Pattern regex2 = EPISODE_PATTERN; // episode fixed to 1-2 chars
-        Matcher m2 = regex2.matcher(eps);
-        while (m2.find()) {
-          int ep = -1;
-          try {
-            ep = Integer.parseInt(m2.group(1));
+        if (result.season < 0) {
+          result.season = s;
+          LOGGER.trace("add found season '{}", s);
+        }
+
+        // multiSE pattern MUST have always same (first) season - mixing not possible!
+        if (result.season == s) {
+          String eps = m.group(2); // name.s01"ep02-02-04".ext
+          // now we have a string of 1-N episodes - parse them
+          Pattern regex2 = EPISODE_PATTERN; // episode fixed to 1-2 chars
+          Matcher m2 = regex2.matcher(eps);
+          while (m2.find()) {
+            int ep = -1;
+            try {
+              ep = Integer.parseInt(m2.group(1));
+            }
+            catch (NumberFormatException nfe) {
+              // can not happen from regex since we only come here with max 2 numeric chars
+            }
+            // check if the found episode is not -1 (0 allowed!), not already in the list and if multi episode
+            if (ep > -1 && !result.episodes.contains(ep)) {
+              result.episodes.add(ep);
+              LOGGER.trace("add found EP '{}'", ep);
+            }
           }
-          catch (NumberFormatException nfe) {
-            // can not happen from regex since we only come here with max 2 numeric chars
-          }
-          // check if the found episode is not -1 (0 allowed!), not already in the list and if multi episode
-          if (ep > -1 && !result.episodes.contains(ep)) {
-            result.episodes.add(ep);
-            LOGGER.trace("add found EP '{}'", ep);
-          }
+        }
+        else {
+          LOGGER.trace("also found season {}, but we already have a season {} - ignoring", s, result.season);
         }
       }
       catch (NumberFormatException nfe) {
         // can not happen from regex since we only come here with max 2 numeric chars
-      }
-      if (s >= 0) {
-        result.season = s;
-        LOGGER.trace("add found season '{}", s);
       }
     }
     return result;

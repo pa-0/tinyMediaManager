@@ -59,7 +59,6 @@ class MovieScraperOptionsSettingsPanel extends JPanel {
   private final MovieSettings       settings = MovieModuleManager.getInstance().getSettings();
 
   private JSlider                   sliderThreshold;
-  private JCheckBox                 chckbxAutomaticallyScrapeImages;
   private JComboBox<MediaLanguages> cbScraperLanguage;
   private JComboBox<CountryCode>    cbCertificationCountry;
   private JComboBox<CountryItem>    cbReleaseCountry;
@@ -99,7 +98,7 @@ class MovieScraperOptionsSettingsPanel extends JPanel {
   }
 
   private void initComponents() {
-    setLayout(new MigLayout("", "[700lp,grow]", "[][]15lp![][15lp!][][15lp!][]"));
+    setLayout(new MigLayout("", "[700lp,grow]", "[][]15lp![][15lp!][]"));
     {
       JPanel panelOptions = new JPanel();
       panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][10lp!][][][]")); // 16lp ~ width of the
@@ -157,25 +156,12 @@ class MovieScraperOptionsSettingsPanel extends JPanel {
       panelDefaults.add(chckbxDoNotOverwrite, "cell 1 1 2 1");
     }
     {
-      JPanel panelImages = new JPanel();
-      panelImages.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
-
-      JLabel lblImagesT = new TmmLabel(TmmResourceBundle.getString("Settings.images"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelImages, lblImagesT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/movies/settings#images"));
-      add(collapsiblePanel, "cell 0 4,growx,wmin 0");
-      {
-        chckbxAutomaticallyScrapeImages = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape"));
-        panelImages.add(chckbxAutomaticallyScrapeImages, "cell 1 0 2 1");
-      }
-    }
-    {
       JPanel panelAutomaticScrape = new JPanel(new MigLayout("hidemode 1, insets 0", "[20lp!][][300lp][grow]", ""));
 
       JLabel lblAutomaticScrapeT = new TmmLabel(TmmResourceBundle.getString("Settings.automaticscraper"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelAutomaticScrape, lblAutomaticScrapeT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/movies/settings#automatic-scraper"));
-      add(collapsiblePanel, "cell 0 6,growx,wmin 0");
+      add(collapsiblePanel, "cell 0 4,growx,wmin 0");
       {
         JLabel lblScraperThreshold = new JLabel(TmmResourceBundle.getString("Settings.scraperTreshold"));
         panelAutomaticScrape.add(lblScraperThreshold, "cell 1 0,aligny top");
@@ -209,12 +195,6 @@ class MovieScraperOptionsSettingsPanel extends JPanel {
   }
 
   protected void initDataBindings() {
-    Property settingsBeanProperty = BeanProperty.create("scrapeBestImage");
-    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, settingsBeanProperty, chckbxAutomaticallyScrapeImages,
-        jCheckBoxBeanProperty);
-    autoBinding.bind();
-    //
     Property settingsBeanProperty_8 = BeanProperty.create("scraperLanguage");
     Property jComboBoxBeanProperty = BeanProperty.create("selectedItem");
     AutoBinding autoBinding_7 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, settingsBeanProperty_8, cbScraperLanguage,
@@ -239,6 +219,7 @@ class MovieScraperOptionsSettingsPanel extends JPanel {
     autoBinding_2.bind();
     //
     Property movieSettingsBeanProperty = BeanProperty.create("doNotOverwriteExistingData");
+    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
     AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty, chckbxDoNotOverwrite,
         jCheckBoxBeanProperty);
     autoBinding_3.bind();

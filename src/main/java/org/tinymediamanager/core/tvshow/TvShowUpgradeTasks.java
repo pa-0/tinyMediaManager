@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2020 Manuel Laggner
+ * Copyright 2012 - 2024 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,6 +232,23 @@ public class TvShowUpgradeTasks extends UpgradeTasks {
         }
       }
       module.setDbVersion(5006);
+    }
+
+    // fix ratings
+    // we already did this for 5004, but we need to do this again to remove empty values
+    if (module.getDbVersion() < 5007) {
+      LOGGER.info("performing upgrade to ver: {}", 5007);
+      for (TvShow tvShow : tvShowList.getTvShows()) {
+        for (TvShowEpisode episode : tvShow.getEpisodes()) {
+          if (fixRatings(episode)) {
+            registerForSaving(episode);
+          }
+        }
+        if (fixRatings(tvShow)) {
+          registerForSaving(tvShow);
+        }
+      }
+      module.setDbVersion(5007);
     }
 
     saveAll();

@@ -20,6 +20,7 @@ import static org.tinymediamanager.core.movie.MovieSettings.DEFAULT_RENAMER_FILE
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -203,8 +204,7 @@ public class MovieExporter extends MediaEntityExporter {
 
     @Override
     public String render(Object o, String pattern, Locale locale, Map<String, Object> model) {
-      if (o instanceof Movie) {
-        Movie movie = (Movie) o;
+      if (o instanceof Movie movie) {
 
         Map<String, Object> parameters = new HashMap<>();
         if (pattern != null) {
@@ -214,9 +214,10 @@ public class MovieExporter extends MediaEntityExporter {
         String filename = getMovieFilename(movie);
         if (parameters.get("escape") == Boolean.TRUE) {
           try {
-            filename = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
+            filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
 
@@ -285,8 +286,7 @@ public class MovieExporter extends MediaEntityExporter {
 
     @Override
     public String render(Object o, String pattern, Locale locale, Map<String, Object> model) {
-      if (o instanceof Movie) {
-        Movie movie = (Movie) o;
+      if (o instanceof Movie movie) {
         Map<String, Object> parameters = parseParameters(pattern);
 
         MediaFile mf = movie.getArtworkMap().get(parameters.get("type"));
@@ -337,9 +337,10 @@ public class MovieExporter extends MediaEntityExporter {
 
         if (parameters.get("escape") == Boolean.TRUE) {
           try {
-            filename = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
+            filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
 

@@ -110,7 +110,7 @@ public class MoviePostProcessingSettingsPanel extends JPanel {
     {
       JPanel panelProcess = new JPanel(new MigLayout("hidemode 1, insets 0", "[20lp!][600lp,grow][]", "[500lp,grow]"));
       JLabel lblProcess = new TmmLabel(TmmResourceBundle.getString("Settings.postprocessing"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelProcess, lblProcess, false);
+      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelProcess, lblProcess, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/movies/settings#post-processing"));
       add(collapsiblePanel, "growx,wmin 0");
 

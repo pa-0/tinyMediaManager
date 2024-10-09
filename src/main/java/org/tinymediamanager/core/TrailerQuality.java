@@ -31,7 +31,8 @@ public enum TrailerQuality {
   //@formatter:off
   SD("SD", Arrays.asList("SD", "480p", "360p", "240p", "144p")),
   HD_720("720p", Arrays.asList("HD", "720p", "720")),
-  HD_1080("1080p", Arrays.asList("HD", "1080p", "1080"));
+  HD_1080("1080p", Arrays.asList("HD", "1080p", "1080")),
+  HD_2160("2160p", Arrays.asList("HD", "2160p", "2160"));
   // @formatter:on
 
   private final String       displayText;

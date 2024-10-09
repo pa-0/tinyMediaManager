@@ -831,9 +831,9 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
     }
 
     Map<String, Object> ids = new HashMap<>(tvShowToScrape.getIds());
-    ids.put("tvShowSeason", season);
+    ids.put("tvShowSeason", season.getSeason());
 
-    String imageUrl = ImageChooserDialog.chooseImage(this, ids, imageType, artworkScrapers, null, null, MediaType.TV_SHOW,
+    String imageUrl = ImageChooserDialog.chooseImage(this, ids, imageType, artworkScrapers, MediaType.TV_SHOW,
         tvShowToScrape.getPathNIO().toAbsolutePath().toString());
 
     season.setArtworkUrl(imageUrl, MediaFileType.getMediaFileType(imageType));

@@ -33,7 +33,7 @@ import org.tinymediamanager.ui.tvshows.TvShowUIModule;
  */
 public class TmmSettingsDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
 
-  private TmmTreeNode root;
+  private final TmmTreeNode root;
 
   public TmmSettingsDataProvider() {
     TmmSettingsNode rootSettingsNode = new TmmSettingsNode("", null);
@@ -41,8 +41,11 @@ public class TmmSettingsDataProvider extends TmmTreeDataProvider<TmmTreeNode> {
 
     // build up the settings structure
     TmmSettingsNode generalSettingsNode = new TmmSettingsNode(TmmResourceBundle.getString("Settings.general"), new UiSettingsPanel());
+    generalSettingsNode.setBoldText(true);
+
     generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.filetypes"), new FileTypesSettingsPanel()));
     generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.sorting"), new SortTitleSettingsPanel()));
+    generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.externaltools"), new ExternalToolsSettingsPanel()));
     generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.externaldevices"), new ExternalDevicesSettingsPanel()));
     generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.externalservices"), new ExternalServicesSettingsPanel()));
     generalSettingsNode.addChild(new TmmSettingsNode(TmmResourceBundle.getString("Settings.system"), new SystemSettingsPanel()));

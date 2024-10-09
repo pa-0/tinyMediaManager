@@ -310,21 +310,25 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
   }
 
   /**
-   * add the displayseason in the form <displayseason>xxx</displayseason>
+   * add the display season in the form <displayseason>xxx</displayseason>, if set
    */
   protected void addDisplaySeason(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
     Element displayseason = document.createElement("displayseason");
-    displayseason.setTextContent(Integer.toString(episode.getDisplaySeason()));
-    root.appendChild(displayseason);
+    if (episode.getDisplaySeason() >= 0 && episode.getDisplayEpisode() >= 0) {
+      displayseason.setTextContent(Integer.toString(episode.getDisplaySeason()));
+      root.appendChild(displayseason);
+    }
   }
 
   /**
-   * add the displayepisode in the form <displayepisode>xxx</displayepisode>
+   * add the display episode in the form <displayepisode>xxx</displayepisode>, if set
    */
   protected void addDisplayEpisode(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
     Element displayepisode = document.createElement("displayepisode");
-    displayepisode.setTextContent(Integer.toString(episode.getDisplayEpisode()));
-    root.appendChild(displayepisode);
+    if (episode.getDisplaySeason() >= 0 && episode.getDisplayEpisode() >= 0) {
+      displayepisode.setTextContent(Integer.toString(episode.getDisplayEpisode()));
+      root.appendChild(displayepisode);
+    }
   }
 
   /**
@@ -721,6 +725,7 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
   protected void addTinyMediaManagerTags(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
     root.appendChild(document.createComment("tinyMediaManager meta data"));
     addSource(episode, parser);
+    addEdition(episode, parser);
     addOriginalFilename(episode, parser);
     addUserNote(episode, parser);
     addEpisodeGroups(episode, parser);
@@ -733,6 +738,15 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
     Element source = document.createElement("source");
     source.setTextContent(episode.getMediaSource().name());
     root.appendChild(source);
+  }
+
+  /**
+   * add the edition in <edition>xxx</edition>
+   */
+  protected void addEdition(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
+    Element edition = document.createElement("edition");
+    edition.setTextContent(episode.getEdition().name());
+    root.appendChild(edition);
   }
 
   /**

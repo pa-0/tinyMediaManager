@@ -86,7 +86,7 @@ class SortTitleSettingsPanel extends JPanel {
   private void initComponents() {
     setLayout(new MigLayout("", "[600lp,grow]", "[]"));
     {
-      JPanel panelSorttitle = new JPanel(new MigLayout("hidemode 1, insets 0", "[20lp!][100lp][][grow]", "[]"));
+      JPanel panelSorttitle = new JPanel(new MigLayout("hidemode 1, insets 0", "[20lp!][150lp][][grow]", "[][250lp][]"));
 
       JLabel lblSorttitleT = new TmmLabel(TmmResourceBundle.getString("Settings.sorting"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelSorttitle, lblSorttitleT, true);

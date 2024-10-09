@@ -17,11 +17,17 @@ package org.tinymediamanager.ui.dialogs;
 
 import static org.tinymediamanager.ui.TmmUIHelper.createLinkForImage;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JSpinner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.tinymediamanager.core.MediaFileType;
@@ -100,6 +106,31 @@ public abstract class AbstractEditorDialog extends TmmDialog {
 
     lblSize.setVisible(true);
     buttonDelete.setVisible(true);
+  }
+
+  protected void commitChanges() {
+    for (Component component : getAllComponents(getContentPane())) {
+      if (component instanceof JSpinner spinner) {
+        try {
+          spinner.commitEdit();
+        }
+        catch (ParseException e) {
+          // ignore
+        }
+      }
+    }
+  }
+
+  private List<Component> getAllComponents(final Container c) {
+    Component[] comps = c.getComponents();
+    List<Component> compList = new ArrayList<>();
+    for (Component comp : comps) {
+      compList.add(comp);
+      if (comp instanceof Container) {
+        compList.addAll(getAllComponents((Container) comp));
+      }
+    }
+    return compList;
   }
 
   /*********************

@@ -100,9 +100,6 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
   private static final CacheMap<String, List<MediaMetadata>> EPISODE_LIST_CACHE_MAP = new CacheMap<>(600, 5);
   private static final CacheMap<String, MediaMetadata>       EPISODE_CACHE_MAP      = new CacheMap<>(600, 5);
 
-  private static final MediaEpisodeGroup                     ALTERNATE              = new MediaEpisodeGroup(
-      MediaEpisodeGroup.EpisodeGroupType.ALTERNATE);
-
   @Override
   protected MediaProviderInfo createMediaProviderInfo() {
     MediaProviderInfo info = super.createMediaProviderInfo();
@@ -401,7 +398,7 @@ public class TheTvDbTvShowMetadataProvider extends TheTvDbMetadataProvider
     // new style
     if (options.getIds().get(MediaMetadata.EPISODE_NR) instanceof List<?> episodeNumbers) {
       for (Object obj : episodeNumbers) {
-        if (obj instanceof MediaEpisodeNumber episodeNumber && episodeNumber.episodeGroup() == episodeGroup) {
+        if (obj instanceof MediaEpisodeNumber episodeNumber && episodeNumber.episodeGroup().equals(episodeGroup)) {
           episodeNr = episodeNumber.episode();
           seasonNr = episodeNumber.season();
           break;

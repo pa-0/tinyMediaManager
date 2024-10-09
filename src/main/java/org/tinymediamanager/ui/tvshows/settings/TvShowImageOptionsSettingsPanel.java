@@ -54,6 +54,7 @@ import net.miginfocom.swing.MigLayout;
 class TvShowImageOptionsSettingsPanel extends JPanel {
   private final TvShowSettings      settings = TvShowModuleManager.getInstance().getSettings();
 
+  private JCheckBox                 chckbxAutomaticallyScrapeImages;
   private JComboBox                 cbImagePosterSize;
   private JComboBox                 cbImageFanartSize;
   private JComboBox                 cbImageThumbSize;
@@ -117,38 +118,41 @@ class TvShowImageOptionsSettingsPanel extends JPanel {
 
     {
       JPanel panelOptions = new JPanel();
-      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][15lp!][][][][15lp!][][]")); // 16lp ~ width of the
+      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][15lp!][][][][15lp!][][]")); // 16lp ~ width of
+                                                                                                                                 // the
 
       JLabel lblOptionsT = new TmmLabel(TmmResourceBundle.getString("Settings.advancedoptions"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelOptions, lblOptionsT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#advanced-options-1"));
       add(collapsiblePanel, "cell 0 0,growx,wmin 0");
       {
+        chckbxAutomaticallyScrapeImages = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape"));
+        panelOptions.add(chckbxAutomaticallyScrapeImages, "cell 1 0 2 1");
 
         JLabel lblImageTmdbPosterSize = new JLabel(TmmResourceBundle.getString("image.poster.size"));
-        panelOptions.add(lblImageTmdbPosterSize, "cell 1 0 2 1");
+        panelOptions.add(lblImageTmdbPosterSize, "cell 1 1 2 1");
 
         cbImagePosterSize = new JComboBox(MediaArtwork.PosterSizes.values());
-        panelOptions.add(cbImagePosterSize, "cell 1 0 2 1");
+        panelOptions.add(cbImagePosterSize, "cell 1 1 2 1");
 
         JLabel lblImageTmdbFanartSize = new JLabel(TmmResourceBundle.getString("image.fanart.size"));
-        panelOptions.add(lblImageTmdbFanartSize, "cell 1 1 2 1");
+        panelOptions.add(lblImageTmdbFanartSize, "cell 1 2 2 1");
 
         cbImageFanartSize = new JComboBox(MediaArtwork.FanartSizes.values());
-        panelOptions.add(cbImageFanartSize, "cell 1 1 2 1");
+        panelOptions.add(cbImageFanartSize, "cell 1 2 2 1");
 
         JLabel lblImageTmdbThumbSize = new JLabel(TmmResourceBundle.getString("image.thumb.size"));
-        panelOptions.add(lblImageTmdbThumbSize, "flowx,cell 1 2 2 1");
+        panelOptions.add(lblImageTmdbThumbSize, "cell 1 3 2 1");
 
         cbImageThumbSize = new JComboBox(MediaArtwork.ThumbSizes.values());
-        panelOptions.add(cbImageThumbSize, "cell 1 2");
+        panelOptions.add(cbImageThumbSize, "cell 1 3 2 1");
       }
       {
         JLabel lblScraperLanguage = new JLabel(TmmResourceBundle.getString("Settings.preferredLanguage"));
-        panelOptions.add(lblScraperLanguage, "cell 1 4 2 1");
+        panelOptions.add(lblScraperLanguage, "cell 1 5 2 1");
 
         JPanel panelLanguagegSource = new JPanel();
-        panelOptions.add(panelLanguagegSource, "cell 2 5,grow");
+        panelOptions.add(panelLanguagegSource, "cell 2 6,grow");
         panelLanguagegSource.setLayout(new MigLayout("insets 0", "[100lp][]", "[grow][]"));
 
         listLanguages = new JList();
@@ -179,13 +183,13 @@ class TvShowImageOptionsSettingsPanel extends JPanel {
       }
 
       chckbxFanartWoText = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape.fanartwotext"));
-      panelOptions.add(chckbxFanartWoText, "cell 1 6 2 1");
+      panelOptions.add(chckbxFanartWoText, "cell 1 7 2 1");
 
       chckbxResolutions = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape.resolutions"));
-      panelOptions.add(chckbxResolutions, "cell 1 8 2 1");
+      panelOptions.add(chckbxResolutions, "cell 1 9 2 1");
 
       chckbxFallback = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape.fallback"));
-      panelOptions.add(chckbxFallback, "cell 1 9 2 1");
+      panelOptions.add(chckbxFallback, "cell 1 10 2 1");
     }
   }
 
@@ -225,5 +229,10 @@ class TvShowImageOptionsSettingsPanel extends JPanel {
     AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_4, cbImageThumbSize,
         jComboBoxBeanProperty);
     autoBinding_3.bind();
+    //
+    Property settingsBeanProperty = BeanProperty.create("scrapeBestImage");
+    AutoBinding autoBinding_6 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, settingsBeanProperty, chckbxAutomaticallyScrapeImages,
+        jCheckBoxBeanProperty);
+    autoBinding_6.bind();
   }
 }

@@ -18,6 +18,7 @@ package org.tinymediamanager.ui.tvshows;
 import java.awt.FontMetrics;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -263,7 +264,27 @@ public class TvShowTableFormat extends TmmTreeTableFormat<TmmTreeNode> {
     /*
      * date added (hidden per default)
      */
-    col = new Column(TmmResourceBundle.getString("metatag.dateadded"), "dateAdded", this::getDateAdded, Date.class);
+    col = new Column(TmmResourceBundle.getString("metatag.dateadded") + " (" + TmmResourceBundle.getString("metatag.tvshow") + ")", "dateAdded",
+        this::getDateAdded, Date.class);
+    col.setHeaderIcon(IconManager.DATE_ADDED);
+    col.setCellRenderer(new DateTableCellRenderer());
+    col.setColumnResizeable(false);
+    col.setDefaultHidden(true);
+    try {
+      Date date = StrgUtils.parseDate("2012-12-12");
+      col.setMinWidth(fontMetrics.stringWidth(TmmDateFormat.MEDIUM_DATE_FORMAT.format(date)) + getCellPadding());
+    }
+    catch (Exception ignored) {
+      // ignored
+    }
+    col.setColumnComparator(dateTimeComparator);
+    addColumn(col);
+
+    /*
+     * date added2 - sort by latest episode (hidden per default)
+     */
+    col = new Column(TmmResourceBundle.getString("metatag.dateadded") + " (" + TmmResourceBundle.getString("metatag.episode") + ")",
+        "dateAddedEpisode", this::getDateAddedEpisode, Date.class);
     col.setHeaderIcon(IconManager.DATE_ADDED);
     col.setCellRenderer(new DateTableCellRenderer());
     col.setColumnResizeable(false);
@@ -691,6 +712,23 @@ public class TvShowTableFormat extends TmmTreeTableFormat<TmmTreeNode> {
     Object userObject = node.getUserObject();
     if (userObject instanceof TvShow tvShow) {
       return tvShow.getDateAddedForUi();
+    }
+    if (userObject instanceof TvShowEpisode episode) {
+      if (!episode.isDummy()) {
+        return episode.getDateAddedForUi();
+      }
+    }
+    return null;
+  }
+
+  private Date getDateAddedEpisode(TmmTreeNode node) {
+    Object userObject = node.getUserObject();
+    if (userObject instanceof TvShow tvShow) {
+      List<TvShowEpisode> modifyableList = new ArrayList<TvShowEpisode>(tvShow.getEpisodes());
+      if (!modifyableList.isEmpty()) {
+        TvShowEpisode latest = Collections.max(modifyableList, Comparator.comparing(TvShowEpisode::getDateAddedForUi));
+        return latest.getDateAddedForUi();
+      }
     }
     if (userObject instanceof TvShowEpisode episode) {
       if (!episode.isDummy()) {

@@ -54,7 +54,7 @@ import org.tinymediamanager.ui.panels.WolDevicePanel;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * The ExternalDevicesSettingsPanel - a panel to configure external devices
+ * The {@link ExternalDevicesSettingsPanel} - a panel to configure external devices
  * 
  * @author Manuel Laggner
  */

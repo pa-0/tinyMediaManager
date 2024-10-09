@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -145,6 +146,24 @@ public abstract class UpgradeTasks {
         changed = true;
       }
     }
+
+    // remove -1/0 values
+    Iterator<String> it = me.getRatings().keySet().iterator();
+    while (it.hasNext()) {
+      MediaRating rat = me.getRatings().get(it.next());
+      if (rat.getRating() < 0) {
+        LOGGER.trace("Remove invalid rating: [{}] from {}", rat, me.getTitle());
+        it.remove();
+        changed = true;
+      }
+      else if (rat.getRating() == 0 && !rat.getId().equals(MediaMetadata.ROGER_EBERT)) {
+        // rogerebert DOES rate 0/4 star remove all others!
+        LOGGER.trace("Remove invalid rating: [{}] from {}", rat, me.getTitle());
+        it.remove();
+        changed = true;
+      }
+    }
+
     return changed;
   }
 

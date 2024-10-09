@@ -75,6 +75,7 @@ import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.entities.MediaSource;
 import org.tinymediamanager.core.entities.Person;
+import org.tinymediamanager.core.tvshow.TvShowEpisodeEdition;
 import org.tinymediamanager.core.tvshow.TvShowEpisodeSearchAndScrapeOptions;
 import org.tinymediamanager.core.tvshow.TvShowList;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
@@ -135,48 +136,49 @@ import net.miginfocom.swing.MigLayout;
  * @author Manuel Laggner
  */
 public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
-  private static final Logger                      LOGGER              = LoggerFactory.getLogger(TvShowEpisodeEditorDialog.class);
-  private static final String                      ORIGINAL_IMAGE_SIZE = "originalImageSize";
-  private static final String                      DIALOG_ID           = "tvShowEpisodeEditor";
+  private static final Logger                        LOGGER              = LoggerFactory.getLogger(TvShowEpisodeEditorDialog.class);
+  private static final String                        ORIGINAL_IMAGE_SIZE = "originalImageSize";
+  private static final String                        DIALOG_ID           = "tvShowEpisodeEditor";
 
-  private final TvShowList                         tvShowList          = TvShowModuleManager.getInstance().getTvShowList();
-  private final JTabbedPane                        tabbedPane          = new TmmTabbedPane();
-  private final TvShowEpisode                      episodeToEdit;
-  private final List<String>                       tags                = ObservableCollections.observableList(new ArrayList<>());
-  private final List<MediaFile>                    mediaFiles          = new ArrayList<>();
+  private final TvShowList                           tvShowList          = TvShowModuleManager.getInstance().getTvShowList();
+  private final JTabbedPane                          tabbedPane          = new TmmTabbedPane();
+  private final TvShowEpisode                        episodeToEdit;
+  private final List<String>                         tags                = ObservableCollections.observableList(new ArrayList<>());
+  private final List<MediaFile>                      mediaFiles          = new ArrayList<>();
 
-  private final EventList<MediaEpisodeNumber>      episodeNumbers;
-  private final EventList<MediaIdTable.MediaId>    ids;
-  private final EventList<MediaRatingTable.Rating> ratings;
-  private final EventList<Person>                  guests;
-  private final EventList<Person>                  directors;
-  private final EventList<Person>                  writers;
+  private final EventList<MediaEpisodeNumber>        episodeNumbers;
+  private final EventList<MediaIdTable.MediaId>      ids;
+  private final EventList<MediaRatingTable.Rating>   ratings;
+  private final EventList<Person>                    guests;
+  private final EventList<Person>                    directors;
+  private final EventList<Person>                    writers;
 
-  private JTextArea                                tfTitle;
-  private JSpinner                                 spRating;
-  private DatePicker                               dpFirstAired;
-  private JSpinner                                 spDateAdded;
-  private JCheckBox                                chckbxWatched;
-  private ImageLabel                               lblThumb;
-  private JTextArea                                taPlot;
-  private AutocompleteComboBox<String>             cbTags;
-  private AutoCompleteSupport<String>              cbTagsAutoCompleteSupport;
-  private JList<String>                            listTags;
-  private AutocompleteComboBox<MediaSource>        cbMediaSource;
-  private MediaFileEditorPanel                     mediaFilesPanel;
-  private MediaScraperComboBox                     cbScraper;
+  private JTextArea                                  tfTitle;
+  private JSpinner                                   spRating;
+  private DatePicker                                 dpFirstAired;
+  private JSpinner                                   spDateAdded;
+  private JCheckBox                                  chckbxWatched;
+  private ImageLabel                                 lblThumb;
+  private JTextArea                                  taPlot;
+  private AutocompleteComboBox<String>               cbTags;
+  private AutoCompleteSupport<String>                cbTagsAutoCompleteSupport;
+  private JList<String>                              listTags;
+  private AutocompleteComboBox<MediaSource>          cbMediaSource;
+  private AutocompleteComboBox<TvShowEpisodeEdition> cbEdition;
+  private MediaFileEditorPanel                       mediaFilesPanel;
+  private MediaScraperComboBox                       cbScraper;
 
-  private TmmTable                                 tableIds;
-  private TmmTable                                 tableRatings;
-  private PersonTable                              tableGuests;
-  private PersonTable                              tableDirectors;
-  private PersonTable                              tableWriters;
-  private JTextArea                                tfOriginalTitle;
-  private JTextField                               tfThumb;
-  private JTextArea                                taNote;
-  private TmmTable                                 tableEpisodeNumbers;
+  private TmmTable                                   tableIds;
+  private TmmTable                                   tableRatings;
+  private PersonTable                                tableGuests;
+  private PersonTable                                tableDirectors;
+  private PersonTable                                tableWriters;
+  private JTextArea                                  tfOriginalTitle;
+  private JTextField                                 tfThumb;
+  private JTextArea                                  taNote;
+  private TmmTable                                   tableEpisodeNumbers;
 
-  private ScrapeTask                               scrapeTask          = null;
+  private ScrapeTask                                 scrapeTask          = null;
 
   /**
    * Instantiates a new TV show episode scrape dialog.
@@ -224,6 +226,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
       taPlot.setText(episodeToEdit.getPlot());
       taPlot.setCaretPosition(0);
       cbMediaSource.setSelectedItem(episodeToEdit.getMediaSource());
+      cbEdition.setSelectedItem(episodeToEdit.getEdition());
       taNote.setText(episodeToEdit.getNote());
 
       episodeNumbers.addAll(episodeToEdit.getEpisodeNumbers());
@@ -443,7 +446,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
     {
       JPanel details2Panel = new JPanel();
       tabbedPane.addTab(TmmResourceBundle.getString("metatag.details2"), details2Panel);
-      details2Panel.setLayout(new MigLayout("", "[][][20lp:50lp][][20lp:n][][300lp:300lp]", "[][][20lp:n][100lp:150lp,grow][][][][grow 200]"));
+      details2Panel.setLayout(new MigLayout("", "[][][20lp:50lp][][20lp:n][][300lp:300lp]", "[][][][20lp:n][100lp:150lp,grow][][][][grow 200]"));
       {
         JLabel lblDateAdded = new TmmLabel(TmmResourceBundle.getString("metatag.dateadded"));
         details2Panel.add(lblDateAdded, "cell 0 0,alignx right");
@@ -466,31 +469,39 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
         details2Panel.add(cbMediaSource, "cell 1 1,growx");
       }
       {
+        JLabel lblEdition = new TmmLabel(TmmResourceBundle.getString("metatag.edition"));
+        details2Panel.add(lblEdition, "cell 0 2,alignx right");
+
+        cbEdition = new AutocompleteComboBox(TvShowEpisodeEdition.values());
+        cbEdition.getAutoCompleteSupport().setCorrectsCase(false);
+        details2Panel.add(cbEdition, "cell 1 2,growx");
+      }
+      {
         JLabel lblTags = new TmmLabel(TmmResourceBundle.getString("metatag.tags"));
-        details2Panel.add(lblTags, "flowy,cell 0 3,alignx right,aligny top");
+        details2Panel.add(lblTags, "flowy,cell 0 4,alignx right,aligny top");
 
         JScrollPane scrollPaneTags = new JScrollPane();
-        details2Panel.add(scrollPaneTags, "cell 1 3 3 1,grow");
+        details2Panel.add(scrollPaneTags, "cell 1 4 3 1,grow");
 
         listTags = new JList();
         scrollPaneTags.setViewportView(listTags);
 
         JButton btnAddTag = new SquareIconButton(new AddTagAction());
-        details2Panel.add(btnAddTag, "cell 0 3,alignx right,aligny top");
+        details2Panel.add(btnAddTag, "cell 0 4,alignx right,aligny top");
 
         JButton btnRemoveTag = new SquareIconButton(new RemoveTagAction());
-        details2Panel.add(btnRemoveTag, "cell 0 3,alignx right,aligny top");
+        details2Panel.add(btnRemoveTag, "cell 0 4,alignx right,aligny top");
 
         JButton btnMoveTagUp = new SquareIconButton(new MoveTagUpAction());
-        details2Panel.add(btnMoveTagUp, "cell 0 3,alignx right,aligny top");
+        details2Panel.add(btnMoveTagUp, "cell 0 4,alignx right,aligny top");
 
         JButton btnMoveTagDown = new SquareIconButton(new MoveTagDownAction());
-        details2Panel.add(btnMoveTagDown, "cell 0 3,alignx right,aligny top");
+        details2Panel.add(btnMoveTagDown, "cell 0 4,alignx right,aligny top");
 
         cbTags = new AutocompleteComboBox<>(tvShowList.getTagsInEpisodes());
         cbTags.setEditable(true);
         cbTagsAutoCompleteSupport = cbTags.getAutoCompleteSupport();
-        details2Panel.add(cbTags, "cell 1 4 3 1,growx");
+        details2Panel.add(cbTags, "cell 1 5 3 1,growx");
 
         InputMap im = cbTags.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object enterAction = im.get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
@@ -498,27 +509,27 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
       }
       {
         JLabel label = new TmmLabel(TmmResourceBundle.getString("metatag.ids"));
-        details2Panel.add(label, "flowy,cell 5 3,alignx right,aligny top");
+        details2Panel.add(label, "flowy,cell 5 4,alignx right,aligny top");
 
         JScrollPane scrollPaneIds = new JScrollPane();
-        details2Panel.add(scrollPaneIds, "cell 6 3,grow");
+        details2Panel.add(scrollPaneIds, "cell 6 4,grow");
 
         tableIds = new MediaIdTable(ids, ScraperType.TV_SHOW);
         tableIds.configureScrollPane(scrollPaneIds);
 
         JButton btnAddId = new SquareIconButton(new AddIdAction());
-        details2Panel.add(btnAddId, "cell 5 3,alignx right,aligny top");
+        details2Panel.add(btnAddId, "cell 5 4,alignx right,aligny top");
 
         JButton btnRemoveId = new SquareIconButton(new RemoveIdAction());
-        details2Panel.add(btnRemoveId, "cell 5 3,alignx right,aligny top");
+        details2Panel.add(btnRemoveId, "cell 5 4,alignx right,aligny top");
       }
 
       {
         JLabel lblThumbT = new TmmLabel(TmmResourceBundle.getString("mediafiletype.thumb"));
-        details2Panel.add(lblThumbT, "cell 0 6,alignx right");
+        details2Panel.add(lblThumbT, "cell 0 7,alignx right");
 
         tfThumb = new JTextField();
-        details2Panel.add(tfThumb, "cell 1 6 6 1,growx");
+        details2Panel.add(tfThumb, "cell 1 7 6 1,growx");
         tfThumb.setColumns(10);
       }
     }
@@ -666,6 +677,8 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
       okButton.addActionListener(e -> mediaFilesPanel.cancelTask());
       getRootPane().registerKeyboardAction(new ChangeEpisodeAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
+      getRootPane().registerKeyboardAction(new ChangeEpisodeAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
+          JComponent.WHEN_IN_FOCUSED_WINDOW);
       addButton(okButton);
     }
   }
@@ -765,6 +778,9 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
 
       cancelScrapeTask();
 
+      // commit all pending changes in this dialog
+      commitChanges();
+
       episodeToEdit.setTitle(tfTitle.getText());
       episodeToEdit.setOriginalTitle(tfOriginalTitle.getText());
 
@@ -788,6 +804,17 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
       }
       else {
         episodeToEdit.setMediaSource(MediaSource.UNKNOWN);
+      }
+
+      Object episodeEdition = cbEdition.getSelectedItem();
+      if (episodeEdition instanceof TvShowEpisodeEdition edition) {
+        episodeToEdit.setEdition(edition);
+      }
+      else if (episodeEdition instanceof String str) {
+        episodeToEdit.setEdition(TvShowEpisodeEdition.getTvShowEpisodeEditionStrict(str));
+      }
+      else {
+        episodeToEdit.setEdition(TvShowEpisodeEdition.NONE);
       }
 
       // sync of media ids

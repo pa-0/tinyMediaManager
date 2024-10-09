@@ -20,6 +20,7 @@ import static org.tinymediamanager.core.tvshow.TvShowSettings.DEFAULT_RENAMER_FI
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -227,14 +228,14 @@ public class TvShowExporter extends MediaEntityExporter {
       if (pattern != null) {
         parameters = parseParameters(pattern);
       }
-      if (o instanceof TvShow) {
-        TvShow show = (TvShow) o;
+      if (o instanceof TvShow show) {
         String filename = getFilename(show);
         if (parameters.get("escape") == Boolean.TRUE) {
           try {
-            filename = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
+            filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
         return filename;
@@ -358,9 +359,10 @@ public class TvShowExporter extends MediaEntityExporter {
 
         if (parameters.get("escape") == Boolean.TRUE) {
           try {
-            filename = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
+            filename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
           }
-          catch (Exception ignored) {
+          catch (Exception e) {
+            LOGGER.debug("could not encode filename - '{}'", e.getMessage());
           }
         }
 

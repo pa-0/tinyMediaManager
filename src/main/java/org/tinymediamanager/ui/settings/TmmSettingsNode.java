@@ -32,6 +32,7 @@ public class TmmSettingsNode {
 
   private String                title;
   private JComponent            component;
+  private boolean               boldText = false;
 
   public TmmSettingsNode(String title, JComponent component) {
     this.title = title;
@@ -66,8 +67,16 @@ public class TmmSettingsNode {
     return "";
   }
 
+  public void setBoldText(boolean boldText) {
+    this.boldText = boldText;
+  }
+
   @Override
   public String toString() {
+    if (boldText) {
+      return "<html><b>" + title + "</b></html>";
+    }
+
     return title;
   }
 }

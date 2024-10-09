@@ -337,7 +337,9 @@ public class TvShowScrapeTask extends TmmThreadPool {
             }
 
             // last but not least call a further rename task on the TV show root to move the season fanart into the right folders
-            if (TvShowModuleManager.getInstance().getSettings().isRenameAfterScrape()) {
+            // but only if there has been anything scraped
+            if (TvShowModuleManager.getInstance().getSettings().isRenameAfterScrape()
+                && (!tvShowScrapeParams.tvShowScraperMetadataConfig.isEmpty() || !tvShowScrapeParams.episodeScraperMetadataConfig.isEmpty())) {
               TvShowRenameTask task = new TvShowRenameTask(tvShow);
               // start this task embedded (to the abortable)
               task.run();

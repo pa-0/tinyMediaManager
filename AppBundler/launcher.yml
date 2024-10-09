@@ -21,6 +21,7 @@ jvmOpts:
   - '[macos] -Dapple.awt.application.name=tinyMediaManager'
   - '[macos] -Dapple.awt.application.appearance=system'
   - '[macos] -Dapple.eawt.quitStrategy=CLOSE_ALL_WINDOWS'
+  - '[macos] -Djdk.nio.path.useNormalizationFormD=true'
   - '[linux] -Dawt.useSystemAAFontSettings=on'
   - '[linux] -Dswing.aatext=true'
 env:

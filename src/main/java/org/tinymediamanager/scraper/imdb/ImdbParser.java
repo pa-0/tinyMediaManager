@@ -380,76 +380,115 @@ public abstract class ImdbParser {
     String language = options.getLanguage().getLanguage();
     String country = options.getCertificationCountry().getAlpha2(); // for passing the country to the scrape
 
-    searchTerm = MetadataUtil.removeNonSearchCharacters(searchTerm);
+    searchTerm = MetadataUtil.removeNonSearchCharacters(searchTerm).strip();
 
     getLogger().debug("========= BEGIN IMDB Scraper Search for: {}", searchTerm);
     Document doc = null;
 
-    Url url;
-
     boolean advancedSearch = false;
-    // always use advSearch for TV, since we need to filter out tvMovies on TV scraping :/
-    // if (options.getMediaType() == MediaType.TV_SHOW) {
-    // advancedSearch = true;
-    // }
     if (isIncludeShortResults() || isIncludeTvMovieResults() || isIncludeVideogameResults() || isIncludeAdultResults()) {
       advancedSearch = true;
     }
+    // if we enter just an ID as search term, this only works via basic find url!
+    if (MediaIdUtil.isValidImdbId(searchTerm)) {
+      advancedSearch = false;
+    }
 
+    Url advUrl;
+    Url findUrl;
     try {
-      if (advancedSearch) {
+      String param = "";
 
-        // build advanced search queries per entity
-        String cats = "";
-        if (options.getMediaType() == MediaType.MOVIE) {
-          cats = "&title_type=feature";
-          if (isIncludeShortResults()) {
-            cats += ",short,tv_short"; // tv shorts are "short movies played solely on tv, mostly ads, but also dinnerForOne"
-          }
-          if (isIncludeTvMovieResults()) {
-            cats += ",tv_movie,tv_special";
-          }
-          if (isIncludeVideogameResults()) {
-            cats += ",video_game";
-          }
+      // ADVANCED SEARCH
+      // build advanced search queries per entity
+      if (options.getMediaType() == MediaType.MOVIE) {
+        param = "&title_type=feature";
+        if (isIncludeShortResults()) {
+          param += ",short,tv_short"; // tv shorts are "short movies played solely on tv, mostly ads, but also dinnerForOne"
         }
-        else if (options.getMediaType() == MediaType.TV_SHOW) {
-          cats = "&title_type=tv_series,tv_miniseries";
-          if (isIncludePodcastResults()) {
-            cats += ",podcast_series";
-          }
+        if (isIncludeTvMovieResults()) {
+          param += ",tv_movie,tv_special";
         }
+        if (isIncludeVideogameResults()) {
+          param += ",video_game";
+        }
+      }
+      else if (options.getMediaType() == MediaType.TV_SHOW) {
+        param = "&title_type=tv_series,tv_miniseries";
+        if (isIncludePodcastResults()) {
+          param += ",podcast_series";
+        }
+      }
+      if (isIncludeAdultResults()) {
+        param += "&adult=include";
+      }
+      advUrl = new InMemoryCachedUrl(constructUrl("search/title/?title=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), param));
+      advUrl.addHeader("Accept-Language", getAcceptLanguage(language, country));
 
-        if (isIncludeAdultResults()) {
-          cats += "&adult=include";
-        }
-        url = new InMemoryCachedUrl(constructUrl("search/title/?title=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), cats));
+      // BASIC SEARCH
+      param = "&s=tt&ttype=ft"; // movies
+      if (options.getMediaType() == MediaType.TV_SHOW) {
+        param = "&s=tt&ttype=tv";
       }
-      else {
-        String cat = "&s=tt&ttype=ft"; // movies
-        if (options.getMediaType() == MediaType.TV_SHOW) {
-          cat = "&s=tt&ttype=tv";
-        }
-        url = new InMemoryCachedUrl(constructUrl("find/?q=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), cat));
-      }
-      url.addHeader("Accept-Language", getAcceptLanguage(language, country));
+      findUrl = new InMemoryCachedUrl(constructUrl("find/?q=", URLEncoder.encode(searchTerm, StandardCharsets.UTF_8), param));
+      findUrl.addHeader("Accept-Language", getAcceptLanguage(language, country));
     }
     catch (Exception e) {
       getLogger().debug("tried to fetch search response", e);
       throw new ScrapeException(e);
     }
 
-    try (InputStream is = url.getInputStream()) {
-      doc = Jsoup.parse(is, UrlUtil.UTF_8, "");
-      doc.setBaseUri(metadataProvider.getApiKey());
+    if (advancedSearch) {
+      // first advanced search, normal as fallback
+      try (InputStream is = advUrl.getInputStream()) {
+        doc = Jsoup.parse(is, UrlUtil.UTF_8, "");
+        doc.setBaseUri(metadataProvider.getApiKey());
+      }
+      catch (InterruptedException | InterruptedIOException e) {
+        // do not swallow these Exceptions
+        Thread.currentThread().interrupt();
+      }
+      catch (Exception e) {
+        getLogger().debug("tried to fetch search response", e);
+        try (InputStream is = findUrl.getInputStream()) {
+          doc = Jsoup.parse(is, UrlUtil.UTF_8, "");
+          doc.setBaseUri(metadataProvider.getApiKey());
+        }
+        catch (InterruptedException | InterruptedIOException e2) {
+          // do not swallow these Exceptions
+          Thread.currentThread().interrupt();
+        }
+        catch (Exception e2) {
+          getLogger().debug("tried to fetch search2 response", e2);
+          throw new ScrapeException(e2);
+        }
+      }
     }
-    catch (InterruptedException | InterruptedIOException e) {
-      // do not swallow these Exceptions
-      Thread.currentThread().interrupt();
-    }
-    catch (Exception e) {
-      getLogger().debug("tried to fetch search response", e);
-      throw new ScrapeException(e);
+    else {
+      // first normal search, advance as fallback
+      try (InputStream is = findUrl.getInputStream()) {
+        doc = Jsoup.parse(is, UrlUtil.UTF_8, "");
+        doc.setBaseUri(metadataProvider.getApiKey());
+      }
+      catch (InterruptedException | InterruptedIOException e) {
+        // do not swallow these Exceptions
+        Thread.currentThread().interrupt();
+      }
+      catch (Exception e) {
+        getLogger().debug("tried to fetch search response", e);
+        try (InputStream is = advUrl.getInputStream()) {
+          doc = Jsoup.parse(is, UrlUtil.UTF_8, "");
+          doc.setBaseUri(metadataProvider.getApiKey());
+        }
+        catch (InterruptedException | InterruptedIOException e2) {
+          // do not swallow these Exceptions
+          Thread.currentThread().interrupt();
+        }
+        catch (Exception e2) {
+          getLogger().debug("tried to fetch search2 response", e2);
+          throw new ScrapeException(e2);
+        }
+      }
     }
 
     if (doc == null) {
@@ -2097,7 +2136,7 @@ public abstract class ImdbParser {
         String extension = FilenameUtils.getExtension(image);
         // https://stackoverflow.com/a/73501833
         String defaultUrl = image.replace("." + extension, "_UX" + width + "." + extension);
-        artwork.setLanguage("?"); // since we do not know which language the artwork is in, set it to a value which will never match
+        artwork.setLanguage("");
         artwork.addImageSize(width, height, defaultUrl, sizeOrder);
       }
     }

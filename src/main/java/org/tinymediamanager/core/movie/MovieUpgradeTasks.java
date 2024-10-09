@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2020 Manuel Laggner
+ * Copyright 2012 - 2024 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,14 +78,16 @@ public class MovieUpgradeTasks extends UpgradeTasks {
     }
 
     // fix ratings
-    if (module.getDbVersion() < 5002) {
-      LOGGER.info("performing upgrade to ver: {}", 5002);
+    // we already did this for 5002, but we need to do this again to remove empty values
+    // and since this was also the last upgrade, we just increment the number ;)
+    if (module.getDbVersion() < 5003) {
+      LOGGER.info("performing upgrade to ver: {}", 5003);
       for (Movie movie : movieList.getMovies()) {
         if (fixRatings(movie)) {
           registerForSaving(movie);
         }
       }
-      module.setDbVersion(5002);
+      module.setDbVersion(5003);
     }
 
     saveAll();

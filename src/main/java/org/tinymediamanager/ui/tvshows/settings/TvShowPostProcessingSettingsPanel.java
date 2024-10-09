@@ -141,7 +141,7 @@ public class TvShowPostProcessingSettingsPanel extends JPanel {
       JPanel panelProcess = new JPanel(
           new MigLayout("hidemode 1, insets 0", "[20lp!][300lp:600lp,grow][]", "[][grow][150lp:200lp,grow][][][grow][150lp:200lp,grow]"));
       JLabel lblProcess = new TmmLabel(TmmResourceBundle.getString("Settings.postprocessing"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelProcess, lblProcess, false);
+      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelProcess, lblProcess, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#post-processing"));
       add(collapsiblePanel, "growx,wmin 0");
 

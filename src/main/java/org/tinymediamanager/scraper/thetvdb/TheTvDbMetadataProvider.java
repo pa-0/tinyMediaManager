@@ -280,7 +280,12 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
         member.setThumbUrl(character.image);
       }
       if (StringUtils.isNotBlank(character.url)) {
-        member.setProfileUrl(character.url);
+        // add https://thetvdb.com/people/ in the front in case this is missing
+        String profileUrl = character.url;
+        if (!profileUrl.startsWith("http")) {
+          profileUrl = "https://thetvdb.com/people/" + profileUrl;
+        }
+        member.setProfileUrl(profileUrl);
       }
 
       members.add(member);

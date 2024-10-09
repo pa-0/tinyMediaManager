@@ -100,7 +100,7 @@ class MdbListRating {
         ratingEntity = response.body();
         // Loop over result to get all Ratings and add them to list of media ratings
         for (MdbListRatings ratings : ListUtils.nullSafe(ratingEntity.ratings)) {
-          if (ratings.source == null || ratings.value == null) {
+          if (ratings.source == null || ratings.value == null || (ratings.value == 0 && !ratings.source.equals(MediaMetadata.ROGER_EBERT))) {
             continue;
           }
           MediaRating mediaRating = new MediaRating(ratings.source, ratings.value, ratings.votes);

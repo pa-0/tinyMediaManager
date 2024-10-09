@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -36,10 +35,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingbinding.JListBinding;
 import org.jdesktop.swingbinding.SwingBindings;
 import org.tinymediamanager.core.TmmProperties;
@@ -70,7 +67,6 @@ import net.miginfocom.swing.MigLayout;
 class TvShowDatasourceSettingsPanel extends JPanel {
   private final TvShowSettings settings = TvShowModuleManager.getInstance().getSettings();
 
-  private JCheckBox            chckbxDvdOrder;
   private JTextField           tfAddBadword;
   private JList<String>        listBadWords;
   private JList<String>        listDatasources;
@@ -259,9 +255,6 @@ class TvShowDatasourceSettingsPanel extends JPanel {
         btnExchangeDatasource = new SquareIconButton(IconManager.EXCHANGE);
         btnExchangeDatasource.setToolTipText(TmmResourceBundle.getString("Settings.exchangedatasource.desc"));
         panelDatasources.add(btnExchangeDatasource, "cell 2 1");
-
-        chckbxDvdOrder = new JCheckBox(TmmResourceBundle.getString("Settings.dvdorder"));
-        panelDatasources.add(chckbxDvdOrder, "cell 1 3 2 1");
       }
     }
     {
@@ -325,12 +318,6 @@ class TvShowDatasourceSettingsPanel extends JPanel {
   }
 
   protected void initDataBindings() {
-    BeanProperty<TvShowSettings, Boolean> settingsBeanProperty_1 = BeanProperty.create("dvdOrder");
-    BeanProperty<JCheckBox, Boolean> jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding<TvShowSettings, Boolean, JCheckBox, Boolean> autoBinding_1 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings,
-        settingsBeanProperty_1, chckbxDvdOrder, jCheckBoxBeanProperty);
-    autoBinding_1.bind();
-    //
     BeanProperty<TvShowSettings, List<String>> settingsBeanProperty_2 = BeanProperty.create("tvShowDataSource");
     JListBinding<String, TvShowSettings, JList> jListBinding = SwingBindings.createJListBinding(UpdateStrategy.READ_WRITE, settings,
         settingsBeanProperty_2, listDatasources);

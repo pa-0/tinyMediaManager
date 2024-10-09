@@ -221,83 +221,60 @@ class UiSettingsPanel extends JPanel {
     }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   private void initComponents() {
-    setLayout(new MigLayout("hidemode 1", "[600lp,grow]", "[][15lp!][][15lp!][][15lp!][][15lp!][][grow]"));
+    setLayout(new MigLayout("hidemode 1", "[600lp,grow]", "[][15lp!][][15lp!][]"));
     {
-      JPanel panelLanguage = new JPanel();
-      panelLanguage.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
+      JPanel panelUiSettings = new JPanel();
+      panelUiSettings.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][][grow]", "[][][][][5lp!][][][5lp!][][][]"));
 
-      JLabel lblLanguageT = new TmmLabel(TmmResourceBundle.getString("Settings.language"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelLanguage, lblLanguageT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/settings#ui-language"));
-      add(collapsiblePanel, "cell 0 0,growx, wmin 0");
+      JLabel lblUiSettingsT = new TmmLabel(TmmResourceBundle.getString("Settings.ui"), H3);
+      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelUiSettings, lblUiSettingsT, true);
+      collapsiblePanel.addExtraTitleComponent(new DocsButton("/settings#general"));
+      add(collapsiblePanel, "cell 0 0, growx, wmin 0");
       {
+        JLabel lblLanguageT = new JLabel(TmmResourceBundle.getString("Settings.language"));
+        panelUiSettings.add(lblLanguageT, "cell 1 0 3 1");
+
         cbLanguage = new JComboBox(locales.toArray());
-        panelLanguage.add(cbLanguage, "cell 1 0 2 1");
-      }
-      {
-        final JLabel lblLanguageHint = new JLabel(TmmResourceBundle.getString("tmm.helptranslate"));
-        panelLanguage.add(lblLanguageHint, "cell 1 1 2 1");
-      }
-      {
+        panelUiSettings.add(cbLanguage, "cell 1 0 3 1");
+
+        JLabel lblLanguageHint = new JLabel(TmmResourceBundle.getString("tmm.helptranslate"));
+        panelUiSettings.add(lblLanguageHint, "cell 2 1 2 1");
+
         lblLinkTranslate = new LinkTextArea("https://www.reddit.com/r/tinyMediaManager/comments/kt2iyq/basic_information/");
-        panelLanguage.add(lblLinkTranslate, "cell 1 2 2 1, grow, wmin 0");
-      }
-      {
+        panelUiSettings.add(lblLinkTranslate, "cell 2 2 2 1, grow, wmin 0");
+
         lblLanguageChangeHint = new JLabel("");
         TmmFontHelper.changeFont(lblLanguageChangeHint, Font.BOLD);
-        panelLanguage.add(lblLanguageChangeHint, "cell 0 3 3 1");
+        panelUiSettings.add(lblLanguageChangeHint, "cell 0 3 4 1");
       }
-    }
-
-    {
-      JPanel panelTheme = new JPanel();
-      panelTheme.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
-
-      JLabel lblThemeT = new TmmLabel(TmmResourceBundle.getString("Settings.uitheme"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelTheme, lblThemeT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/settings#ui-theme"));
-      add(collapsiblePanel, "cell 0 2,growx,wmin 0");
       {
+        JLabel lblThemeT = new JLabel(TmmResourceBundle.getString("Settings.uitheme"));
+        panelUiSettings.add(lblThemeT, "cell 1 5 3 1");
+
         cbTheme = new JComboBox(new String[] { "Light", "Dark" });
-        panelTheme.add(cbTheme, "cell 1 0 2 1");
-      }
-      {
+        panelUiSettings.add(cbTheme, "cell 1 5 3 1");
+
         lblThemeHint = new JLabel("");
         TmmFontHelper.changeFont(lblThemeHint, Font.BOLD);
-        panelTheme.add(lblThemeHint, "cell 0 1 3 1");
+        panelUiSettings.add(lblThemeHint, "cell 0 6 4 1");
       }
-    }
-
-    {
-      JPanel panelFont = new JPanel();
-      panelFont.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][][grow]", "[][][]")); // 16lp ~ width of the
-
-      JLabel lblFontT = new TmmLabel(TmmResourceBundle.getString("Settings.font"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelFont, lblFontT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/settings#font"));
-      add(collapsiblePanel, "cell 0 4,growx,wmin 0");
       {
         JLabel lblFontFamilyT = new JLabel(TmmResourceBundle.getString("Settings.fontfamily"));
-        panelFont.add(lblFontFamilyT, "cell 1 0");
-      }
-      {
+        panelUiSettings.add(lblFontFamilyT, "cell 1 8 2 1");
+
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         cbFontFamily = new JComboBox(env.getAvailableFontFamilyNames());
-        panelFont.add(cbFontFamily, "cell 2 0");
-      }
-      {
+        panelUiSettings.add(cbFontFamily, "cell 3 8");
+
         JLabel lblFontSizeT = new JLabel(TmmResourceBundle.getString("Settings.fontsize"));
-        panelFont.add(lblFontSizeT, "cell 1 1");
-      }
-      {
+        panelUiSettings.add(lblFontSizeT, "cell 1 9 2 1");
+
         cbFontSize = new JComboBox(DEFAULT_FONT_SIZES);
-        panelFont.add(cbFontSize, "cell 2 1");
-      }
-      {
+        panelUiSettings.add(cbFontSize, "cell 3 9");
+
         JTextArea tpFontHint = new ReadOnlyTextArea(TmmResourceBundle.getString("Settings.fonts.hint"));
-        panelFont.add(tpFontHint, "cell 1 2 2 1,growx");
+        panelUiSettings.add(tpFontHint, "cell 2 10 2 1,growx");
       }
     }
 
@@ -309,7 +286,7 @@ class UiSettingsPanel extends JPanel {
       JLabel lblMiscT = new TmmLabel(TmmResourceBundle.getString("Settings.misc"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelMisc, lblMiscT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/settings#misc-settings"));
-      add(collapsiblePanel, "cell 0 6,growx,wmin 0");
+      add(collapsiblePanel, "cell 0 2,growx,wmin 0");
       {
         JLabel lblDatefield = new JLabel(TmmResourceBundle.getString("Settings.datefield"));
         panelMisc.add(lblDatefield, "cell 1 0 2 1");
@@ -356,7 +333,7 @@ class UiSettingsPanel extends JPanel {
       JLabel lblUpdateT = new TmmLabel(TmmResourceBundle.getString("Settings.update"), H3);
       collapsiblePanelUpdate = new CollapsiblePanel(panelUpdate, lblUpdateT, true);
       collapsiblePanelUpdate.addExtraTitleComponent(new DocsButton("/settings#update"));
-      add(collapsiblePanelUpdate, "cell 0 8,growx,wmin 0");
+      add(collapsiblePanelUpdate, "cell 0 4,growx,wmin 0");
 
       {
         chckbxAutomaticUpdates = new JCheckBox(TmmResourceBundle.getString("Settings.updatecheck"));

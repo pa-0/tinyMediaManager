@@ -15,54 +15,9 @@
  */
 package org.tinymediamanager.scraper.tvmaze.entities;
 
-import com.google.gson.annotations.SerializedName;
-
 public class Cast {
-
-  @SerializedName("person")
   public Person    person;
-  @SerializedName("character")
   public Character character;
-
-  public class Person {
-
-    @SerializedName("id")
-    public int     id;
-    @SerializedName("url")
-    public String  url;
-    @SerializedName("name")
-    public String  name;
-    @SerializedName("country")
-    public Country country;
-    @SerializedName("birthdate")
-    public String  birthdate;
-    @SerializedName("image")
-    public Image   image;
-  }
-
-  public class Character {
-
-    @SerializedName("id")
-    public int    id;
-    @SerializedName("url")
-    public String url;
-    @SerializedName("name")
-    public String name;
-    @SerializedName("image")
-    public Image  image;
-  }
-
-  public class Country {
-    @SerializedName("name")
-    public String name;
-  }
-
-  public class Image {
-    @SerializedName("medium")
-    public String medium;
-
-    @SerializedName("original")
-    public String original;
-  }
-
+  public boolean   self  = false;
+  public boolean   voice = false;
 }

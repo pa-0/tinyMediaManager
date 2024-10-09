@@ -64,26 +64,26 @@ class MiscSettingsPanel extends JPanel {
   private void initComponents() {
     setLayout(new MigLayout("", "[600lp,grow]", "[][15lp!][]"));
     {
-      JPanel panelMisc = new JPanel();
-      panelMisc.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][][20lp][][][]")); // 16lp ~ width of the
+      JPanel panelCache = new JPanel();
+      panelCache.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][]")); // 16lp ~ width of the
 
-      JLabel lblMiscT = new TmmLabel(TmmResourceBundle.getString("Settings.misc"), H3);
-      CollapsiblePanel collapsiblePanelMisc = new CollapsiblePanel(panelMisc, lblMiscT, true);
+      JLabel lblCacheT = new TmmLabel(TmmResourceBundle.getString("Settings.cache"), H3);
+      CollapsiblePanel collapsiblePanelMisc = new CollapsiblePanel(panelCache, lblCacheT, true);
       collapsiblePanelMisc.addExtraTitleComponent(new DocsButton("/settings#misc-settings-2"));
       add(collapsiblePanelMisc, "cell 0 0,growx, wmin 0");
       {
         chckbxImageCache = new JCheckBox(TmmResourceBundle.getString("Settings.imagecache"));
-        panelMisc.add(chckbxImageCache, "cell 1 0 2 1");
+        panelCache.add(chckbxImageCache, "cell 1 0 2 1");
 
         JLabel lblImageCacheSize = new JLabel(TmmResourceBundle.getString("Settings.imagecachesize"));
-        panelMisc.add(lblImageCacheSize, "flowx,cell 2 1");
+        panelCache.add(lblImageCacheSize, "flowx,cell 2 1");
 
         cbImageCacheSize = new JComboBox(ImageCache.CacheSize.values());
-        panelMisc.add(cbImageCacheSize, "cell 2 1");
+        panelCache.add(cbImageCacheSize, "cell 2 1");
 
         {
           JPanel panel = new JPanel();
-          panelMisc.add(panel, "cell 2 2,grow");
+          panelCache.add(panel, "cell 2 2,grow");
           panel.setLayout(new MigLayout("", "[10lp:n][grow]", "[]"));
 
           JTextArea lblImageCacheSizeSmallT = new ReadOnlyTextArea("SMALL - " + TmmResourceBundle.getString("Settings.imagecachesize.small"));
@@ -97,14 +97,14 @@ class MiscSettingsPanel extends JPanel {
           panel.add(lblImageCacheSizeOriginalT, "cell 1 0,growx, wmin 0");
         }
         JLabel lblImageCacheQuality = new JLabel(TmmResourceBundle.getString("Settings.imagecachetype"));
-        panelMisc.add(lblImageCacheQuality, "cell 2 3");
+        panelCache.add(lblImageCacheQuality, "cell 2 3");
 
         cbImageCacheQuality = new JComboBox(ImageCache.CacheType.values());
-        panelMisc.add(cbImageCacheQuality, "cell 2 3");
+        panelCache.add(cbImageCacheQuality, "cell 2 3");
 
         {
           JPanel panel = new JPanel();
-          panelMisc.add(panel, "cell 2 4,grow");
+          panelCache.add(panel, "cell 2 4,grow");
           panel.setLayout(new MigLayout("", "[10lp:n][grow]", "[]"));
 
           JTextArea lblImageCacheTypeBalancedT = new ReadOnlyTextArea(
@@ -118,16 +118,26 @@ class MiscSettingsPanel extends JPanel {
               "ULTRA_QUALITY - " + TmmResourceBundle.getString("Settings.imagecachetype.ultra_quality"));
           panel.add(lblImageCacheTypeUltraQualityT, "cell 1 0,growx, wmin 0");
         }
+      }
+    }
+    {
+      JPanel Misc = new JPanel();
+      Misc.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][]")); // 16lp ~ width of the
 
+      JLabel lblCacheT = new TmmLabel(TmmResourceBundle.getString("Settings.misc"), H3);
+      CollapsiblePanel collapsiblePanelMisc = new CollapsiblePanel(Misc, lblCacheT, true);
+      collapsiblePanelMisc.addExtraTitleComponent(new DocsButton("/settings#misc-settings-2"));
+      add(collapsiblePanelMisc, "cell 0 2,growx, wmin 0");
+      {
         chckbxEnableTrash = new JCheckBox(TmmResourceBundle.getString("Settings.enabletrash"));
         chckbxEnableTrash.setToolTipText(TmmResourceBundle.getString("Settings.enabletrash.desc"));
-        panelMisc.add(chckbxEnableTrash, "cell 1 6 2 1");
+        Misc.add(chckbxEnableTrash, "cell 1 0 2 1");
 
         chckbxDeleteTrash = new JCheckBox(TmmResourceBundle.getString("Settings.deletetrash"));
-        panelMisc.add(chckbxDeleteTrash, "cell 1 7 2 1");
+        Misc.add(chckbxDeleteTrash, "cell 1 1 2 1");
 
         chckbxMediaInfoXml = new JCheckBox(TmmResourceBundle.getString("Settings.writemediainfoxml"));
-        panelMisc.add(chckbxMediaInfoXml, "cell 1 8 2 1");
+        Misc.add(chckbxMediaInfoXml, "cell 1 2 2 1");
       }
     }
   }

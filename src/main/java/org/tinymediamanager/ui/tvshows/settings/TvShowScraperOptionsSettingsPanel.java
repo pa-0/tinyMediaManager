@@ -51,7 +51,6 @@ import net.miginfocom.swing.MigLayout;
 class TvShowScraperOptionsSettingsPanel extends JPanel {
   private final TvShowSettings      settings = TvShowModuleManager.getInstance().getSettings();
 
-  private JCheckBox                 chckbxAutomaticallyScrapeImages;
   private JComboBox<MediaLanguages> cbScraperLanguage;
   private JComboBox<CountryCode>    cbCertificationCountry;
   private JComboBox<CountryItem>    cbReleaseCountry;
@@ -133,19 +132,6 @@ class TvShowScraperOptionsSettingsPanel extends JPanel {
       chckbxDoNotOverwrite.setToolTipText(TmmResourceBundle.getString("message.scrape.donotoverwrite.desc"));
       panelDefaults.add(chckbxDoNotOverwrite, "cell 1 1 2 1");
     }
-    {
-      JPanel panelImages = new JPanel();
-      panelImages.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "")); // 16lp ~ width of the
-
-      JLabel lblImagesT = new TmmLabel(TmmResourceBundle.getString("Settings.images"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelImages, lblImagesT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#images"));
-      add(collapsiblePanel, "cell 0 4,growx,wmin 0");
-      {
-        chckbxAutomaticallyScrapeImages = new JCheckBox(TmmResourceBundle.getString("Settings.default.autoscrape"));
-        panelImages.add(chckbxAutomaticallyScrapeImages, "cell 1 0 2 1");
-      }
-    }
   }
 
   private static class CountryItem {
@@ -172,12 +158,7 @@ class TvShowScraperOptionsSettingsPanel extends JPanel {
     AutoBinding autoBinding_8 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, settingsBeanProperty_9, cbCertificationCountry,
         jComboBoxBeanProperty);
     autoBinding_8.bind();
-    //
-    Property settingsBeanProperty = BeanProperty.create("scrapeBestImage");
-    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, settingsBeanProperty, chckbxAutomaticallyScrapeImages,
-        jCheckBoxBeanProperty);
-    autoBinding.bind();
+
     //
     Property settingsBeanProperty_10 = BeanProperty.create("capitalWordsInTitles");
     Property jCheckBoxBeanProperty_1 = BeanProperty.create("selected");
@@ -186,6 +167,7 @@ class TvShowScraperOptionsSettingsPanel extends JPanel {
     autoBinding_9.bind();
     //
     Property tvShowSettingsBeanProperty = BeanProperty.create("doNotOverwriteExistingData");
+    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
     AutoBinding autoBinding_1 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty, chckbxDoNotOverwrite,
         jCheckBoxBeanProperty);
     autoBinding_1.bind();

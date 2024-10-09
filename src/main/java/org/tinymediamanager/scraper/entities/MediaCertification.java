@@ -265,8 +265,8 @@ public enum MediaCertification {
     BR_16(CountryCode.BR, "16", new String[] { "16", "BR-16" } ),
     BR_18(CountryCode.BR, "18", new String[] { "18", "BR-18" } ),
 
-    NOT_RATED(CountryCode.US, "not rated", new String[] { "not rated", "NR" }),
-    UNKNOWN(null, "unknown", new String[] { "unknown" });
+    NOT_RATED(CountryCode.US, "Not Rated", new String[] { "Not Rated", "NR" }),
+    UNKNOWN(null, "Unknown", new String[] { "Unknown" });
   // @formatter:on
 
   private final CountryCode country;

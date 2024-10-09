@@ -1,0 +1,4 @@
+sep=,${-- first line defines fixed separator char; US defaults to "," non-US to ";" }
+"Title","Season count","Episode count","Path"
+${foreach tvShows show}"${show.title}","${show.seasonCount}","${show.episodeCount}","${show.path}"
+${end}

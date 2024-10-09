@@ -34,8 +34,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +49,7 @@ import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.components.FlatButton;
+import org.tinymediamanager.ui.components.NoBorderScrollPane;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.TmmTabbedPane;
 import org.tinymediamanager.ui.dialogs.TmmDialog;
@@ -99,6 +102,7 @@ import org.tinymediamanager.ui.movies.filters.MovieSubtitleLanguageFilter;
 import org.tinymediamanager.ui.movies.filters.MovieTagFilter;
 import org.tinymediamanager.ui.movies.filters.MovieThumbSizeFilter;
 import org.tinymediamanager.ui.movies.filters.MovieTmdbIdFilter;
+import org.tinymediamanager.ui.movies.filters.MovieTrailerFormatFilter;
 import org.tinymediamanager.ui.movies.filters.MovieTraktIdFilter;
 import org.tinymediamanager.ui.movies.filters.MovieVideo3DFilter;
 import org.tinymediamanager.ui.movies.filters.MovieVideoBitdepthFilter;
@@ -154,8 +158,6 @@ public class MovieFilterDialog extends TmmDialog {
       }
     });
 
-    ActionListener resetFilter = e -> SwingUtilities.invokeLater(selectionModel::clearFilters);
-
     {
       tabbedPane = new TmmTabbedPane();
       getContentPane().add(tabbedPane, BorderLayout.CENTER);
@@ -163,13 +165,7 @@ public class MovieFilterDialog extends TmmDialog {
       {
         // panel Main
         JPanel panelMain = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("metatag.details"), panelMain);
-
-        panelMain.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 2 1");
-
-        panelMain.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelMain.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelMain.add(Box.createHorizontalGlue(), "wrap");
+        tabbedPane.addTab(TmmResourceBundle.getString("metatag.details"), createTabPanel(panelMain));
 
         addFilter(new MovieNewMoviesFilter(), panelMain);
         addFilter(new MovieDatasourceFilter(), panelMain);
@@ -183,13 +179,8 @@ public class MovieFilterDialog extends TmmDialog {
 
       {
         // panel metadata
-        JPanel panelMetadata = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("tmm.metadata"), panelMetadata);
-        panelMetadata.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 3 1");
-
-        panelMetadata.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelMetadata.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelMetadata.add(Box.createHorizontalGlue(), "wrap");
+        JPanel panelMetadata = new JPanel(new MigLayout("insets 0", PANEL_COL_CONSTRAINTS, "[]"));
+        tabbedPane.addTab(TmmResourceBundle.getString("tmm.metadata"), createTabPanel(panelMetadata));
 
         addFilter(new MovieYearFilter(), panelMetadata);
         addFilter(new MovieDecadesFilter(), panelMetadata);
@@ -216,12 +207,7 @@ public class MovieFilterDialog extends TmmDialog {
       {
         // panel video
         JPanel panelVideo = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("metatag.video"), panelVideo);
-        panelVideo.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 2 1");
-
-        panelVideo.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelVideo.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelVideo.add(Box.createHorizontalGlue(), "wrap");
+        tabbedPane.addTab(TmmResourceBundle.getString("metatag.video"), createTabPanel(panelVideo));
 
         addFilter(new MovieVideoFormatFilter(), panelVideo);
         addFilter(new MovieVideoCodecFilter(), panelVideo);
@@ -237,12 +223,7 @@ public class MovieFilterDialog extends TmmDialog {
       {
         // panel audio
         JPanel panelAudio = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("metatag.audio"), panelAudio);
-        panelAudio.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 2 1");
-
-        panelAudio.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelAudio.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelAudio.add(Box.createHorizontalGlue(), "wrap");
+        tabbedPane.addTab(TmmResourceBundle.getString("metatag.audio"), createTabPanel(panelAudio));
 
         addFilter(new MovieAudioCodecFilter(), panelAudio);
         addFilter(new MovieAudioChannelFilter(), panelAudio);
@@ -254,12 +235,7 @@ public class MovieFilterDialog extends TmmDialog {
       {
         // panel artwork
         JPanel panelArtwork = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("filter.artwork"), panelArtwork);
-        panelArtwork.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 2 1");
-
-        panelArtwork.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelArtwork.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelArtwork.add(Box.createHorizontalGlue(), "wrap");
+        tabbedPane.addTab(TmmResourceBundle.getString("filter.artwork"), createTabPanel(panelArtwork));
 
         addFilter(new MoviePosterSizeFilter(), panelArtwork);
         addFilter(new MovieFanartSizeFilter(), panelArtwork);
@@ -275,12 +251,7 @@ public class MovieFilterDialog extends TmmDialog {
       {
         // panel other
         JPanel panelOther = new JPanel(new MigLayout("", PANEL_COL_CONSTRAINTS, "[]"));
-        tabbedPane.addTab(TmmResourceBundle.getString("filter.others"), panelOther);
-        panelOther.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0 2 1");
-
-        panelOther.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 3 0, right");
-        panelOther.add(new FlatButton(IconManager.DELETE, resetFilter), "cell 3 0, right, wrap");
-        panelOther.add(Box.createHorizontalGlue(), "wrap");
+        tabbedPane.addTab(TmmResourceBundle.getString("filter.others"), createTabPanel(panelOther));
 
         addFilter(new MovieMediaSourceFilter(), panelOther);
         addFilter(new MovieMediaFilesFilter(), panelOther);
@@ -292,6 +263,7 @@ public class MovieFilterDialog extends TmmDialog {
         addFilter(new MovieSubtitleLanguageFilter(), panelOther);
         addFilter(new MovieSubtitleFormatFilter(), panelOther);
         addFilter(new MovieVideoExtrasFilter(), panelOther);
+        addFilter(new MovieTrailerFormatFilter(), panelOther);
         addFilter(new MovieRuntimeFilter(), panelOther);
         addFilter(new MovieDifferentRuntimeFilter(), panelOther);
 
@@ -405,6 +377,29 @@ public class MovieFilterDialog extends TmmDialog {
     }
   }
 
+  /**
+   * create a new {@link JPanel} which holds the label/clear filter button and the scrollpane with the content
+   * 
+   * @param content
+   *          the content {@link JPanel} to add
+   * @return the embedding {@link JPanel} which can be added to the {@link TmmTabbedPane}
+   */
+  private JPanel createTabPanel(JPanel content) {
+    JPanel panel = new JPanel(new MigLayout("insets 0", "[grow][]", "[][][]"));
+    panel.add(new TmmLabel(TmmResourceBundle.getString("movieextendedsearch.filterby")), "cell 0 0");
+
+    panel.add(new JLabel(TmmResourceBundle.getString("filter.reset")), "cell 1 0, right");
+    panel.add(new FlatButton(IconManager.DELETE, e -> SwingUtilities.invokeLater(selectionModel::clearFilters)), "cell 1 0, right");
+
+    JScrollPane scrollPane = new NoBorderScrollPane(content);
+    scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(4);
+
+    panel.add(scrollPane, "cell 0 2 2 1, grow, wrap");
+
+    return panel;
+  }
+
   private Set<UIFilters> getActiveUiFilters() {
     return new HashSet<>(IMovieUIFilter.morphToUiFilters(filters));
   }
@@ -491,12 +486,6 @@ public class MovieFilterDialog extends TmmDialog {
         }
       }
     }
-  }
-
-  @Override
-  public void setVisible(boolean visible) {
-    super.setVisible(visible);
-    pack();
   }
 
   @Override

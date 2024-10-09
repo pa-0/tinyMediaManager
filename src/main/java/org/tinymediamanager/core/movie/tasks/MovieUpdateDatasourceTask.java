@@ -383,7 +383,12 @@ public class MovieUpdateDatasourceTask extends TmmThreadPool {
             // check only movies matching datasource
             continue;
           }
-          imageFiles.addAll(movie.getImagesToCache());
+          for (MediaFile imageFile : movie.getImagesToCache()) {
+            // only cache if not cached already
+            if (!ImageCache.isImageCached(imageFile.getFileAsPath())) {
+              imageFiles.add(imageFile);
+            }
+          }
         }
       }
     } // END datasource loop

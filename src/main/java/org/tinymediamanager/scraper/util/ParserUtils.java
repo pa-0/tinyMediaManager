@@ -91,10 +91,10 @@ public class ParserUtils {
     // remove extension (if found) and split (keep var)
     String fname = filename.replaceFirst("\\.\\w{2,4}$", "");
     // replaces any resolution 1234x1234 (must start and end with a non-word (else too global)
-    fname = fname.replaceFirst("(?i)" + DELIMITER + "\\d{3,4}x\\d{3,4}" + "(" + DELIMITER + "|$)", " ");
+    fname = fname.replaceFirst("(?i)(" + DELIMITER + ")\\d{3,4}x\\d{3,4}" + "(" + DELIMITER + "|$)", "$1");
     // replace FPS specific words (must start with a non-word (else too global)
     for (String cw : CLEANWORDS) {
-      fname = fname.replaceFirst("(?i)" + DELIMITER + cw, " ");
+      fname = fname.replaceFirst("(?i)(" + DELIMITER + ")" + cw, "$1");
     }
 
     LOGGER.trace("--------------------");
@@ -343,12 +343,11 @@ public class ParserUtils {
     String basename = before;
 
     // replaces any resolution 1234x1234 (must start with a non-word (else too global)
-    basename = basename.replaceFirst("(?i)" + DELIMITER + "\\d{3,4}x\\d{3,4}" + "(" + DELIMITER + "|$)", " ");
+    basename = basename.replaceFirst("(?i)(" + DELIMITER + ")\\d{3,4}x\\d{3,4}" + "(" + DELIMITER + "|$)", "$1");
 
     for (String s : HARD_STOPWORDS) {
-      basename = basename.replaceAll("(?i)" + DELIMITER + s + "(" + DELIMITER + "|$)", " "); // TV stop words must start AND END with a non-word (else
-                                                                                             // too global) or line
-      // end
+      // TV stop words must start AND END with a non-word (else too global) or line end (replaced by SAME delimiter)
+      basename = basename.replaceAll("(?i)(" + DELIMITER + ")" + s + "(" + DELIMITER + "|$)", "$1");
       if (LOGGER.isTraceEnabled() && basename.length() != before.length()) {
         // TODO: (ts): VIDEO_TS -> VIDEO - noooo
         LOGGER.trace("Removed some TV stopword (" + s + "): " + before + " -> " + basename);
@@ -358,8 +357,8 @@ public class ParserUtils {
 
     // also remove bad words
     for (String s : TvShowModuleManager.getInstance().getSettings().getBadWord()) {
-      basename = basename.replaceAll("(?i)" + DELIMITER + s + "(" + DELIMITER + "|$)", " "); // TV bad words must start AND END with a non-word (else
-                                                                                             // too global) or line end
+      // TV bad words must start AND END with a non-word (else too global) or line end (replaced by SAME delimiter)
+      basename = basename.replaceAll("(?i)(" + DELIMITER + ")" + s + "(" + DELIMITER + "|$)", "$1");
       if (LOGGER.isTraceEnabled() && basename.length() != before.length()) {
         LOGGER.trace("Removed some TV bad word (" + s + "): " + before + " -> " + basename);
         before = basename;

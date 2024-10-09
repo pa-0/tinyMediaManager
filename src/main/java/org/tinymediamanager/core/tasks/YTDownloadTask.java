@@ -185,34 +185,39 @@ public abstract class YTDownloadTask extends TmmTask {
     MediaEntity mediaEntity = getMediaEntityToAdd();
 
     try {
-      // delete any existing trailer files
-      for (MediaFile trailerMediaFile : mediaEntity.getMediaFiles(MediaFileType.TRAILER)) {
-        Utils.deleteFileSafely(trailerMediaFile.getFile());
-      }
-
-      Path trailerBasename = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName());
-
-      int width = 0;
-
+      int height = 0;
       try {
         VideoQuality videoQuality = getVideoQuality(mediaTrailer.getQuality());
-        width = Integer.parseInt(videoQuality.name().toLowerCase().replace("hd", "").replace("p", ""));
+        height = Integer.parseInt(videoQuality.name().toLowerCase().replace("hd", "").replace("p", ""));
       }
       catch (Exception ignored) {
       }
 
-      YtDlp.downloadTrailer(mediaTrailer.getUrl(), width, trailerBasename);
+      Path trailerBasename = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName());
+      Path tempDir = Paths.get(Utils.getTempFolder());
+      if (!Files.exists(tempDir)) {
+        Files.createDirectory(tempDir);
+      }
+      long timestamp = System.currentTimeMillis();
+      Path tempFile = tempDir.resolve("yt-dlp." + timestamp + ".mp4");
+      YtDlp.downloadTrailer(mediaTrailer.getUrl(), height, tempFile);
 
-      // add new trailer
       Path trailerFilename = Paths.get(trailerBasename + ".mp4");
-      if (Files.exists(trailerFilename)) {
+      // add new trailer
+      if (Files.exists(tempFile)) {
+        // delete same named trailer
+        if (Files.exists(trailerFilename)) {
+          Utils.deleteFileSafely(trailerFilename);
+        }
+        // and move the temporary file
+        Utils.moveFileSafe(tempFile, trailerFilename);
+
         MediaFile mf = new MediaFile(trailerFilename, MediaFileType.TRAILER);
         mf.gatherMediaInformation();
         mediaEntity.removeFromMediaFiles(mf); // remove old (possibly same) file
         mediaEntity.addToMediaFiles(mf); // add file, but maybe with other MI values
         mediaEntity.saveToDb();
       }
-
     }
     catch (Exception e) {
       LOGGER.error("Could not download trailer using yt-dlp - '{}'", e.getMessage());
@@ -414,12 +419,12 @@ public abstract class YTDownloadTask extends TmmTask {
     Path tempFile = download(audioVideoFormat);
 
     if (tempFile != null) {
-      // delete any existing trailer files
-      for (MediaFile trailerMediaFile : mediaEntity.getMediaFiles(MediaFileType.TRAILER)) {
-        Utils.deleteFileSafely(trailerMediaFile.getFile());
-      }
-
       Path trailer = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName() + ".mp4");
+
+      // delete same named trailer
+      if (Files.exists(trailer)) {
+        Utils.deleteFileSafely(trailer);
+      }
 
       // create parent if needed
       if (!Files.exists(trailer.getParent())) {
@@ -479,25 +484,38 @@ public abstract class YTDownloadTask extends TmmTask {
     Path audioFile = futureAudio.get();
 
     if (videoFile != null && audioFile != null) {
-
       // Mux the audio and video
       LOGGER.trace("Muxing...");
-      TmmMuxer muxer = new TmmMuxer(audioFile, videoFile);
-      Path trailer = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName() + ".mp4");
-
-      // create parent if needed
-      if (!Files.exists(trailer.getParent())) {
-        Files.createDirectory(trailer.getParent());
+      Path tempDir = Paths.get(Utils.getTempFolder());
+      if (!Files.exists(tempDir)) {
+        Files.createDirectory(tempDir);
       }
+      long timestamp = System.currentTimeMillis();
+      Path trailerBasename = getDestinationWoExtension().getParent().resolve(getDestinationWoExtension().getFileName());
+      Path tempFile = tempDir.resolve("muxing." + timestamp + ".mp4");
+      Path trailerFilename = Paths.get(trailerBasename + ".mp4");
 
-      muxer.mergeAudioVideo(trailer);
-      LOGGER.trace("Muxing finished");
+      TmmMuxer muxer = new TmmMuxer(audioFile, videoFile);
+      try {
+        muxer.mergeAudioVideo(tempFile);
+        LOGGER.trace("Muxing finished");
 
-      MediaFile mf = new MediaFile(trailer, MediaFileType.TRAILER);
-      mf.gatherMediaInformation();
-      mediaEntity.removeFromMediaFiles(mf); // remove old (possibly same) file
-      mediaEntity.addToMediaFiles(mf); // add file, but maybe with other MI values
-      mediaEntity.saveToDb();
+        // delete same named trailer
+        if (Files.exists(trailerFilename)) {
+          Utils.deleteFileSafely(trailerFilename);
+        }
+        // and move the temporary file
+        Utils.moveFileSafe(tempFile, trailerFilename);
+
+        MediaFile mf = new MediaFile(trailerFilename, MediaFileType.TRAILER);
+        mf.gatherMediaInformation();
+        mediaEntity.removeFromMediaFiles(mf); // remove old (possibly same) file
+        mediaEntity.addToMediaFiles(mf); // add file, but maybe with other MI values
+        mediaEntity.saveToDb();
+      }
+      catch (Exception e) {
+        // TODO: handle exception
+      }
     }
     else {
       setState(TaskState.FAILED);

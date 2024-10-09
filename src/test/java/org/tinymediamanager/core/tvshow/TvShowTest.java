@@ -190,6 +190,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:4 E:101", detectEpisode("Season 4 Episode 101.avi"));
     assertEqual("S:4 E:204", detectEpisode("4x204.avi"));
     assertEqual("S:1 E:13 E:14 E:15", detectEpisode("Peter Pan S01E13_1x14_1x15 - El Hookato.ts"));
+    assertEqual("S:1 E:1", detectEpisode("Better Call Saul - S01E01 - Uno - [2160p-WEB.DL-HEVC.x265-10bit.SDR-DTS.DTS5.1-TrollUHD].mkv"));
 
     // ANIME - https://kodi.wiki/view/Anime
     // PREPEND
@@ -295,6 +296,9 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01 1x02.ext"));
     assertEqual("S:1 E:1 E:2", detectEpisode("name.ep01.ep02.ext"));
     assertEqual("S:1 E:2 E:4 E:345", detectEpisode("name.s01e02e04ep345.ext")); // non consecutive episodes
+    // multi with season change - invalid
+    assertEqual("S:1 E:1", detectEpisode("name.s01e01.s05e02.ext"));
+    assertEqual("S:1 E:1 E:3", detectEpisode("name.01x01_03x02_01x03.ext"));
 
     // multi episode short
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01e02.ext"));

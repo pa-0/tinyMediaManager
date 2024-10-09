@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -42,18 +41,14 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
-import org.tinymediamanager.core.LanguageStyle;
 import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.TvShowSettings;
 import org.tinymediamanager.scraper.MediaScraper;
-import org.tinymediamanager.scraper.entities.MediaLanguages;
-import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.ScraperInTable;
 import org.tinymediamanager.ui.TableColumnResizer;
 import org.tinymediamanager.ui.components.CollapsiblePanel;
 import org.tinymediamanager.ui.components.DocsButton;
-import org.tinymediamanager.ui.components.JHintCheckBox;
 import org.tinymediamanager.ui.components.ReadOnlyTextPane;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.table.TmmTable;
@@ -74,9 +69,6 @@ class TvShowSubtitleSettingsPanel extends JPanel {
   private TmmTable                   tableScraper;
   private JTextPane                  tpScraperDescription;
   private JPanel                     panelScraperOptions;
-  private JComboBox                  cbScraperLanguage;
-  private JComboBox<LanguageStyle>   cbLanguageStyle;
-  private JHintCheckBox              chckbxForceBestMatch;
 
   TvShowSubtitleSettingsPanel() {
     // data init
@@ -150,7 +142,7 @@ class TvShowSubtitleSettingsPanel extends JPanel {
   }
 
   private void initComponents() {
-    setLayout(new MigLayout("hidemode 0", "[600lp,grow]", "[][15lp!][]"));
+    setLayout(new MigLayout("hidemode 0", "[600lp,grow]", "[]"));
     {
       JPanel panelScraper = new JPanel(new MigLayout("hidemode 1, insets 0", "[20lp!][grow]", "[][shrink 0][]"));
 
@@ -188,33 +180,6 @@ class TvShowSubtitleSettingsPanel extends JPanel {
         panelScraperDetails.add(panelScraperOptions, "cell 0 1,grow");
       }
     }
-    {
-      JPanel panelOptions = new JPanel();
-      panelOptions.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][10lp!][]")); // 16lp ~ width of the
-
-      JLabel lblOptionsT = new TmmLabel(TmmResourceBundle.getString("Settings.advancedoptions"), H3);
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelOptions, lblOptionsT, true);
-      collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#advanced-options-3"));
-      add(collapsiblePanel, "cell 0 2,growx, wmin 0");
-      {
-        JLabel lblScraperLanguage = new JLabel(TmmResourceBundle.getString("Settings.preferredLanguage"));
-        panelOptions.add(lblScraperLanguage, "cell 1 0 2 1");
-
-        cbScraperLanguage = new JComboBox(MediaLanguages.valuesSorted());
-        panelOptions.add(cbScraperLanguage, "cell 1 0 2 1");
-
-        chckbxForceBestMatch = new JHintCheckBox(TmmResourceBundle.getString("subtitle.download.force"));
-        chckbxForceBestMatch.setToolTipText(TmmResourceBundle.getString("subtitle.download.force.desc"));
-        chckbxForceBestMatch.setHintIcon(IconManager.HINT);
-        panelOptions.add(chckbxForceBestMatch, "cell 1 1 2 1");
-
-        JLabel lblLanguageStyle = new JLabel(TmmResourceBundle.getString("Settings.renamer.language"));
-        panelOptions.add(lblLanguageStyle, "cell 1 3 2 1");
-
-        cbLanguageStyle = new JComboBox(LanguageStyle.values());
-        panelOptions.add(cbLanguageStyle, "cell 1 3 2 1");
-      }
-    }
   }
 
   protected void initDataBindings() {
@@ -236,22 +201,5 @@ class TvShowSubtitleSettingsPanel extends JPanel {
     AutoBinding autoBinding = Bindings.createAutoBinding(UpdateStrategy.READ, tableScraper, jTableBeanProperty, tpScraperDescription,
         jTextPaneBeanProperty);
     autoBinding.bind();
-    //
-    Property tvShowSettingsBeanProperty = BeanProperty.create("subtitleScraperLanguage");
-    Property jComboBoxBeanProperty = BeanProperty.create("selectedItem");
-    AutoBinding autoBinding_1 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty, cbScraperLanguage,
-        jComboBoxBeanProperty);
-    autoBinding_1.bind();
-    //
-    Property tvShowSettingsBeanProperty_1 = BeanProperty.create("subtitleLanguageStyle");
-    AutoBinding autoBinding_2 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_1, cbLanguageStyle,
-        jComboBoxBeanProperty);
-    autoBinding_2.bind();
-    //
-    Property tvShowSettingsBeanProperty_2 = BeanProperty.create("subtitleForceBestMatch");
-    Property jCheckBoxBeanProperty = BeanProperty.create("selected");
-    AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_2, chckbxForceBestMatch,
-        jCheckBoxBeanProperty);
-    autoBinding_3.bind();
   }
 }

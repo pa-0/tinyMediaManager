@@ -15,11 +15,7 @@
  */
 package org.tinymediamanager.scraper.tvmaze.entities;
 
-import com.google.gson.annotations.SerializedName;
-
-public class Shows {
-
-  @SerializedName("show")
-  public Show show;
-
+public class SearchResult {
+  public float score;
+  public Show  show;
 }

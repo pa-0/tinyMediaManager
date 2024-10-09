@@ -504,6 +504,8 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
       JButton btnOk = new JButton(new OkAction());
       getRootPane().registerKeyboardAction(new OkAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
+      getRootPane().registerKeyboardAction(new OkAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
+          JComponent.WHEN_IN_FOCUSED_WINDOW);
       addDefaultButton(btnOk);
     }
 
@@ -632,6 +634,9 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
         tfName.requestFocusInWindow();
         return;
       }
+
+      // commit all pending changes in this dialog
+      commitChanges();
 
       movieSetToEdit.setTitle(tfName.getText());
       movieSetToEdit.setPlot(taPlot.getText());

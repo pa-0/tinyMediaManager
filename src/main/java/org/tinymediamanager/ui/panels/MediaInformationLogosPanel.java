@@ -117,6 +117,10 @@ public class MediaInformationLogosPanel extends JPanel {
 
     setIcon(lblSource, getSourceIcon());
     setIcon(lblHfr, getHfrIcon());
+
+    // https://stackoverflow.com/questions/1097366/java-swing-revalidate-vs-repaint
+    revalidate();
+    repaint();
   }
 
   private void setIcon(JLabel label, Icon icon) {
@@ -125,12 +129,6 @@ public class MediaInformationLogosPanel extends JPanel {
     if (icon != null) {
       add(label);
     }
-    // if (icon != null) {
-    // label.setVisible(true);
-    // }
-    // else {
-    // label.setVisible(false);
-    // }
   }
 
   /**

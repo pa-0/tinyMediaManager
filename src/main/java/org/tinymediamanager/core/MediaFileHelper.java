@@ -780,6 +780,12 @@ public class MediaFileHelper {
         Date creDat = new Date(view.creationTime().toMillis());
         mediaFile.setDateCreated(creDat);
       }
+      else {
+        // probably the bug https://bugs.openjdk.org/browse/JDK-8331533?attachmentOrder=desc
+        // we do the same as Java < 21.0.2 internally did
+        Date creDat = new Date(view.lastModifiedTime().toMillis());
+        mediaFile.setDateCreated(creDat);
+      }
       if (view.lastModifiedTime().toMillis() > 100000) {
         Date modDat = new Date(view.lastModifiedTime().toMillis());
         mediaFile.setDateLastModified(modDat);
@@ -1762,7 +1768,7 @@ public class MediaFileHelper {
     }
 
     List<Map<String, String>> stream = miSnapshot.get(streamKind);
-    if (stream == null) {
+    if (stream == null || stream.size() <= streamNumber) {
       return Collections.emptyList();
     }
 
@@ -2530,14 +2536,14 @@ public class MediaFileHelper {
     if (StringUtils.isBlank(hdrFormat)) {
       // STILL no HDR format found? check color space
       String col = getMediaInfoValue(miSnapshot, MediaInfo.StreamKind.Video, 0, "colour_primaries");
-      if (col.contains("2020") || col.contains("2100")) {
+      if (col.contains("2100")) {
         hdrFormat = "HDR";
       }
     }
     if (StringUtils.isBlank(hdrFormat)) {
       // STILL no HDR format found? check known HDR transfer protocols
       String trans = getMediaInfoValue(miSnapshot, MediaInfo.StreamKind.Video, 0, "transfer_characteristics");
-      if (trans.contains("2020") || trans.contains("2100") || trans.equals("PQ") || trans.equals("HLG")) {
+      if (trans.contains("2100") || trans.equals("PQ") || trans.equals("HLG")) {
         hdrFormat = "HDR";
       }
     }

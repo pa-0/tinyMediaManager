@@ -19,6 +19,8 @@ import static org.tinymediamanager.core.Constants.ACTORS;
 import static org.tinymediamanager.core.Constants.ACTORS_AS_STRING;
 import static org.tinymediamanager.core.Constants.DIRECTORS;
 import static org.tinymediamanager.core.Constants.DIRECTORS_AS_STRING;
+import static org.tinymediamanager.core.Constants.EDITION;
+import static org.tinymediamanager.core.Constants.EDITION_AS_STRING;
 import static org.tinymediamanager.core.Constants.EPISODE;
 import static org.tinymediamanager.core.Constants.FIRST_AIRED;
 import static org.tinymediamanager.core.Constants.FIRST_AIRED_AS_STRING;
@@ -84,6 +86,7 @@ import org.tinymediamanager.core.threading.TmmTask;
 import org.tinymediamanager.core.threading.TmmTaskChain;
 import org.tinymediamanager.core.threading.TmmTaskHandle;
 import org.tinymediamanager.core.threading.TmmTaskManager;
+import org.tinymediamanager.core.tvshow.TvShowEpisodeEdition;
 import org.tinymediamanager.core.tvshow.TvShowEpisodeScraperMetadataConfig;
 import org.tinymediamanager.core.tvshow.TvShowList;
 import org.tinymediamanager.core.tvshow.TvShowMediaFileComparator;
@@ -136,6 +139,8 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
   private UUID                               tvShowId              = null;
   @JsonProperty
   private MediaSource                        mediaSource           = MediaSource.UNKNOWN;
+  @JsonProperty
+  private TvShowEpisodeEdition               edition               = TvShowEpisodeEdition.NONE;
   @JsonProperty
   private boolean                            stacked               = false;
 
@@ -199,6 +204,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
     dateAdded = new Date(source.dateAdded.getTime());
     ids.putAll(source.ids);
     mediaSource = source.mediaSource;
+    edition = source.edition;
 
     episodeNumbers.addAll(source.episodeNumbers);
 
@@ -301,6 +307,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
     setWatched(!watched || force ? other.watched : watched);
     setPlaycount(playcount == 0 || force ? other.playcount : playcount);
     setMediaSource(mediaSource == MediaSource.UNKNOWN || force ? other.mediaSource : mediaSource);
+    setEdition(edition == TvShowEpisodeEdition.NONE || force ? other.edition : edition);
 
     if (force) {
       actors.clear();
@@ -1375,7 +1382,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
   /**
    * get the play count (mainly passed from/to trakt.tv/NFO)
    * 
-   * @return the play count of this movie
+   * @return the play count of this episode
    */
   public int getPlaycount() {
     return playcount;
@@ -1385,7 +1392,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
    * sets the play count
    * 
    * @param newValue
-   *          the play count of this movie
+   *          the play count of this episode
    */
   public void setPlaycount(int newValue) {
     int oldValue = this.playcount;
@@ -1675,6 +1682,21 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
     firePropertyChange(MEDIA_SOURCE, oldValue, newValue);
   }
 
+  public TvShowEpisodeEdition getEdition() {
+    return edition;
+  }
+
+  public String getEditionAsString() {
+    return edition.toString();
+  }
+
+  public void setEdition(TvShowEpisodeEdition newValue) {
+    TvShowEpisodeEdition oldValue = this.edition;
+    this.edition = newValue;
+    firePropertyChange(EDITION, oldValue, newValue);
+    firePropertyChange(EDITION_AS_STRING, oldValue, newValue);
+  }
+
   /**
    * gets the basename (without stacking)
    *
@@ -1687,7 +1709,7 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
 
   /**
    * <b>PHYSICALLY</b> deletes a complete episode by moving it to datasource backup folder<br>
-   * DS\.backup\&lt;moviename&gt;
+   * DS\.backup\&lt;name&gt;
    */
   public boolean deleteFilesSafely() {
     boolean result = true;

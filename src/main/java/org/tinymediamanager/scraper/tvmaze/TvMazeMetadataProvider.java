@@ -42,7 +42,6 @@ abstract class TvMazeMetadataProvider implements IMediaProvider {
 
   TvMazeMetadataProvider() {
     providerInfo = createMediaProviderInfo();
-
   }
 
   protected abstract String getSubId();

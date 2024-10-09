@@ -116,6 +116,8 @@ public class TvShowEpisodeInformationPanel extends InformationPanel {
   private LinkLabel                         lblTmdbId;
   private JTextPane                         taOtherIds;
   private RatingPanel                       ratingPanel;
+  private JLabel                            lblEditionT;
+  private JLabel                            lblEdition;
 
   /**
    * Instantiates a new tv show information panel.
@@ -402,28 +404,34 @@ public class TvShowEpisodeInformationPanel extends InformationPanel {
       {
         JPanel panelBottomDetails = new JPanel();
         panelRight.add(panelBottomDetails, "cell 0 9,grow");
-        panelBottomDetails.setLayout(new MigLayout("insets 0", "[][10lp][200lp,grow]", "[]2lp[]2lp[]"));
+        panelBottomDetails.setLayout(new MigLayout("insets 0", "[][10lp][200lp,grow]", "[]2lp[]2lp[]2lp[]"));
+
+        lblEditionT = new TmmLabel(TmmResourceBundle.getString("metatag.edition"));
+        panelBottomDetails.add(lblEditionT, "cell 0 0");
+
+        lblEdition = new JLabel("");
+        panelBottomDetails.add(lblEdition, "cell 2 0");
         {
           {
             JLabel lblTagsT = new TmmLabel(TmmResourceBundle.getString("metatag.tags"));
-            panelBottomDetails.add(lblTagsT, "cell 0 0");
+            panelBottomDetails.add(lblTagsT, "cell 0 1");
 
             taTags = new ReadOnlyTextPane();
-            panelBottomDetails.add(taTags, "cell 2 0,growx,wmin 0");
+            panelBottomDetails.add(taTags, "cell 2 1,growx,wmin 0");
           }
           {
             JLabel lblPathT = new TmmLabel(TmmResourceBundle.getString("metatag.path"));
-            panelBottomDetails.add(lblPathT, "cell 0 1");
+            panelBottomDetails.add(lblPathT, "cell 0 2");
 
             lblPath = new LinkTextArea("");
-            panelBottomDetails.add(lblPath, "cell 2 1,growx,wmin 0");
+            panelBottomDetails.add(lblPath, "cell 2 2,growx,wmin 0");
           }
           {
             JLabel lblNoteT = new TmmLabel(TmmResourceBundle.getString("metatag.note"));
-            panelBottomDetails.add(lblNoteT, "cell 0 2");
+            panelBottomDetails.add(lblNoteT, "cell 0 3");
 
             taNote = new ReadOnlyTextPaneHTML();
-            panelBottomDetails.add(taNote, "cell 2 2,growx,wmin 0");
+            panelBottomDetails.add(taNote, "cell 2 3,growx,wmin 0");
           }
         }
       }
@@ -599,5 +607,11 @@ public class TvShowEpisodeInformationPanel extends InformationPanel {
     AutoBinding<TvShowEpisodeSelectionModel, Map<String, Object>, JTextPane, String> autoBinding_19 = Bindings.createAutoBinding(UpdateStrategy.READ,
         tvShowEpisodeSelectionModel, tvShowEpisodeSelectionModelBeanProperty_17, taOtherIds, JTextPaneBeanProperty);
     autoBinding_19.bind();
+    //
+    BeanProperty<TvShowEpisodeSelectionModel, String> tvShowEpisodeSelectionModelBeanProperty_4 = BeanProperty
+        .create("selectedTvShowEpisode.edition.title");
+    AutoBinding<TvShowEpisodeSelectionModel, String, JLabel, String> autoBinding_4 = Bindings.createAutoBinding(UpdateStrategy.READ,
+        tvShowEpisodeSelectionModel, tvShowEpisodeSelectionModelBeanProperty_4, lblEdition, jLabelBeanProperty);
+    autoBinding_4.bind();
   }
 }

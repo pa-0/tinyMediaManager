@@ -1123,6 +1123,8 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
       JButton okButton = new JButton(new OKAction());
       getRootPane().registerKeyboardAction(new OKAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
+      getRootPane().registerKeyboardAction(new OKAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
+          JComponent.WHEN_IN_FOCUSED_WINDOW);
       addButton(okButton);
     }
 
@@ -1148,6 +1150,9 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
         tfTitle.requestFocusInWindow();
         return;
       }
+
+      // commit all pending changes in this dialog
+      commitChanges();
 
       tvShowToEdit.setTitle(tfTitle.getText());
       tvShowToEdit.setOriginalTitle(tfOriginalTitle.getText());

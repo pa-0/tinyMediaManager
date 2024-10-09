@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.tinymediamanager</groupId>
     <artifactId>tinyMediaManager</artifactId>
-    <version>5.0.10-SNAPSHOT</version>
+    <version>5.1-SNAPSHOT</version>
     <name>tinyMediaManager</name>
     <description>a media management tool written in Java</description>
     <url>https://www.tinymediamanager.org/</url>
@@ -305,6 +305,11 @@
         </dependency>
         <dependency>
             <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-fonts-inter</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
             <artifactId>svgSalamander</artifactId>
             <version>1.1.4</version>
         </dependency>
@@ -336,7 +341,7 @@
         <dependency>
             <groupId>org.tinymediamanager</groupId>
             <artifactId>yt</artifactId>
-            <version>3.0.2-tmm10</version>
+            <version>3.2.4-tmm1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
