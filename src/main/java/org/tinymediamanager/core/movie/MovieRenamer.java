@@ -40,7 +40,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.IFileNaming;
-import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.core.ImageCache;
 import org.tinymediamanager.core.LanguageStyle;
 import org.tinymediamanager.core.MediaFileHelper;
@@ -82,7 +81,6 @@ import org.tinymediamanager.core.movie.filenaming.MovieNfoNaming;
 import org.tinymediamanager.core.movie.filenaming.MoviePosterNaming;
 import org.tinymediamanager.core.movie.filenaming.MovieThumbNaming;
 import org.tinymediamanager.core.movie.filenaming.MovieTrailerNaming;
-import org.tinymediamanager.core.movie.jmte.MovieEntityRenderer;
 import org.tinymediamanager.core.movie.jmte.MovieNamedFirstCharacterRenderer;
 import org.tinymediamanager.core.movie.jmte.MovieNamedIndexOfMovieSetRenderer;
 import org.tinymediamanager.core.movie.jmte.MovieNamedIndexOfMovieSetWithDummyRenderer;
@@ -91,6 +89,11 @@ import org.tinymediamanager.scraper.util.StrgUtils;
 
 import com.floreysoft.jmte.Engine;
 import com.floreysoft.jmte.extended.ChainedNamedRenderer;
+import com.floreysoft.jmte.message.DefaultErrorHandler;
+import com.floreysoft.jmte.message.ErrorMessage;
+import com.floreysoft.jmte.message.ParseException;
+import com.floreysoft.jmte.message.ResourceBundleMessage;
+import com.floreysoft.jmte.token.Token;
 
 /**
  * The Class MovieRenamer.
@@ -1236,6 +1239,7 @@ public class MovieRenamer {
   public static String getTokenValue(Movie movie, String token) {
     try {
       Engine engine = createEngine();
+      engine.setModelAdaptor(new TmmModelAdaptor());
 
       engine.setOutputAppender(new TmmOutputAppender() {
         @Override
@@ -1269,7 +1273,6 @@ public class MovieRenamer {
   public static Engine createEngine() {
     Engine engine = Engine.createEngine();
     engine.registerRenderer(Number.class, new ZeroNumberRenderer());
-    engine.registerRenderer(IJmteDefaultValue.class, new MovieEntityRenderer());
     engine.registerNamedRenderer(new MovieNamedFirstCharacterRenderer());
     engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetRenderer());
     engine.registerNamedRenderer(new MovieNamedIndexOfMovieSetWithDummyRenderer());
@@ -1288,8 +1291,12 @@ public class MovieRenamer {
     engine.registerNamedRenderer(new ChainedNamedRenderer(engine.getAllNamedRenderers()));
 
     engine.registerAnnotationProcessor(new RegexpProcessor());
-
-    engine.setModelAdaptor(new TmmModelAdaptor());
+    engine.setErrorHandler(new DefaultErrorHandler() {
+      @Override
+      public void error(ErrorMessage errorMessage, Token token, Map<String, Object> parameters) throws ParseException {
+        throw new ParseException(new ResourceBundleMessage(errorMessage.key).withModel(parameters).onToken(token));
+      }
+    });
 
     return engine;
   }

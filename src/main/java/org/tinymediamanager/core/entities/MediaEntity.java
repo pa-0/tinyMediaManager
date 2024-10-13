@@ -70,18 +70,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.AbstractModelObject;
-import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.core.IPrintable;
 import org.tinymediamanager.core.ImageCache;
 import org.tinymediamanager.core.MediaFileHelper;
 import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.TmmDateFormat;
-import org.tinymediamanager.core.TmmMultilineRecursiveToStringStyle;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType;
@@ -97,7 +94,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * 
  * @author Manuel Laggner
  */
-public abstract class MediaEntity extends AbstractModelObject implements IPrintable, IJmteDefaultValue {
+public abstract class MediaEntity extends AbstractModelObject implements IPrintable {
   private static final Logger          LOGGER             = LoggerFactory.getLogger(MediaEntity.class);
 
   /** The id for the database. */
@@ -1565,11 +1562,5 @@ public abstract class MediaEntity extends AbstractModelObject implements IPrinta
   @Override
   public String toPrintable() {
     return getTitle();
-  }
-
-  @Override
-  public String toJmteDefaultValue() {
-    // return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaEntity.class);
-    return ToStringBuilder.reflectionToString(this, new TmmMultilineRecursiveToStringStyle());
   }
 }

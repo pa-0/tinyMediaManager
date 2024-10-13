@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.scraper.DynaEnum;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Manuel Laggner
  * @since 1.0
  */
-public class MediaGenres extends DynaEnum<MediaGenres> implements IJmteDefaultValue {
+public class MediaGenres extends DynaEnum<MediaGenres> {
   private static final Comparator<MediaGenres> COMPARATOR      = new MediaGenres.MediaGenresComparator();
 
   public static final MediaGenres              ACTION          = new MediaGenres("ACTION", 0, "Action");
@@ -395,10 +394,5 @@ public class MediaGenres extends DynaEnum<MediaGenres> implements IJmteDefaultVa
    */
   public static void removeListener(DynaEnumEventListener<?> listener) {
     removeListener(MediaGenres.class, listener);
-  }
-
-  @Override
-  public String toJmteDefaultValue() {
-    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaGenres.class);
   }
 }

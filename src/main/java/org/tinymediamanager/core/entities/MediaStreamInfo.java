@@ -21,13 +21,11 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.tinymediamanager.core.AbstractModelObject;
-import org.tinymediamanager.core.IJmteDefaultValue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MediaStreamInfo extends AbstractModelObject implements IJmteDefaultValue {
+public class MediaStreamInfo extends AbstractModelObject {
 
   /**
    * https://github.com/xbmc/xbmc/blob/master/xbmc/cores/VideoPlayer/Interface/StreamInfo.h
@@ -184,10 +182,5 @@ public class MediaStreamInfo extends AbstractModelObject implements IJmteDefault
     }
 
     return true;
-  }
-
-  @Override
-  public String toJmteDefaultValue() {
-    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaStreamInfo.class);
   }
 }

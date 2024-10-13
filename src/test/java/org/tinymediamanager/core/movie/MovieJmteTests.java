@@ -58,11 +58,11 @@ import org.tinymediamanager.core.jmte.NamedUpperCaseRenderer;
 import org.tinymediamanager.core.jmte.TmmModelAdaptor;
 import org.tinymediamanager.core.jmte.TmmOutputAppender;
 import org.tinymediamanager.core.jmte.ZeroNumberRenderer;
-import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedFirstCharacterRenderer;
-import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedIndexOfMovieSetRenderer;
-import org.tinymediamanager.core.movie.MovieRenamer.MovieNamedIndexOfMovieSetWithDummyRenderer;
 import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.core.movie.entities.MovieSet;
+import org.tinymediamanager.core.movie.jmte.MovieNamedFirstCharacterRenderer;
+import org.tinymediamanager.core.movie.jmte.MovieNamedIndexOfMovieSetRenderer;
+import org.tinymediamanager.core.movie.jmte.MovieNamedIndexOfMovieSetWithDummyRenderer;
 import org.tinymediamanager.scraper.entities.MediaCertification;
 
 import com.floreysoft.jmte.Engine;

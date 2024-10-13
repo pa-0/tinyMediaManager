@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.scraper.util.MetadataUtil;
@@ -46,12 +47,12 @@ public class NamedSplitRenderer implements NamedRenderer {
       return "";
     }
 
-    if (o instanceof String) {
-      String[] split = ((String) o).split(",");
+    if (o instanceof String string && StringUtils.isNotBlank(string)) {
+      String[] split = string.split(",");
 
       if (split.length == 1) {
-        LOGGER.debug("there was nothing to split: {}", o);
-        return o.toString(); // unmodified
+        LOGGER.trace("there was nothing to split: {}", o);
+        return string; // unmodified
       }
 
       // from/to
@@ -61,7 +62,7 @@ public class NamedSplitRenderer implements NamedRenderer {
           int from = MetadataUtil.parseInt(fromTo[0], -1);
           int to = MetadataUtil.parseInt(fromTo[1], -1);
           if (from >= 0 && to >= 0 && from < to) {
-            List<String> ret = new ArrayList<String>();
+            List<String> ret = new ArrayList<>();
             for (int i = from; i <= to; i++) {
               if (i < split.length) {
                 ret.add(split[i].strip());
@@ -74,7 +75,7 @@ public class NamedSplitRenderer implements NamedRenderer {
       else {
         int idx = MetadataUtil.parseInt(s, -1);
         if (idx >= split.length) {
-          LOGGER.debug("Wanted entry {} greater than what we have splitted: {}", idx, split);
+          LOGGER.trace("Wanted entry {} greater than what we have splitted: {}", idx, split);
           return o.toString();// unmodified
         }
 
@@ -84,7 +85,7 @@ public class NamedSplitRenderer implements NamedRenderer {
       }
     }
 
-    LOGGER.debug("there was nothing to split for index: {} - {}", s, o);
+    LOGGER.trace("there was nothing to split for index: {} - {}", s, o);
     return o.toString();// unmodified
   }
 

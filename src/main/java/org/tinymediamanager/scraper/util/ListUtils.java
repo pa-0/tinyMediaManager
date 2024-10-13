@@ -184,4 +184,21 @@ public class ListUtils {
 
     return false;
   }
+
+  /**
+   * gets the first entry of the given {@link List} or null otherwise
+   * 
+   * @param list
+   *          the {@link List} to get the first entry from
+   * @return the first entry or null
+   * @param <E>
+   *          the type of the value
+   */
+  public static <E> E getFirst(List<E> list) {
+    if (isEmpty(list)) {
+      return null;
+    }
+
+    return list.get(0);
+  }
 }

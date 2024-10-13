@@ -36,14 +36,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.AbstractModelObject;
-import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.core.MediaFileHelper;
 import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.Settings;
+import org.tinymediamanager.core.TmmToStringStyle;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.scraper.util.ListUtils;
 import org.tinymediamanager.thirdparty.MediaInfo.StreamKind;
@@ -56,7 +57,7 @@ import com.madgag.gif.fmsware.GifDecoder;
  *
  * @author Manuel Laggner
  */
-public class MediaFile extends AbstractModelObject implements Comparable<MediaFile>, IJmteDefaultValue {
+public class MediaFile extends AbstractModelObject implements Comparable<MediaFile> {
   private static final Logger        LOGGER            = LoggerFactory.getLogger(MediaFile.class);
 
   public static final MediaFile      EMPTY_MEDIAFILE   = new MediaFile();
@@ -1729,6 +1730,19 @@ public class MediaFile extends AbstractModelObject implements Comparable<MediaFi
     return Utils.deleteFileWithBackup(getFileAsPath(), datasource);
   }
 
+  /**
+   * <p>
+   * Uses <code>ReflectionToStringBuilder</code> to generate a <code>toString</code> for the specified object.
+   * </p>
+   *
+   * @return the String result
+   * @see ReflectionToStringBuilder#toString(Object)
+   */
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, TmmToStringStyle.TMM_STYLE, false, MediaFile.class);
+  }
+
   @Override
   public boolean equals(Object other) {
 
@@ -1746,10 +1760,5 @@ public class MediaFile extends AbstractModelObject implements Comparable<MediaFi
   @Override
   public int hashCode() {
     return this.getFileAsPath().hashCode();
-  }
-
-  @Override
-  public String toJmteDefaultValue() {
-    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, MediaFile.class);
   }
 }

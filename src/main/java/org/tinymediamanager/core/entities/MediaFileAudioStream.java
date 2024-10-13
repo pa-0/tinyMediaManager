@@ -17,6 +17,10 @@ package org.tinymediamanager.core.entities;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.tinymediamanager.core.TmmToStringStyle;
+
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -67,6 +71,19 @@ public class MediaFileAudioStream extends MediaStreamInfo {
 
   public void setBitDepth(int bitDepth) {
     this.bitDepth = bitDepth;
+  }
+
+  /**
+   * <p>
+   * Uses <code>ReflectionToStringBuilder</code> to generate a <code>toString</code> for the specified object.
+   * </p>
+   *
+   * @return the String result
+   * @see ReflectionToStringBuilder#toString(Object)
+   */
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, TmmToStringStyle.TMM_STYLE, false, MediaFileAudioStream.class);
   }
 
   @Override

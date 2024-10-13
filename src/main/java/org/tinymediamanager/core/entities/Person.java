@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.tinymediamanager.core.AbstractModelObject;
-import org.tinymediamanager.core.IJmteDefaultValue;
 import org.tinymediamanager.core.IPrintable;
 import org.tinymediamanager.core.TmmToStringStyle;
 import org.tinymediamanager.core.Utils;
@@ -42,7 +41,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @author Manuel Laggner
  */
-public class Person extends AbstractModelObject implements IPrintable, IJmteDefaultValue {
+public class Person extends AbstractModelObject implements IPrintable {
   public static final String ACTOR_DIR    = ".actors";
   public static final String PRODUCER_DIR = ".producers";
 
@@ -367,10 +366,5 @@ public class Person extends AbstractModelObject implements IPrintable, IJmteDefa
   @Override
   public String toPrintable() {
     return getName();
-  }
-
-  @Override
-  public String toJmteDefaultValue() {
-    return ToStringBuilder.reflectionToString(this, IJmteDefaultValue.JMTE_STYLE, false, Person.class);
   }
 }
