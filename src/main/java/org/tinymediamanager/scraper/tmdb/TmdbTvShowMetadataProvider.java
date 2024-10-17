@@ -429,19 +429,30 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
     // build up all episodes
     List<MediaMetadata> episodes = new ArrayList<>();
     for (MediaMetadata md : episodesInRequestedLanguage.values()) {
+      String scrapedTitle = md.getTitle(); // save for later
       int episode = md.getEpisodeNumber(AIRED).episode();
       MediaMetadata fallback = episodesInFallbackLanguage.get(episode);
       MediaMetadata original = episodesInOriginalLanguage.get(episode);
 
-      // title
-      // try to get from fallback
-      if (StringUtils.isBlank(md.getTitle()) && fallback != null && StringUtils.isNotBlank(fallback.getTitle())) {
+      // try to detect TMDBs auto translated, generic "episode X" titles... booo
+      boolean generic = isGenericTitle(md.getTitle());
+      // try to get title from fallback
+      if (fallback != null && (generic || StringUtils.isBlank(md.getTitle()) && StringUtils.isNotBlank(fallback.getTitle()))) {
         md.setTitle(fallback.getTitle());
       }
 
-      // try to get from original
-      if (StringUtils.isBlank(md.getTitle()) && original != null && StringUtils.isNotBlank(original.getTitle())) {
+      // try to get title from original
+      generic = isGenericTitle(md.getTitle());
+      if (original != null && (generic || StringUtils.isBlank(md.getTitle()) && StringUtils.isNotBlank(original.getTitle()))) {
         md.setTitle(original.getTitle());
+      }
+
+      // uh-oh.
+      // our scraped title is generic, the fallback title is also generic, and even the original title is generic!
+      // in this case, we can set it back to the "translated" generic title as it was before....
+      generic = isGenericTitle(md.getTitle());
+      if (generic) {
+        md.setTitle(scrapedTitle);
       }
 
       // original title
@@ -449,6 +460,7 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
         md.setOriginalTitle(original.getTitle());
       }
 
+      // -----------------------------------------------------------------------------
       // plot
       // try to get from fallback
       if (StringUtils.isBlank(md.getPlot()) && fallback != null && StringUtils.isNotBlank(fallback.getPlot())) {
@@ -464,6 +476,16 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
     }
 
     return episodes;
+  }
+
+  private boolean isGenericTitle(String title) {
+    title = title.replaceAll("\\d", ""); // remove all numbers
+    for (String lang : EPISODE_TRANS) {
+      if (title.contains(lang)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -709,6 +731,10 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
     md.setScrapeOptions(options);
 
     int showTmdbId = 0;
+    if (options.getIds().get(MediaMetadata.TVSHOW_IDS) instanceof Map) {
+      Map<String, Object> tvShowIds = (Map<String, Object>) options.getIds().get(MediaMetadata.TVSHOW_IDS);
+      showTmdbId = (int) tvShowIds.getOrDefault(MediaMetadata.TMDB, 0);
+    }
     int episodeTmdbId = options.getIdAsIntOrDefault(TMDB, 0);
 
     // every lookup in tmdb need to be done with the S/E number in AIRED order

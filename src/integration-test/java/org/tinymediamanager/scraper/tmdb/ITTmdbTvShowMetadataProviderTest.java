@@ -28,6 +28,7 @@ import org.tinymediamanager.core.tvshow.TvShowEpisodeSearchAndScrapeOptions;
 import org.tinymediamanager.core.tvshow.TvShowSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaSearchResult;
+import org.tinymediamanager.scraper.config.MediaProviderConfigObject;
 import org.tinymediamanager.scraper.entities.CountryCode;
 import org.tinymediamanager.scraper.entities.MediaEpisodeGroup;
 import org.tinymediamanager.scraper.entities.MediaLanguages;
@@ -280,4 +281,25 @@ public class ITTmdbTvShowMetadataProviderTest extends BasicITest {
           .anyMatch(episodeGroup -> episodeGroup.getEpisodeGroupType() == MediaEpisodeGroup.EpisodeGroupType.ALTERNATE);
     }
   }
+
+  @Test
+  public void getEpisodeTranslationInEveryPossibleLanguage() throws Exception {
+    ITvShowMetadataProvider mp = new TmdbTvShowMetadataProvider();
+    mp.getProviderInfo().getConfig().setValue("titleFallback", false);
+    mp.getProviderInfo().getConfig().setValue("titleFallbackLanguage", MediaLanguages.en.toString());
+
+    TvShowEpisodeSearchAndScrapeOptions options = new TvShowEpisodeSearchAndScrapeOptions();
+    options.setId(MediaMetadata.SEASON_NR, "1");
+    options.setId(MediaMetadata.EPISODE_NR, "1");
+    options.getTvShowIds().put(MediaMetadata.TMDB, 273506);
+    MediaMetadata md = null;
+    MediaProviderConfigObject cfg = mp.getProviderInfo().getConfig().getConfigObject("titleFallbackLanguage");
+    for (String lang : cfg.getPossibleValues()) {
+      options.setLanguage(MediaLanguages.get(lang));
+      options.setId("languCountry", lang); // TODO: workaround; change getMD impl to use THIS language, not our reduced MediaLanguage!!!
+      md = mp.getMetadata(options);
+      System.out.println(md.getTitle() + "\t" + lang);
+    }
+  }
+
 }
