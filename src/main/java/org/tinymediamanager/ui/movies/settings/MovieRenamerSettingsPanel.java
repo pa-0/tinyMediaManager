@@ -32,6 +32,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -129,9 +130,13 @@ public class MovieRenamerSettingsPanel extends JPanel implements HierarchyListen
       }
     };
 
-    tfMoviePath.getDocument().addDocumentListener(documentListener);
-    tfMovieFilename.getDocument().addDocumentListener(documentListener);
     tfFirstCharacter.getDocument().addDocumentListener(documentListener);
+
+    settings.addPropertyChangeListener(e -> {
+      switch (e.getPropertyName()) {
+        case "renamerPathname", "renamerFilename" -> createRenamerExample();
+      }
+    });
 
     // foldername space replacement
     String replacement = settings.getRenamerPathnameSpaceReplacement();
@@ -234,7 +239,10 @@ public class MovieRenamerSettingsPanel extends JPanel implements HierarchyListen
       }
       {
         JButton btnJmteExplorer = new JButton(TmmResourceBundle.getString("jmteexplorer.title"));
-        btnJmteExplorer.addActionListener(e -> MovieJmteExplorer.openDialog());
+        btnJmteExplorer.addActionListener(e -> {
+          MovieJmteExplorer dialog = new MovieJmteExplorer((JDialog) this.getTopLevelAncestor());
+          dialog.setVisible(true);
+        });
         panelPatterns.add(btnJmteExplorer, "cell 4 0");
       }
       {

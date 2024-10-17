@@ -263,7 +263,9 @@ public class MainMenuPanel extends JPanel {
       menu.addSeparator();
       final JMenu jmteExplorerMenu = new JMenu(TmmResourceBundle.getString("jmteexplorer.title"));
       JMenuItem movieJmteExplorer = new JMenuItem(TmmResourceBundle.getString("tmm.movies"));
-      movieJmteExplorer.addActionListener(arg0 -> MovieJmteExplorer.openDialog());
+      movieJmteExplorer.addActionListener(arg0 -> {
+        new MovieJmteExplorer(MainWindow.getInstance()).setVisible(true);
+      });
       jmteExplorerMenu.add(movieJmteExplorer);
 
       menu.add(jmteExplorerMenu);

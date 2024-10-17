@@ -79,7 +79,6 @@ public class SettingsDialog extends TmmDialog {
 
   private SettingsDialog() {
     super(TmmResourceBundle.getString("tmm.settings"), "settings");
-    setModalityType(ModalityType.MODELESS);
 
     dataProvider = new TmmSettingsDataProvider();
 
