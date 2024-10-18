@@ -441,14 +441,8 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
         md.setTitle(fallback.getTitle());
       }
 
-      // try to get title from original
-      generic = isGenericTitle(md.getTitle());
-      if (original != null && (generic || StringUtils.isBlank(md.getTitle()) && StringUtils.isNotBlank(original.getTitle()))) {
-        md.setTitle(original.getTitle());
-      }
-
       // uh-oh.
-      // our scraped title is generic, the fallback title is also generic, and even the original title is generic!
+      // our scraped title is generic and the fallback title is also generic!
       // in this case, we can set it back to the "translated" generic title as it was before....
       generic = isGenericTitle(md.getTitle());
       if (generic) {
@@ -458,6 +452,11 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
       // original title
       if (original != null && StringUtils.isNotBlank(original.getTitle())) {
         md.setOriginalTitle(original.getTitle());
+
+        // seems not to happen any longer, as we ALWAYS get a translation/title
+        if (StringUtils.isBlank(md.getTitle())) {
+          md.setTitle(original.getTitle());
+        }
       }
 
       // -----------------------------------------------------------------------------
