@@ -114,9 +114,27 @@ class Controller {
    * @throws IOException
    *           any {@link IOException} occurred for the request
    */
+  Response<SubdlModel> getResultsFromImdbId(String imdbId, String language, Type type, int season, int episode) throws IOException {
+    return getService().fetchResultswithImdbId(getSecretKey(), imdbId, type.name().toLowerCase(Locale.ROOT), language, season, episode)
+        .execute();
+  }
+
+  /**
+   * get the Subdl results for the given IMDB id
+   *
+   * @param imdbId
+   *          the IMDB id to search for
+   * @param language
+   *          the language to get the result for (ISO 639-1, uppercase)
+   * @param type
+   *          the video {@link Type}
+   * @return the {@link Response<SubdlModel>} for the request
+   * @throws IOException
+   *           any {@link IOException} occurred for the request
+   */
   Response<SubdlModel> getResultsFromImdbId(String imdbId, String language, Type type) throws IOException {
     return getService().fetchResultswithImdbId(getSecretKey(), imdbId, type.name().toLowerCase(Locale.ROOT), language)
-        .execute();
+            .execute();
   }
 
   /**
@@ -132,9 +150,27 @@ class Controller {
    * @throws IOException
    *           any {@link IOException} occurred for the request
    */
+  Response<SubdlModel> getResultsFromTmdbId(int tmdbId, String language, Type type, int season, int episode) throws IOException {
+    return getService().fetchResultswithTmdbId(getSecretKey(), tmdbId, type.name().toLowerCase(Locale.ROOT), language, season, episode)
+        .execute();
+  }
+
+  /**
+   * get the Subdl results for the given TMDB id
+   *
+   * @param tmdbId
+   *          the TMDB id to search for
+   * @param language
+   *          the language to get the result for (ISO 639-1, uppercase)
+   * @param type
+   *          the video {@link Type}
+   * @return the {@link Response<SubdlModel>} for the request
+   * @throws IOException
+   *           any {@link IOException} occurred for the request
+   */
   Response<SubdlModel> getResultsFromTmdbId(int tmdbId, String language, Type type) throws IOException {
     return getService().fetchResultswithTmdbId(getSecretKey(), tmdbId, type.name().toLowerCase(Locale.ROOT), language)
-        .execute();
+            .execute();
   }
 
 }

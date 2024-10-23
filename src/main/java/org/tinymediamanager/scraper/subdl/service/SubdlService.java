@@ -51,12 +51,33 @@ public interface SubdlService {
    *          the video type (`movie` or `tv`)
    * @param languages
    *          the languages to get the response for (separated by comma)
+   * @param season
+   *          season ID
+   * @param episode
+   *          episode ID
+   * @return the response as {@link Call<SubdlModel>}
+   */
+  @GET("subtitles")
+  Call<SubdlModel> fetchResultswithImdbId(@Query("api_key") String apiKey, @Query("imdb_id") String imdbId, @Query("type") String type,
+      @Query("languages") String languages, @Query("season_number") int season, @Query("episode_number") int episode);
+
+  /**
+   * Fetch all results for a query with the IMDB id
+   *
+   * @param apiKey
+   *          the API key
+   * @param imdbId
+   *          the IMDB id
+   * @param type
+   *          the video type (`movie` or `tv`)
+   * @param languages
+   *          the languages to get the response for (separated by comma)
    *
    * @return the response as {@link Call<SubdlModel>}
    */
   @GET("subtitles")
   Call<SubdlModel> fetchResultswithImdbId(@Query("api_key") String apiKey, @Query("imdb_id") String imdbId, @Query("type") String type,
-      @Query("languages") String languages);
+                                          @Query("languages") String languages);
 
   /**
    * Fetch all results for a query with the TMDB id
@@ -69,9 +90,31 @@ public interface SubdlService {
    *          the video type (`movie` or `tv`)
    * @param languages
    *          the languages to get the response for (separated by comma
+   * @param season
+   *          season ID
+   * @param episode
+   *          episode ID
    * @return the response as {@link Call<SubdlModel>}
    */
   @GET("subtitles")
   Call<SubdlModel> fetchResultswithTmdbId(@Query("api_key") String apiKey, @Query("tmdb_id") int tmdbId, @Query("type") String type,
-      @Query("languages") String languages);
+      @Query("languages") String languages, @Query("season_number") int season, @Query("episode_number") int episode);
+
+  /**
+   * Fetch all results for a query with the TMDB id
+   *
+   * @param apiKey
+   *          the API key
+   * @param tmdbId
+   *          the TMDB id
+   * @param type
+   *          the video type (`movie` or `tv`)
+   * @param languages
+   *          the languages to get the response for (separated by comma
+   * @return the response as {@link Call<SubdlModel>}
+   */
+  @GET("subtitles")
+  Call<SubdlModel> fetchResultswithTmdbId(@Query("api_key") String apiKey, @Query("tmdb_id") int tmdbId, @Query("type") String type,
+                                          @Query("languages") String languages);
 }
+

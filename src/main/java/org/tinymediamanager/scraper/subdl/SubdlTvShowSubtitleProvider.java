@@ -18,15 +18,16 @@ package org.tinymediamanager.scraper.subdl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaProviderInfo;
 import org.tinymediamanager.scraper.SubtitleSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.SubtitleSearchResult;
-import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.NothingFoundException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.ITvShowSubtitleProvider;
@@ -34,6 +35,9 @@ import org.tinymediamanager.scraper.subdl.model.SubdlModel;
 import org.tinymediamanager.scraper.subdl.model.Subtitles;
 import org.tinymediamanager.scraper.subdl.model.Type;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
+import org.tinymediamanager.scraper.util.MetadataUtil;
+
+import static org.tinymediamanager.scraper.MediaMetadata.IMDB;
 
 /**
  * The class {@link SubdlTvShowSubtitleProvider} offers access to the SubDL service for movies
@@ -47,6 +51,7 @@ public class SubdlTvShowSubtitleProvider extends SubdlSubtitleProvider implement
   @Override
   public List<SubtitleSearchResult> search(SubtitleSearchAndScrapeOptions options) throws ScrapeException {
 
+    Map<String, Object> tvShowIds;
     initAPI(providerInfo.getConfig().getValue("secret_key"));
     LOGGER.debug("search() {}", options);
 
@@ -54,29 +59,39 @@ public class SubdlTvShowSubtitleProvider extends SubdlSubtitleProvider implement
 
     SubdlModel searchResult = null;
 
-    if (MediaIdUtil.isValidImdbId(options.getImdbId())) {
-      searchResult = getSubdlFromImdbID(options.getImdbId(), options.getLanguage().name());
+    if (options.getIds().get("tvShowIds") instanceof Map) {
+      tvShowIds = (Map<String, Object>) options.getIds().get("tvShowIds");
     }
-
-    if (searchResult == null && options.getTmdbId() > 0) {
-      searchResult = getSubdlFromTmdbID(options.getTmdbId(), options.getLanguage().name());
-    }
-
-    if (searchResult == null) {
-      searchResult = getSubdlFromQuery(options.getSearchQuery(), options.getLanguage().name());
-    }
-
-    if (searchResult == null) {
+    else {
       throw new NothingFoundException();
     }
 
-    for (Subtitles subtitles : searchResult.subtitles) {
-      SubtitleSearchResult subtitleSearchResult = new SubtitleSearchResult(options.getImdbId());
-      subtitleSearchResult.setReleaseName(subtitles.releaseName);
-      subtitleSearchResult.setTitle(subtitles.name);
-      subtitleSearchResult.setUrl(() -> BASE_URL_DL + subtitles.url);
-      results.add(subtitleSearchResult);
+    String tvShowImdbId = String.valueOf(tvShowIds.get(IMDB));
+    if (MediaIdUtil.isValidImdbId(tvShowImdbId)) {
+      searchResult = getSubdlFromImdbID(tvShowImdbId, options.getLanguage().name(), options.getSeason(), options.getEpisode());
+    }
 
+    int tvShowTmdbId = MetadataUtil.parseInt(String.valueOf(tvShowIds.get(MediaMetadata.TMDB)), 0);
+    if ((searchResult == null || !searchResult.status) && tvShowTmdbId > 0) {
+      searchResult = getSubdlFromTmdbID(tvShowTmdbId, options.getLanguage().name(), options.getSeason(), options.getEpisode());
+    }
+
+    if ((searchResult == null || !searchResult.status)) {
+      searchResult = getSubdlFromQuery(options.getSearchQuery(), options.getLanguage().name());
+    }
+
+    if ((searchResult == null || !searchResult.status)) {
+      return results;
+    }
+
+    for (Subtitles subtitles : searchResult.subtitles) {
+      if (options.getSeason() == subtitles.season && options.getEpisode() == subtitles.episode) {
+        SubtitleSearchResult subtitleSearchResult = new SubtitleSearchResult(options.getImdbId());
+        subtitleSearchResult.setReleaseName(subtitles.releaseName);
+        subtitleSearchResult.setTitle(subtitles.name);
+        subtitleSearchResult.setUrl(() -> BASE_URL_DL + subtitles.url);
+        results.add(subtitleSearchResult);
+      }
     }
 
     return results;
@@ -93,9 +108,9 @@ public class SubdlTvShowSubtitleProvider extends SubdlSubtitleProvider implement
     return null;
   }
 
-  private @Nullable SubdlModel getSubdlFromImdbID(String imdbID, String language) {
+  private @Nullable SubdlModel getSubdlFromImdbID(String imdbID, String language, int season, int episode) {
     try {
-      return processResponse(controller.getResultsFromImdbId(imdbID, language.toUpperCase(Locale.ROOT), Type.TV));
+      return processResponse(controller.getResultsFromImdbId(imdbID, language.toUpperCase(Locale.ROOT), Type.TV, season, episode));
     }
     catch (Exception e) {
       LOGGER.warn("could not get response from subdl - '{}'", e.getMessage());
@@ -104,9 +119,9 @@ public class SubdlTvShowSubtitleProvider extends SubdlSubtitleProvider implement
     return null;
   }
 
-  private @Nullable SubdlModel getSubdlFromTmdbID(int tmdbId, String language) {
+  private @Nullable SubdlModel getSubdlFromTmdbID(int tmdbId, String language, int season, int episode) {
     try {
-      return processResponse(controller.getResultsFromTmdbId(tmdbId, language.toUpperCase(Locale.ROOT), Type.TV));
+      return processResponse(controller.getResultsFromTmdbId(tmdbId, language.toUpperCase(Locale.ROOT), Type.TV, season, episode));
     }
     catch (Exception e) {
       LOGGER.warn("could not get response from subdl - '{}'", e.getMessage());

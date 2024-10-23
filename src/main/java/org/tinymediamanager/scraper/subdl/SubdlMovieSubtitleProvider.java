@@ -15,7 +15,6 @@
  */
 package org.tinymediamanager.scraper.subdl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -27,17 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.tinymediamanager.scraper.MediaProviderInfo;
 import org.tinymediamanager.scraper.SubtitleSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.SubtitleSearchResult;
-import org.tinymediamanager.scraper.exceptions.HttpException;
-import org.tinymediamanager.scraper.exceptions.NothingFoundException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMovieSubtitleProvider;
 import org.tinymediamanager.scraper.subdl.model.SubdlModel;
 import org.tinymediamanager.scraper.subdl.model.Subtitles;
 import org.tinymediamanager.scraper.subdl.model.Type;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
-
-import okhttp3.ResponseBody;
-import retrofit2.Response;
 
 /**
  * The class {@link SubdlMovieSubtitleProvider} offers access to the SubDL service for movies
@@ -81,16 +75,16 @@ public class SubdlMovieSubtitleProvider extends SubdlSubtitleProvider implements
       searchResult = getSubdlFromImdbID(options.getImdbId(), options.getLanguage().name());
     }
 
-    if (searchResult == null && options.getTmdbId() > 0) {
+    if ((searchResult == null || !searchResult.status) && options.getTmdbId() > 0) {
       searchResult = getSubdlFromTmdbID(options.getTmdbId(), options.getLanguage().name());
     }
 
-    if (searchResult == null) {
+    if ((searchResult == null || !searchResult.status)) {
       searchResult = getSubdlFromQuery(options.getSearchQuery(), options.getLanguage().name());
     }
 
-    if (searchResult == null) {
-      throw new NothingFoundException();
+    if (( searchResult == null || !searchResult.status)) {
+      return results;
     }
 
     for (Subtitles subtitles : searchResult.subtitles) {
