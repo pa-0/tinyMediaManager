@@ -6,6 +6,7 @@ x [UI] propagate more failed responses to Movie/TvShow chooser dialog #2728
 x [UI] do not scrape -1/unknown season artwork (thx u/Casual_Tea_94)
 x [UI] improve BugReport dialog on choosing movies/shows #2730
 x [Trailer] fix creating directories #2727
+x [Subtitle] fix detection of subtitle language #2740
 x [Lib] updated FlatLaf to 3.5.2
 
 
