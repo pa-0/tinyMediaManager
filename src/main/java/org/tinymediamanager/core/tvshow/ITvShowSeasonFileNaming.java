@@ -16,6 +16,7 @@
 
 package org.tinymediamanager.core.tvshow;
 
+import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 
 /**
@@ -29,9 +30,46 @@ public interface ITvShowSeasonFileNaming {
    *          the TV show season
    * @param extension
    *          the file extension
+   * @param forRenamer
+   *          do we want to create the filename for the renamer (aka. clean season folder)
    * @return the file name or an empty string
    */
-  String getFilename(TvShowSeason tvShowSeason, String extension);
+  String getFilename(TvShowSeason tvShowSeason, String extension, boolean forRenamer);
+
+  /**
+   * get the file name for this enum - renamer version (creates a clean season folder according to settings)
+   *
+   * @param tvShowSeason
+   *          the TV show season
+   * @param extension
+   *          the file extension
+   * @return the file name or an empty string
+   */
+  default String getFilename(TvShowSeason tvShowSeason, String extension) {
+    return getFilename(tvShowSeason, extension, true);
+  }
+
+  /**
+   * get the desired season folder
+   * 
+   * @param tvShowSeason
+   *          the {@link TvShowSeason} to get the folder for
+   * @param forRenamer
+   *          do we want to create the filename for the renamer (aka. clean season folder)
+   * @return the season folder name
+   */
+  default String getSeasonFolder(TvShowSeason tvShowSeason, boolean forRenamer) {
+    TvShow tvShow = tvShowSeason.getTvShow();
+
+    if (forRenamer) {
+      // create a clean folder name
+      return TvShowRenamer.getSeasonFoldername(tvShow, tvShowSeason);
+    }
+    else {
+      // search for the best-fitting existing folder
+      return TvShowHelpers.detectSeasonFolder(tvShow, tvShowSeason.getSeason());
+    }
+  }
 
   /**
    * get the enum name

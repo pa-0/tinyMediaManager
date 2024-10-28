@@ -15,6 +15,10 @@
  */
 package org.tinymediamanager.core.tvshow;
 
+import static org.tinymediamanager.core.MediaFileType.SEASON_BANNER;
+import static org.tinymediamanager.core.MediaFileType.SEASON_FANART;
+import static org.tinymediamanager.core.MediaFileType.SEASON_POSTER;
+import static org.tinymediamanager.core.MediaFileType.SEASON_THUMB;
 import static org.tinymediamanager.core.tvshow.TvShowRenamer.generateFoldername;
 import static org.tinymediamanager.core.tvshow.TvShowRenamer.getSeasonFoldername;
 import static org.tinymediamanager.core.tvshow.TvShowRenamer.getTvShowFoldername;
@@ -22,6 +26,7 @@ import static org.tinymediamanager.core.tvshow.TvShowRenamer.getTvShowFoldername
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -31,10 +36,16 @@ import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.tinymediamanager.core.MediaFileType;
 import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
 import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
+import org.tinymediamanager.core.tvshow.filenaming.TvShowSeasonBannerNaming;
+import org.tinymediamanager.core.tvshow.filenaming.TvShowSeasonFanartNaming;
+import org.tinymediamanager.core.tvshow.filenaming.TvShowSeasonNfoNaming;
+import org.tinymediamanager.core.tvshow.filenaming.TvShowSeasonPosterNaming;
+import org.tinymediamanager.core.tvshow.filenaming.TvShowSeasonThumbNaming;
 
 /**
  * the class {@link TvShowRenamerPreview} is used to create a renamer preview for TV shows
@@ -68,7 +79,7 @@ public class TvShowRenamerPreview {
     processTvShow();
 
     // process season media files
-    // processSeasons(); // TODO: reverted for now, until we have a dedicated method to generate correct filenames according to settings
+    processSeasons(); // TODO: reverted for now, until we have a dedicated method to generate correct filenames according to settings
 
     // generate all episode filenames
     processEpisodes();
@@ -116,23 +127,98 @@ public class TvShowRenamerPreview {
   private void processSeasons() {
     List<TvShowSeason> seasons = new ArrayList<>(tvShow.getSeasons());
     Collections.sort(seasons);
+
     for (TvShowSeason season : seasons) {
-      TvShowEpisode dummy = season.getEpisodes().get(0);
-      String seasonFoldername = getSeasonFoldername(season.getTvShow(), dummy);
-      Path seasonFolder = container.newPath;
-      if (StringUtils.isNotBlank(seasonFoldername)) {
-        seasonFolder = container.newPath.resolve(seasonFoldername);
-      }
+      // NFO
+      MediaFile nfo = MediaFile.EMPTY_MEDIAFILE;
 
-      for (MediaFile mf : season.getMediaFiles()) {
-        MediaFile oldMf = new MediaFile(mf);
+      for (MediaFile oldMf : season.getMediaFiles(MediaFileType.NFO)) {
         oldFiles.put(oldMf.getFileAsPath().toString(), oldMf);
-
-        MediaFile newMf = new MediaFile(mf);
-        newMf.replacePathForRenamedFolder(mf.getFileAsPath().getParent(), seasonFolder);
-        newFiles.add(newMf);
+        if (oldMf.getFiledate() >= nfo.getFiledate()) {
+          nfo = new MediaFile(oldMf);
+        }
       }
 
+      if (nfo != MediaFile.EMPTY_MEDIAFILE
+          && (!season.getEpisodes().isEmpty() || TvShowModuleManager.getInstance().getSettings().isCreateMissingSeasonItems())) {
+
+        for (TvShowSeasonNfoNaming naming : TvShowModuleManager.getInstance().getSettings().getSeasonNfoFilenames()) {
+          String filename = naming.getFilename(season, "nfo");
+          if (StringUtils.isNotBlank(filename)) {
+            MediaFile newMf = new MediaFile(nfo);
+            newMf.setFile(Paths.get(tvShow.getPath(), filename));
+            newFiles.add(newMf);
+          }
+        }
+      }
+
+      // artwork
+      List<MediaFileType> types = Arrays.asList(SEASON_POSTER, SEASON_FANART, SEASON_BANNER, SEASON_THUMB);
+
+      for (var type : types) {
+        for (var tvShowSeason : tvShow.getSeasons()) {
+          MediaFile artworkFile = null;
+
+          for (var mf : tvShowSeason.getMediaFiles(type)) {
+            oldFiles.put(mf.getFileAsPath().toString(), mf);
+
+            if (artworkFile == null) {
+              artworkFile = mf;
+            }
+          }
+
+          // do we ant to write the artwork file at all?
+          if (artworkFile != null
+              && (!tvShowSeason.getEpisodes().isEmpty() || TvShowModuleManager.getInstance().getSettings().isCreateMissingSeasonItems())) {
+            String filename;
+            switch (type) {
+              case SEASON_POSTER -> {
+                for (TvShowSeasonPosterNaming naming : TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames()) {
+                  filename = naming.getFilename(tvShowSeason, artworkFile.getExtension(), true);
+                  if (StringUtils.isNotBlank(filename)) {
+                    MediaFile newMf = new MediaFile(artworkFile);
+                    newMf.setFile(Paths.get(tvShow.getPath(), filename));
+                    newFiles.add(newMf);
+                  }
+                }
+              }
+              case SEASON_FANART -> {
+                for (TvShowSeasonFanartNaming naming : TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames()) {
+                  filename = naming.getFilename(tvShowSeason, artworkFile.getExtension());
+                  if (StringUtils.isNotBlank(filename)) {
+                    MediaFile newMf = new MediaFile(artworkFile);
+                    newMf.setFile(Paths.get(tvShow.getPath(), filename));
+                    newFiles.add(newMf);
+                  }
+                }
+              }
+              case SEASON_BANNER -> {
+                for (TvShowSeasonBannerNaming naming : TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames()) {
+                  filename = naming.getFilename(tvShowSeason, artworkFile.getExtension());
+                  if (StringUtils.isNotBlank(filename)) {
+                    MediaFile newMf = new MediaFile(artworkFile);
+                    newMf.setFile(Paths.get(tvShow.getPath(), filename));
+                    newFiles.add(newMf);
+                  }
+                }
+              }
+              case SEASON_THUMB -> {
+                for (TvShowSeasonThumbNaming naming : TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames()) {
+                  filename = naming.getFilename(tvShowSeason, artworkFile.getExtension());
+                  if (StringUtils.isNotBlank(filename)) {
+                    MediaFile newMf = new MediaFile(artworkFile);
+                    newMf.setFile(Paths.get(tvShow.getPath(), filename));
+                    newFiles.add(newMf);
+                  }
+                }
+              }
+              default -> {
+                // do nothing
+              }
+            }
+          }
+        }
+      }
     }
   }
 

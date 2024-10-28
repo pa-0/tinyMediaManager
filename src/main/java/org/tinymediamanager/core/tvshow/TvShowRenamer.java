@@ -1880,6 +1880,23 @@ public class TvShowRenamer {
    *
    * @param show
    *          the TV show to generate the season folder for
+   * @param season
+   *          the season to generate the season folder name for
+   * @return the folder name of that season
+   */
+  public static String getSeasonFoldername(TvShow show, TvShowSeason season) {
+    TvShowEpisode firstEpisode = ListUtils.getFirst(season.getEpisodes());
+    if (firstEpisode == null) {
+      return "";
+    }
+    return getSeasonFoldername(TvShowModuleManager.getInstance().getSettings().getRenamerSeasonFoldername(), show, firstEpisode);
+  }
+
+  /**
+   * generate the season folder name according to the settings
+   *
+   * @param show
+   *          the TV show to generate the season folder for
    * @param episode
    *          the episode to generate the season folder name for
    * @return the folder name of that season
