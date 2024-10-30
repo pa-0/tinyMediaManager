@@ -3,7 +3,7 @@ stages:
   - deploy
 
 variables:
-  MAVEN_CLI_OPTS: "-s .ci/settings.xml --batch-mode"
+  MAVEN_CLI_OPTS: "-s .ci/settings-test.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 cache:
