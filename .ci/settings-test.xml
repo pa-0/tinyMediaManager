@@ -11,7 +11,7 @@
             <!-- local build mirror -->
             <id>tmm-nexus</id>
             <name>tinyMediaManager Nexus</name>
-            <url>http://nexus:8081/repository/maven-public/</url>
+            <url>http://nexus.lan:8081/repository/maven-public/</url>
             <mirrorOf>*</mirrorOf>
         </mirror>
     </mirrors>
