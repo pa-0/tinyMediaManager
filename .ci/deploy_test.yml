@@ -37,7 +37,7 @@ build:
 
     # push the build to the webserver
     - echo -e "\e[0Ksection_start:`date +%s`:ftp_upload\r\e[0KUpload"
-    - lftp -c "set set sftp:auto-confirm true; set net:timeout 5; set net:max-retries 2; set net:reconnect-interval-base 5; open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
+    - lftp -c "set sftp:connect-program "ssh -oPreferredAuthentications=password -a -x"; set sftp:auto-confirm true; set net:timeout 5; set net:max-retries 2; set net:reconnect-interval-base 5; open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
     - echo -e "\e[0Ksection_end:`date +%s`:ftp_upload\r\e[0K"
 
   artifacts:
