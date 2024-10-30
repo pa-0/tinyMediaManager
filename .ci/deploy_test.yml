@@ -25,14 +25,20 @@ build:
     - sh generate_changelog.sh
 
     # package archives
+    - echo -e "\e[0Ksection_start:`date +%s`:maven_build\r\e[0KMaven build"
     - mvn $MAVEN_CLI_OPTS -U -P dist -DbuildNumber=${CI_COMMIT_SHORT_SHA} -Dgetdown=getdown-test.txt -Dtier=test -Dthread_pool_size=1 clean package
+    - echo -e "\e[0Ksection_end:`date +%s`:maven_build\r\e[0K"
 
     # build Windows installer
+    - echo -e "\e[0Ksection_start:`date +%s`:windows_installer\r\e[0KWindows installer"
     - chmod 777 . dist
     - sudo -u xclient PATH=$PATH:/opt/bin AppBundler/create_windows_installer.sh "$CODE_SIGN_CERT" "$CODE_SIGN_PASS"
+    - echo -e "\e[0Ksection_end:`date +%s`:windows_installer\r\e[0K"
 
     # push the build to the webserver
-    - lftp -c "set ftp:ssl-allow no; open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} ${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
+    - echo -e "\e[0Ksection_start:`date +%s`:ftp_upload\r\e[0KUpload"
+    - lftp -c "open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} sftp://${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
+    - echo -e "\e[0Ksection_end:`date +%s`:ftp_upload\r\e[0K"
 
   artifacts:
     expire_in: 2 hours
