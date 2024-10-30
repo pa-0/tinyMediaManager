@@ -5,6 +5,7 @@ stages:
 variables:
   MAVEN_CLI_OPTS: "-s .ci/settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  LFTP_OPTIONS: "set sftp:connect-program 'ssh -a -x -o StrictHostKeyChecking=no'; set net:timeout 5; set net:max-retries 2; set net:reconnect-interval-base 5;"
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
@@ -37,7 +38,7 @@ build:
 
     # push the build to the webserver
     - echo -e "\e[0Ksection_start:`date +%s`:ftp_upload\r\e[0KUpload"
-    - lftp -c "set sftp:connect-program 'ssh -a -x -o StrictHostKeyChecking=no'; set net:timeout 5; set net:max-retries 2; set net:reconnect-interval-base 5; open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
+    - lftp -c "${LFTP_OPTIONS} open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
     - echo -e "\e[0Ksection_end:`date +%s`:ftp_upload\r\e[0K"
 
   artifacts:
@@ -63,10 +64,14 @@ build-mac:
     - rm dist/tinyMediaManager*linux-arm64.tar.xz
 
     # create macOS bundles
+    - echo -e "\e[0Ksection_start:`date +%s`:create_images\r\e[0KCreate DMG images"
     - sh AppBundler/create_mac_image.sh
+    - echo -e "\e[0Ksection_end:`date +%s`:create_images\r\e[0K"
 
     # push the build to the webserver
-    - lftp -c "set ftp:ssl-allow no; open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} ${FTP_HOST}; mirror -Rv dist/ ./upload/v5/dist; chmod -R g+w ./upload/v5"
+    - echo -e "\e[0Ksection_start:`date +%s`:ftp_upload\r\e[0KUpload"
+    - lftp -c "${LFTP_OPTIONS} open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rv dist/ ./upload/v5/dist; chmod -R g+w ./upload/v5"
+    - echo -e "\e[0Ksection_end:`date +%s`:ftp_upload\r\e[0K"
 
 deploy-docker-amd64:
   stage: deploy
