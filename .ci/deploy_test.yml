@@ -38,7 +38,7 @@ build:
 
     # push the build to the webserver
     - echo -e "\e[0Ksection_start:`date +%s`:ftp_upload\r\e[0KUpload"
-    - lftp -c "${LFTP_OPTIONS} open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev -parallel=2 target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev -parallel=2 dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
+    - lftp -c "${LFTP_OPTIONS} open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rev --parallel=2 target/tinyMediaManager-getdown/ ./upload/v5/build; mirror -Rev --parallel=2 dist/ ./upload/v5/dist; chmod -R g+rw ./upload/v5"
     - echo -e "\e[0Ksection_end:`date +%s`:ftp_upload\r\e[0K"
 
   artifacts:
