@@ -441,12 +441,13 @@ public final class MovieList extends AbstractModelObject {
   }
 
   /**
-   * Gets the movies.
-   * 
+   * Gets the movies as an unmodifiable {@link List<Movie>}. <br />
+   * <b>ATTENTION: the iterator of this List is not thread safe!</b>
+   *
    * @return the movies
    */
   public List<Movie> getMovies() {
-    return Collections.unmodifiableList(movieList);
+    return movieList;
   }
 
   /**
@@ -586,7 +587,13 @@ public final class MovieList extends AbstractModelObject {
 
     // the given movie must be in the movie list (same dbId and not only same path!)
     if (movieInList == null || !movieInList.getDbId().equals(movie.getDbId())) {
-      LOGGER.debug("not persisting movie - not in movielist");
+      // do get the stacktrace
+      try {
+        throw new IllegalArgumentException(movie.getPathNIO().toString());
+      }
+      catch (Exception e) {
+        LOGGER.debug("not persisting movie - not in movielist", e);
+      }
       return;
     }
 
@@ -652,14 +659,15 @@ public final class MovieList extends AbstractModelObject {
       }
     }
     finally {
-      readWriteLock.writeLock().unlock();
+      readWriteLock.readLock().unlock();
     }
 
     return null;
   }
 
   /**
-   * Gets a list of movies by same path.
+   * Gets a list of movies by same path.<br />
+   * <b>ATTENTION: this list is unmodifiable</b>
    * 
    * @param path
    *          the path
@@ -667,11 +675,11 @@ public final class MovieList extends AbstractModelObject {
    */
   public List<Movie> getMoviesByPath(Path path) {
     try {
-      readWriteLock.writeLock().lock();
+      readWriteLock.readLock().lock();
       return movieList.stream().filter(movie -> movie.getPathNIO().compareTo(path) == 0).toList();
     }
     finally {
-      readWriteLock.writeLock().unlock();
+      readWriteLock.readLock().unlock();
     }
   }
 
@@ -1489,8 +1497,9 @@ public final class MovieList extends AbstractModelObject {
   }
 
   /**
-   * Gets the movie set list.
-   * 
+   * Gets the movie sets as an unmodifiable {@link List<MovieSet>}. <br />
+   * <b>ATTENTION: the iterator of this List is not thread safe!</b>
+   *
    * @return the movieSetList
    */
   public List<MovieSet> getMovieSetList() {

@@ -44,7 +44,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -185,12 +184,13 @@ public final class TvShowList extends AbstractModelObject {
   }
 
   /**
-   * Gets the tv shows.
+   * Gets the tv shows as an unmodifiable {@link List<TvShow>}. <br />
+   * <b>ATTENTION: the iterator of this List is not thread safe!</b>
    *
    * @return the tv shows
    */
   public List<TvShow> getTvShows() {
-    return tvShows;
+    return Collections.unmodifiableList(tvShows);
   }
 
   /**
@@ -200,9 +200,11 @@ public final class TvShowList extends AbstractModelObject {
    */
   public List<TvShowEpisode> getEpisodes() {
     List<TvShowEpisode> newEp = new ArrayList<>();
-    for (TvShow show : tvShows) {
-      newEp.addAll(show.getEpisodes());
-    }
+
+    readWriteLock.readLock().lock();
+    tvShows.forEach(tvShow -> newEp.addAll(tvShow.getEpisodes()));
+    readWriteLock.readLock().unlock();
+
     return newEp;
   }
 
@@ -284,7 +286,13 @@ public final class TvShowList extends AbstractModelObject {
    * @return the unscraped TvShows
    */
   public List<TvShow> getUnscrapedTvShows() {
-    return tvShows.parallelStream().filter(tvShow -> !tvShow.isScraped()).collect(Collectors.toList());
+    try {
+      readWriteLock.readLock().lock();
+      return tvShows.stream().filter(tvShow -> !tvShow.isScraped()).toList();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -308,7 +316,6 @@ public final class TvShowList extends AbstractModelObject {
 
     // fire events outside the lock to avoid deadlocks
     if (dirty) {
-
       firePropertyChange(TV_SHOWS, null, tvShows);
       firePropertyChange(ADDED_TV_SHOW, null, tvShow);
       firePropertyChange(TV_SHOW_COUNT, oldValue, tvShows.size());
@@ -318,20 +325,21 @@ public final class TvShowList extends AbstractModelObject {
   /**
    * Removes the datasource.
    * 
-   * @param path
+   * @param datasource
    *          the path
    */
-  public void removeDatasource(String path) {
-    if (StringUtils.isEmpty(path)) {
+  public void removeDatasource(String datasource) {
+    if (StringUtils.isEmpty(datasource)) {
       return;
     }
 
-    for (int i = tvShows.size() - 1; i >= 0; i--) {
-      TvShow tvShow = tvShows.get(i);
-      if (Paths.get(path).equals(Paths.get(tvShow.getDataSource()))) {
-        removeTvShow(tvShow);
-      }
-    }
+    Path path = Paths.get(datasource);
+
+    readWriteLock.readLock().lock();
+    List<TvShow> tvShowsToRemove = tvShows.stream().filter(tvShow -> path.equals(Paths.get(tvShow.getDataSource()))).toList();
+    readWriteLock.readLock().unlock();
+
+    tvShowsToRemove.forEach(this::removeTvShow);
   }
 
   /**
@@ -339,7 +347,11 @@ public final class TvShowList extends AbstractModelObject {
    */
   void exchangeDatasource(String oldDatasource, String newDatasource) {
     Path oldPath = Paths.get(oldDatasource);
+
+    readWriteLock.readLock().lock();
     List<TvShow> tvShowsToChange = tvShows.stream().filter(tvShow -> oldPath.equals(Paths.get(tvShow.getDataSource()))).toList();
+    readWriteLock.readLock().unlock();
+
     List<MediaFile> imagesToCache = new ArrayList<>();
 
     for (TvShow tvShow : tvShowsToChange) {
@@ -494,7 +506,13 @@ public final class TvShowList extends AbstractModelObject {
    * @return the tv show count
    */
   public int getTvShowCount() {
-    return tvShows.size();
+    try {
+      readWriteLock.readLock().lock();
+      return tvShows.size();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -504,9 +522,12 @@ public final class TvShowList extends AbstractModelObject {
    */
   public int getEpisodeCount() {
     int count = 0;
+
+    readWriteLock.readLock().lock();
     for (TvShow tvShow : tvShows) {
       count += tvShow.getEpisodeCount();
     }
+    readWriteLock.readLock().unlock();
 
     return count;
   }
@@ -518,9 +539,12 @@ public final class TvShowList extends AbstractModelObject {
    */
   public int getDummyEpisodeCount() {
     int count = 0;
+
+    readWriteLock.readLock().lock();
     for (TvShow tvShow : tvShows) {
       count += tvShow.getDummyEpisodeCount();
     }
+    readWriteLock.readLock().unlock();
 
     return count;
   }
@@ -531,11 +555,19 @@ public final class TvShowList extends AbstractModelObject {
    * @return true/false
    */
   public boolean hasDummyEpisodes() {
-    for (TvShow tvShow : tvShows) {
-      if (tvShow.getDummyEpisodeCount() > 0) {
-        return true;
+    try {
+      readWriteLock.readLock().lock();
+
+      for (TvShow tvShow : tvShows) {
+        if (tvShow.getDummyEpisodeCount() > 0) {
+          return true;
+        }
       }
     }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
+
     return false;
   }
 
@@ -781,13 +813,19 @@ public final class TvShowList extends AbstractModelObject {
 
   public void persistTvShow(TvShow tvShow) {
     // sanity checks
-    try {
-      if (!tvShows.contains(tvShow)) {
+    readWriteLock.readLock().lock();
+    TvShow tvShowInList = tvShows.stream().filter(t -> t.equals(tvShow)).findFirst().orElse(null);
+    readWriteLock.readLock().unlock();
+
+    // the given TV show must be in the tvShow list (same dbId and same path!)
+    if (tvShowInList == null || !tvShowInList.getDbId().equals(tvShow.getDbId())) {
+      // do get the stacktrace
+      try {
         throw new IllegalArgumentException(tvShow.getPathNIO().toString());
       }
-    }
-    catch (Exception e) {
-      LOGGER.debug("not persisting TV show - not in tvShowList", e);
+      catch (Exception e) {
+        LOGGER.debug("not persisting TV show - not in tvShowlist", e);
+      }
       return;
     }
 
@@ -1059,7 +1097,7 @@ public final class TvShowList extends AbstractModelObject {
   }
 
   public List<String> getTagsInTvShows() {
-    return tagsInTvShows;
+    return Collections.unmodifiableList(tagsInTvShows);
   }
 
   private void updateEpisodeTags(Collection<TvShowEpisode> episodes) {
@@ -1073,7 +1111,7 @@ public final class TvShowList extends AbstractModelObject {
   }
 
   public Collection<String> getTagsInEpisodes() {
-    return tagsInEpisodes;
+    return Collections.unmodifiableList(tagsInEpisodes);
   }
 
   private void updateMediaInformationLists(Collection<TvShowEpisode> episodes) {
@@ -1136,9 +1174,7 @@ public final class TvShowList extends AbstractModelObject {
           // HDR Format
           if (!mf.getHdrFormat().isEmpty()) {
             String[] hdrs = mf.getHdrFormat().split(", ");
-            for (String hdr : hdrs) {
-              hdrFormat.add(hdr);
-            }
+            hdrFormat.addAll(Arrays.asList(hdrs));
           }
         }
 
@@ -1291,11 +1327,17 @@ public final class TvShowList extends AbstractModelObject {
    * @return the TV show by path
    */
   public TvShow getTvShowByPath(Path path) {
-    // iterate over all tv shows and check whether this path is being owned by one
-    for (TvShow tvShow : this.tvShows) {
-      if (tvShow.getPathNIO().compareTo(path.toAbsolutePath()) == 0) {
-        return tvShow;
+    try {
+      readWriteLock.readLock().lock();
+      // iterate over all tv shows and check whether this path is being owned by one
+      for (TvShow tvShow : this.tvShows) {
+        if (tvShow.getPathNIO().compareTo(path.toAbsolutePath()) == 0) {
+          return tvShow;
+        }
       }
+    }
+    finally {
+      readWriteLock.readLock().unlock();
     }
 
     return null;
@@ -1309,11 +1351,12 @@ public final class TvShowList extends AbstractModelObject {
    * @return the tv episodes by file
    */
   public static List<TvShowEpisode> getTvEpisodesByFile(TvShow tvShow, Path file) {
-    List<TvShowEpisode> episodes = new ArrayList<>(1);
-    // validy check
+    // validity check
     if (file == null) {
-      return episodes;
+      return Collections.emptyList();
     }
+
+    List<TvShowEpisode> episodes = new ArrayList<>();
 
     // check if that file is in this tv show/episode (iterating thread safe)
     for (TvShowEpisode episode : new ArrayList<>(tvShow.getEpisodes())) {
@@ -1331,7 +1374,7 @@ public final class TvShowList extends AbstractModelObject {
    * invalidate the title sortable upon changes to the sortable prefixes
    */
   public void invalidateTitleSortable() {
-    tvShows.stream().parallel().forEach(tvShow -> {
+    tvShows.forEach(tvShow -> {
       tvShow.clearTitleSortable();
       for (TvShowEpisode episode : tvShow.getEpisodes()) {
         episode.clearTitleSortable();
@@ -1346,11 +1389,15 @@ public final class TvShowList extends AbstractModelObject {
    */
   public List<TvShow> getNewTvShows() {
     List<TvShow> newShows = new ArrayList<>();
+
+    readWriteLock.readLock().lock();
     for (TvShow show : tvShows) {
       if (show.isNewlyAdded()) {
         newShows.add(show);
       }
     }
+    readWriteLock.readLock().unlock();
+
     return newShows;
   }
 
@@ -1361,6 +1408,8 @@ public final class TvShowList extends AbstractModelObject {
    */
   public List<TvShowEpisode> getNewEpisodes() {
     List<TvShowEpisode> newEp = new ArrayList<>();
+
+    readWriteLock.readLock().lock();
     for (TvShow show : tvShows) {
       for (TvShowEpisode ep : show.getEpisodes()) {
         if (ep.isNewlyAdded()) {
@@ -1368,6 +1417,8 @@ public final class TvShowList extends AbstractModelObject {
         }
       }
     }
+    readWriteLock.readLock().unlock();
+
     return newEp;
   }
 
@@ -1378,6 +1429,8 @@ public final class TvShowList extends AbstractModelObject {
    */
   public List<TvShowEpisode> getUnscrapedEpisodes() {
     List<TvShowEpisode> newEp = new ArrayList<>();
+
+    readWriteLock.readLock().lock();
     for (TvShow show : tvShows) {
       for (TvShowEpisode ep : show.getEpisodes()) {
         if (!ep.isScraped()) {
@@ -1385,6 +1438,8 @@ public final class TvShowList extends AbstractModelObject {
         }
       }
     }
+    readWriteLock.readLock().unlock();
+
     return newEp;
   }
 
@@ -1393,7 +1448,12 @@ public final class TvShowList extends AbstractModelObject {
    */
   private void checkAndCleanupMediaFiles() {
     boolean problemsDetected = false;
-    for (TvShow tvShow : tvShows) {
+
+    readWriteLock.readLock().lock();
+    List<TvShow> allTvShows = new ArrayList<>(tvShows);
+    readWriteLock.readLock().unlock();
+
+    for (TvShow tvShow : allTvShows) {
       for (TvShowEpisode episode : new ArrayList<>(tvShow.getEpisodes())) {
         List<MediaFile> mfs = episode.getMediaFiles(MediaFileType.VIDEO);
         if (mfs.isEmpty()) {
@@ -1483,7 +1543,11 @@ public final class TvShowList extends AbstractModelObject {
     Map<String, TvShow> showMap = new HashMap<>();
     Map<String, TvShowEpisode> hashMap = new HashMap<>(); // global, over ALL shows/episodes
 
-    for (TvShow tvShow : getTvShows()) {
+    readWriteLock.readLock().lock();
+    List<TvShow> allTvShows = new ArrayList<>(tvShows);
+    readWriteLock.readLock().unlock();
+
+    for (TvShow tvShow : allTvShows) {
       tvShow.clearDuplicate();
 
       Map<String, Object> ids = tvShow.getIds();

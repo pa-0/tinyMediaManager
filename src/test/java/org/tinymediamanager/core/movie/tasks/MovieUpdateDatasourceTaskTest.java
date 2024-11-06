@@ -16,6 +16,7 @@
 
 package org.tinymediamanager.core.movie.tasks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -84,7 +85,7 @@ public class MovieUpdateDatasourceTaskTest extends BasicMovieTest {
     int disc = 0;
     int mmd = 0;
     int mfCnt = 0;
-    List<Movie> movies = MovieModuleManager.getInstance().getMovieList().getMovies();
+    List<Movie> movies = new ArrayList<>(MovieModuleManager.getInstance().getMovieList().getMovies());
     movies.sort(new MovieComparator());
     for (Movie m : movies) {
       System.out.println(rpad(m.getTitle(), 30) + "(Disc:" + rpad(m.isDisc(), 5) + " Stack:" + rpad(m.isStacked(), 5) + " Multi:"

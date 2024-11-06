@@ -119,7 +119,7 @@ public abstract class TmmThreadPool extends TmmTask {
         cancel = true;
       }
       catch (ExecutionException e) {
-        LOGGER.error("ThreadPool {}: Error getting result! - {}", poolname, e.getMessage());
+        LOGGER.error("ThreadPool {}: Error getting result!", poolname, e);
       }
     }
 

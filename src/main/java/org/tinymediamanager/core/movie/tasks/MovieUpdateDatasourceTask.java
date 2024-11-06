@@ -1128,7 +1128,7 @@ public class MovieUpdateDatasourceTask extends TmmThreadPool {
     LOGGER.debug("Parsing multi  movie directory: {}", movieDir); // double space is for log alignment ;)
     publishState(movieDir.toString());
 
-    List<Movie> movies = movieList.getMoviesByPath(movieDir);
+    List<Movie> movies = new ArrayList<>(movieList.getMoviesByPath(movieDir));
 
     fileLock.writeLock().lock();
     filesFound.add(movieDir); // our global cache

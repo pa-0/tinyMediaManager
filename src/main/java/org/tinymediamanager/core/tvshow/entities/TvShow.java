@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
@@ -2598,5 +2599,23 @@ public class TvShow extends MediaEntity implements IMediaInformation {
         }
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    TvShow tvShow = (TvShow) o;
+    return path.equals(tvShow.path);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(path);
   }
 }
