@@ -1538,7 +1538,7 @@ public final class TvShowList extends AbstractModelObject {
     }
 
     hashMap.clear();
-    tvShows.clear();
+    showMap.clear();
   }
 
   public List<TvShowScraperMetadataConfig> detectMissingMetadata(TvShow tvShow) {
