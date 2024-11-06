@@ -290,19 +290,29 @@ public final class TvShowList extends AbstractModelObject {
   /**
    * Adds the tv show.
    * 
-   * @param newValue
+   * @param tvShow
    *          the new value
    */
-  public void addTvShow(TvShow newValue) {
+  public void addTvShow(TvShow tvShow) {
+    boolean dirty = false;
+
     readWriteLock.writeLock().lock();
     int oldValue = tvShows.size();
-    tvShows.add(newValue);
+
+    if (!tvShows.contains(tvShow)) {
+      tvShows.add(tvShow);
+      tvShow.addPropertyChangeListener(propertyChangeListener);
+      dirty = true;
+    }
     readWriteLock.writeLock().unlock();
 
-    newValue.addPropertyChangeListener(propertyChangeListener);
-    firePropertyChange(TV_SHOWS, null, tvShows);
-    firePropertyChange(ADDED_TV_SHOW, null, newValue);
-    firePropertyChange(TV_SHOW_COUNT, oldValue, tvShows.size());
+    // fire events outside the lock to avoid deadlocks
+    if (dirty) {
+
+      firePropertyChange(TV_SHOWS, null, tvShows);
+      firePropertyChange(ADDED_TV_SHOW, null, tvShow);
+      firePropertyChange(TV_SHOW_COUNT, oldValue, tvShows.size());
+    }
   }
 
   /**

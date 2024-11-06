@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,7 +46,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -230,12 +230,21 @@ public final class MovieList extends AbstractModelObject {
    *          the movie
    */
   public void addMovie(Movie movie) {
-    if (!movieList.contains(movie)) {
-      int oldValue = movieList.size();
-      movieList.add(movie);
+    boolean dirty = false;
 
-      updateLists(Collections.singletonList(movie));
+    readWriteLock.writeLock().lock();
+    int oldValue = movieList.size();
+
+    if (!movieList.contains(movie)) {
+      movieList.add(movie);
       movie.addPropertyChangeListener(movieListener);
+      dirty = true;
+    }
+    readWriteLock.writeLock().unlock();
+
+    // fire events outside the lock to avoid deadlocks
+    if (dirty) {
+      updateLists(Collections.singletonList(movie));
       firePropertyChange("movies", null, movieList);
       firePropertyChange("movieCount", oldValue, movieList.size());
     }
@@ -252,14 +261,11 @@ public final class MovieList extends AbstractModelObject {
       return;
     }
 
-    List<Movie> moviesToRemove = new ArrayList<>();
     Path path = Paths.get(datasource);
-    for (int i = movieList.size() - 1; i >= 0; i--) {
-      Movie movie = movieList.get(i);
-      if (path.equals(Paths.get(movie.getDataSource()))) {
-        moviesToRemove.add(movie);
-      }
-    }
+
+    readWriteLock.readLock().lock();
+    List<Movie> moviesToRemove = movieList.stream().filter(movie -> path.equals(Paths.get(movie.getDataSource()))).toList();
+    readWriteLock.readLock().unlock();
 
     removeMovies(moviesToRemove);
   }
@@ -269,7 +275,11 @@ public final class MovieList extends AbstractModelObject {
    */
   void exchangeDatasource(String oldDatasource, String newDatasource) {
     Path oldPath = Paths.get(oldDatasource);
+
+    readWriteLock.readLock().lock();
     List<Movie> moviesToChange = movieList.stream().filter(movie -> oldPath.equals(Paths.get(movie.getDataSource()))).toList();
+    readWriteLock.readLock().unlock();
+
     List<MediaFile> imagesToCache = new ArrayList<>();
 
     for (Movie movie : moviesToChange) {
@@ -305,7 +315,13 @@ public final class MovieList extends AbstractModelObject {
    * @return the unscraped movies
    */
   public List<Movie> getUnscrapedMovies() {
-    return movieList.parallelStream().filter(movie -> !movie.isScraped()).collect(Collectors.toList());
+    try {
+      readWriteLock.readLock().lock();
+      return movieList.stream().filter(movie -> !movie.isScraped()).toList();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -314,7 +330,13 @@ public final class MovieList extends AbstractModelObject {
    * @return the new movies
    */
   public List<Movie> getNewMovies() {
-    return movieList.parallelStream().filter(MediaEntity::isNewlyAdded).collect(Collectors.toList());
+    try {
+      readWriteLock.readLock().lock();
+      return movieList.stream().filter(MediaEntity::isNewlyAdded).toList();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -333,9 +355,10 @@ public final class MovieList extends AbstractModelObject {
    *          list of movies to remove
    */
   public void removeMovies(List<Movie> movies) {
-    if (movies == null || movies.isEmpty()) {
+    if (ListUtils.isEmpty(movies)) {
       return;
     }
+
     int oldValue = movieList.size();
 
     // remove in inverse order => performance
@@ -379,7 +402,7 @@ public final class MovieList extends AbstractModelObject {
    *          list of movies to delete
    */
   public void deleteMovies(List<Movie> movies) {
-    if (movies == null || movies.isEmpty()) {
+    if (ListUtils.isEmpty(movies)) {
       return;
     }
     int oldValue = movieList.size();
@@ -388,9 +411,11 @@ public final class MovieList extends AbstractModelObject {
     for (int i = movies.size() - 1; i >= 0; i--) {
       Movie movie = movies.get(i);
       movie.deleteFilesSafely();
+
       readWriteLock.writeLock().lock();
       movieList.remove(movie);
       readWriteLock.writeLock().unlock();
+
       if (movie.getMovieSet() != null) {
         MovieSet movieSet = movie.getMovieSet();
         movieSet.removeMovie(movie, false);
@@ -421,7 +446,7 @@ public final class MovieList extends AbstractModelObject {
    * @return the movies
    */
   public List<Movie> getMovies() {
-    return movieList;
+    return Collections.unmodifiableList(movieList);
   }
 
   /**
@@ -555,7 +580,9 @@ public final class MovieList extends AbstractModelObject {
 
   public void persistMovie(Movie movie) {
     // sanity checks
+    readWriteLock.readLock().lock();
     Movie movieInList = movieList.stream().filter(m -> m.equals(movie)).findFirst().orElse(null);
+    readWriteLock.readLock().unlock();
 
     // the given movie must be in the movie list (same dbId and not only same path!)
     if (movieInList == null || !movieInList.getDbId().equals(movie.getDbId())) {
@@ -614,13 +641,18 @@ public final class MovieList extends AbstractModelObject {
    *          the path
    * @return the movie by path
    */
-  public synchronized Movie getMovieByPath(Path path) {
-
-    for (Movie movie : movieList) {
-      if (movie.getPathNIO().compareTo(path.toAbsolutePath()) == 0) {
-        LOGGER.debug("Ok, found already existing movie '{}' in DB (path: {})", movie.getTitle(), path);
-        return movie;
+  public Movie getMovieByPath(Path path) {
+    try {
+      readWriteLock.readLock().lock();
+      for (Movie movie : movieList) {
+        if (movie.getPathNIO().compareTo(path.toAbsolutePath()) == 0) {
+          LOGGER.debug("Ok, found already existing movie '{}' in DB (path: {})", movie.getTitle(), path);
+          return movie;
+        }
       }
+    }
+    finally {
+      readWriteLock.writeLock().unlock();
     }
 
     return null;
@@ -633,8 +665,14 @@ public final class MovieList extends AbstractModelObject {
    *          the path
    * @return the movie list
    */
-  public synchronized List<Movie> getMoviesByPath(Path path) {
-    return movieList.parallelStream().filter(movie -> movie.getPathNIO().compareTo(path) == 0).collect(Collectors.toList());
+  public List<Movie> getMoviesByPath(Path path) {
+    try {
+      readWriteLock.writeLock().lock();
+      return movieList.stream().filter(movie -> movie.getPathNIO().compareTo(path) == 0).toList();
+    }
+    finally {
+      readWriteLock.writeLock().unlock();
+    }
   }
 
   /**
@@ -647,14 +685,16 @@ public final class MovieList extends AbstractModelObject {
 
     // build up lookup maps for a faster MMD comparison
     Map<String, List<Movie>> moviePathMap = new HashMap<>();
-    for (Movie movie : movieList) {
+    List<Movie> movies = new ArrayList<>(movieList); // copy to avoid ConcurrentModificationExceptions
+
+    for (Movie movie : movies) {
       String path = movie.getPathNIO().toAbsolutePath().toString();
       List<Movie> moviesForPath = moviePathMap.computeIfAbsent(path, k -> new ArrayList<>());
       moviesForPath.add(movie);
     }
 
     Map<String, List<Movie>> subMoviePathMap = new HashMap<>();
-    for (Movie movie : movieList) {
+    for (Movie movie : movies) {
       Path datasource = Paths.get(movie.getDataSource());
 
       Path path = movie.getPathNIO().toAbsolutePath();
@@ -671,7 +711,7 @@ public final class MovieList extends AbstractModelObject {
     }
 
     LOGGER.info("re-evaluating MMD for {} movies...", movieList.size());
-    for (Movie movie : movieList) {
+    for (Movie movie : movies) {
       boolean old = movie.isMultiMovieDir();
 
       // imagine a structure like
@@ -932,7 +972,7 @@ public final class MovieList extends AbstractModelObject {
    */
   public List<MediaScraper> getDefaultArtworkScrapers() {
     List<MediaScraper> defaultScrapers = getArtworkScrapers(MovieModuleManager.getInstance().getSettings().getArtworkScrapers());
-    return defaultScrapers.stream().filter(MediaScraper::isActive).collect(Collectors.toList());
+    return defaultScrapers.stream().filter(MediaScraper::isActive).toList();
   }
 
   /**
@@ -954,7 +994,7 @@ public final class MovieList extends AbstractModelObject {
    */
   public List<MediaScraper> getDefaultTrailerScrapers() {
     List<MediaScraper> defaultScrapers = getTrailerScrapers(MovieModuleManager.getInstance().getSettings().getTrailerScrapers());
-    return defaultScrapers.stream().filter(MediaScraper::isActive).collect(Collectors.toList());
+    return defaultScrapers.stream().filter(MediaScraper::isActive).toList();
   }
 
   /**
@@ -998,7 +1038,22 @@ public final class MovieList extends AbstractModelObject {
    */
   public List<MediaScraper> getDefaultSubtitleScrapers() {
     List<MediaScraper> defaultScrapers = getSubtitleScrapers(MovieModuleManager.getInstance().getSettings().getSubtitleScrapers());
-    return defaultScrapers.stream().filter(MediaScraper::isActive).collect(Collectors.toList());
+    return defaultScrapers.stream().filter(MediaScraper::isActive).toList();
+  }
+
+  /**
+   * Gets the movie count.
+   *
+   * @return the movie count
+   */
+  public int getMovieCount() {
+    try {
+      readWriteLock.readLock().lock();
+      return movieList.size();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -1025,21 +1080,18 @@ public final class MovieList extends AbstractModelObject {
   }
 
   /**
-   * Gets the movie count.
-   * 
-   * @return the movie count
-   */
-  public int getMovieCount() {
-    return movieList.size();
-  }
-
-  /**
    * Gets the movie set count.
    * 
    * @return the movie set count
    */
   public int getMovieSetCount() {
-    return movieSetList.size();
+    try {
+      readWriteLock.readLock().lock();
+      return movieSetList.size();
+    }
+    finally {
+      readWriteLock.readLock().unlock();
+    }
   }
 
   /**
@@ -1049,9 +1101,13 @@ public final class MovieList extends AbstractModelObject {
    */
   public int getMovieInMovieSetCount() {
     int count = 0;
+
+    readWriteLock.readLock().lock();
     for (MovieSet movieSet : movieSetList) {
       count += movieSet.getMovies().size();
     }
+    readWriteLock.readLock().unlock();
+
     return count;
   }
 
@@ -1201,9 +1257,7 @@ public final class MovieList extends AbstractModelObject {
         // HDR Format (comma separated)
         if (!mf.getHdrFormat().isEmpty()) {
           String[] hdrs = mf.getHdrFormat().split(", ");
-          for (String hdr : hdrs) {
-            hdrFormat.add(hdr);
-          }
+          hdrFormat.addAll(Arrays.asList(hdrs));
         }
 
         // Audio Titles
@@ -1373,8 +1427,9 @@ public final class MovieList extends AbstractModelObject {
    */
   public void searchDuplicates() {
     Map<String, Movie> duplicates = new HashMap<>();
+    List<Movie> movies = new ArrayList<>(movieList); // copy to avoid ConcurrentModificationExceptions
 
-    for (Movie movie : movieList) {
+    for (Movie movie : movies) {
       movie.clearDuplicate();
 
       Map<String, Object> ids = movie.getIds();
@@ -1460,14 +1515,23 @@ public final class MovieList extends AbstractModelObject {
    *          the movie set
    */
   public void addMovieSet(MovieSet movieSet) {
-    int oldValue = movieSetList.size();
+    boolean dirty = false;
+
     readWriteLock.writeLock().lock();
-    movieSetList.add(movieSet);
+    int oldValue = movieSetList.size();
+    if (!movieSetList.contains(movieSet)) {
+      movieSetList.add(movieSet);
+      movieSet.addPropertyChangeListener(movieSetListener);
+      dirty = true;
+    }
     readWriteLock.writeLock().unlock();
-    movieSet.addPropertyChangeListener(movieSetListener);
-    firePropertyChange(Constants.ADDED_MOVIE_SET, null, movieSet);
-    firePropertyChange("movieSetCount", oldValue, movieSetList.size());
-    firePropertyChange("movieInMovieSetCount", oldValue, getMovieInMovieSetCount());
+
+    // fire events outside the lock to avoid deadlocks
+    if (dirty) {
+      firePropertyChange(Constants.ADDED_MOVIE_SET, null, movieSet);
+      firePropertyChange("movieSetCount", oldValue, movieSetList.size());
+      firePropertyChange("movieInMovieSetCount", oldValue, getMovieInMovieSetCount());
+    }
   }
 
   /**
@@ -1500,6 +1564,7 @@ public final class MovieList extends AbstractModelObject {
       readWriteLock.writeLock().lock();
       movieSetList.remove(movieSet);
       readWriteLock.writeLock().unlock();
+
       MovieModuleManager.getInstance().removeMovieSetFromDb(movieSet);
     }
     catch (Exception e) {
@@ -1512,22 +1577,29 @@ public final class MovieList extends AbstractModelObject {
   }
 
   public MovieSet findMovieSet(String title, int tmdbId) {
-    // first search by tmdbId
-    if (tmdbId > 0) {
-      for (MovieSet movieSet : movieSetList) {
-        if (movieSet.getTmdbId() == tmdbId) {
-          return movieSet;
+    try {
+      readWriteLock.readLock().lock();
+
+      // first search by tmdbId
+      if (tmdbId > 0) {
+        for (MovieSet movieSet : movieSetList) {
+          if (movieSet.getTmdbId() == tmdbId) {
+            return movieSet;
+          }
+        }
+      }
+
+      // search for the movieset by name
+      if (StringUtils.isNotBlank(title)) {
+        for (MovieSet movieSet : movieSetList) {
+          if (movieSet.getTitle().equals(title)) {
+            return movieSet;
+          }
         }
       }
     }
-
-    // search for the movieset by name
-    if (StringUtils.isNotBlank(title)) {
-      for (MovieSet movieSet : movieSetList) {
-        if (movieSet.getTitle().equals(title)) {
-          return movieSet;
-        }
-      }
+    finally {
+      readWriteLock.readLock().unlock();
     }
 
     return null;
@@ -1553,6 +1625,8 @@ public final class MovieList extends AbstractModelObject {
    */
   private void checkAndCleanupMediaFiles() {
     List<Movie> moviesToRemove = new ArrayList<>();
+
+    readWriteLock.readLock().lock();
     for (Movie movie : movieList) {
       List<MediaFile> mfs = movie.getMediaFiles(MediaFileType.VIDEO);
       if (mfs.isEmpty()) {
@@ -1560,6 +1634,7 @@ public final class MovieList extends AbstractModelObject {
         moviesToRemove.add(movie);
       }
     }
+    readWriteLock.readLock().unlock();
 
     if (!moviesToRemove.isEmpty()) {
       removeMovies(moviesToRemove);
@@ -1585,7 +1660,7 @@ public final class MovieList extends AbstractModelObject {
    * invalidate the title sortable upon changes to the sortable prefixes
    */
   public void invalidateTitleSortable() {
-    movieList.parallelStream().forEach(Movie::clearTitleSortable);
+    movieList.forEach(Movie::clearTitleSortable);
   }
 
   /**
@@ -1680,10 +1755,10 @@ public final class MovieList extends AbstractModelObject {
       if (value == null) {
         missingMetadata.add(metadataConfig);
       }
-      else if (value instanceof String && StringUtils.isBlank((String) value)) {
+      else if (value instanceof String string && StringUtils.isBlank(string)) {
         missingMetadata.add(metadataConfig);
       }
-      else if (value instanceof Number && ((Number) value).intValue() <= 0) {
+      else if (value instanceof Number number && number.intValue() <= 0) {
         missingMetadata.add(metadataConfig);
       }
       else if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
@@ -1716,10 +1791,10 @@ public final class MovieList extends AbstractModelObject {
       if (value == null) {
         missingMetadata.add(metadataConfig);
       }
-      else if (value instanceof String && StringUtils.isBlank((String) value)) {
+      else if (value instanceof String string && StringUtils.isBlank(string)) {
         missingMetadata.add(metadataConfig);
       }
-      else if (value instanceof Number && ((Number) value).intValue() <= 0) {
+      else if (value instanceof Number number && number.intValue() <= 0) {
         missingMetadata.add(metadataConfig);
       }
       else if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
