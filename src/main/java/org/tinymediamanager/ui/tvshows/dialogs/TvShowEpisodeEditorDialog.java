@@ -691,7 +691,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
       okButton.addActionListener(e -> mediaFilesPanel.cancelTask());
       getRootPane().registerKeyboardAction(new ChangeEpisodeAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
-      getRootPane().registerKeyboardAction(new ChangeEpisodeAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
+      getRootPane().registerKeyboardAction(new ChangeEpisodeAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
       addDefaultButton(okButton);
     }
