@@ -1160,7 +1160,7 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
           JComponent.WHEN_IN_FOCUSED_WINDOW);
       getRootPane().registerKeyboardAction(new OKAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
           JComponent.WHEN_IN_FOCUSED_WINDOW);
-      addButton(okButton);
+      addDefaultButton(okButton);
     }
 
   }

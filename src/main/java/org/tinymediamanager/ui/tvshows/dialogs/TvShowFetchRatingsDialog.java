@@ -74,7 +74,7 @@ public class TvShowFetchRatingsDialog extends TmmDialog {
         storeDefaults();
         setVisible(false);
       });
-      addButton(btnOk);
+      addDefaultButton(btnOk);
     }
   }
 
