@@ -19,6 +19,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -411,6 +412,17 @@ public class MovieListPanel extends TmmListPanel {
       }
     });
     movieTable.addMouseListener(new TablePopupListener(popupMenu, movieTable));
+
+    KeyListener enterKeyListener = new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        if (!e.isConsumed() && e.getKeyCode() == KeyEvent.VK_ENTER) {
+          Action editAction = new MovieEditAction();
+          editAction.actionPerformed(null);
+        }
+      }
+    };
+    movieTable.addKeyListener(enterKeyListener);
   }
 
   protected void initDataBindings() {
