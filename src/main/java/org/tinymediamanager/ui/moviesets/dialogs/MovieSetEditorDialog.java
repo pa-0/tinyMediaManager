@@ -25,6 +25,7 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -135,6 +136,7 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
    */
   public MovieSetEditorDialog(MovieSet movieSet, int queueIndex, int queueSize, int selectedTab) {
     super(TmmResourceBundle.getString("movieset.edit") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : ""), "movieSetEditor", movieSet);
+    setMinimumSize(new Dimension(800, 600));
 
     movieSetToEdit = movieSet;
     artworkScrapers.addAll(movieList.getDefaultArtworkScrapers());

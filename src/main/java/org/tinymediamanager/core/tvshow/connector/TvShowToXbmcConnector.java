@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.entities.MediaTrailer;
+import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.w3c.dom.Element;
 
@@ -58,18 +59,20 @@ public class TvShowToXbmcConnector extends TvShowGenericXmlConnector {
 
   @Override
   protected void addTrailer() {
-    Element trailer = document.createElement("trailer");
-    for (MediaTrailer mediaTrailer : new ArrayList<>(tvShow.getTrailer())) {
-      if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
-        trailer.setTextContent(prepareTrailerForXbmc(mediaTrailer));
-        break;
+    if (TvShowModuleManager.getInstance().getSettings().isNfoWriteTrailer()) {
+      Element trailer = document.createElement("trailer");
+      for (MediaTrailer mediaTrailer : new ArrayList<>(tvShow.getTrailer())) {
+        if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
+          trailer.setTextContent(prepareTrailerForXbmc(mediaTrailer));
+          break;
+        }
       }
+      root.appendChild(trailer);
     }
-    root.appendChild(trailer);
   }
 
   private String prepareTrailerForXbmc(MediaTrailer trailer) {
-    // youtube trailer are stored in a special notation: plugin://plugin.video.youtube/?action=play_video&videoid=<ID>
+    // YouTube trailers are stored in a special notation: plugin://plugin.video.youtube/?action=play_video&videoid=<ID>
     // parse out the ID from the url and store it in the right notation
     Pattern pattern = Pattern.compile("https{0,1}://.*youtube..*/watch\\?v=(.*)$");
     Matcher matcher = pattern.matcher(trailer.getUrl());

@@ -2574,9 +2574,11 @@ public class MediaFileHelper {
     if (source.contains("2094") || source.contains("hdr10+")) {
       ret.add("HDR10+");
     }
-    source = source.replaceAll("hdr10\\+", "");
-    if ((source.contains("2086") || source.contains("hdr10"))) {
-      ret.add("HDR10");
+    else {
+      // #2680
+      if (source.contains("2086") || source.contains("hdr10")) {
+        ret.add("HDR10");
+      }
     }
     return String.join(", ", ret);
   }

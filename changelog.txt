@@ -4,7 +4,8 @@ Version 5.1
 + [Movies] added a filter for trailer formats #2708
 + [Movies] display director in the movie information panel too
 + [Movies/TV shows] added an enhanced JMTE helper
-+ [Movies/TV shows] added an action to calculate checksums for video files #913
++ [Movies/TV shows] added an action to calculate CRC32 checksums for video files #913
++ [Movies/TV shows] added an option to prevent writing of trailer and fileinfo to the NFO
 + [Movie sets] added sorttitle for exporting into the NFO files #2742
 + [TV shows] show some unique video/audio data on seasons/TV show level when unique over all episodes #2755
 + [TV shows] added user notes for seasons too #2784
@@ -19,6 +20,8 @@ x [TV shows] read mediainfo data for season artwork #2570
 x [TV shows] fixed writing of ratings in NFO #2764
 x [TV shows] also export locked TV shows #2783
 x [TV shows] further tweak episode detection pattern #2785
+x [TV shows] fixed missing external subtitles for multi episode files #2792
+x [TV shows] fixed displaying of season files in renamer preview
 x [UDS/Scraper/JMTE] reworked title case converter
 x [UI] restructured settings dialog
 x [UI] reworked image chooser
@@ -39,3 +42,4 @@ x [OpenSubtitles] use vip server for VIP users #2756
 x [KodiRPC] rework mapping of TMM<>Kodi videos
 x [YT-DLP] self updating and adhere SSL ignores
 x [PostProcessing] add double quoting for windows #2748
+x [HDR] do not add HDR10 when already being HDR10+ #2680

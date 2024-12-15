@@ -216,56 +216,68 @@ public class TvShowArtworkHelper {
     }
 
     for (TvShowSeason season : tvShow.getSeasons()) {
-      List<MediaArtwork> seasonArtwork = artwork.stream().filter(mediaArtwork -> mediaArtwork.getSeason() == season.getSeason()).toList();
-
-      // season poster
-      if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_POSTER))) {
-        int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImagePosterSize().getOrder();
-        List<MediaArtwork.ImageSizeAndUrl> sortedPosters = sortArtworkUrls(seasonArtwork, SEASON_POSTER, preferredSizeOrder);
-
-        if (!sortedPosters.isEmpty()) {
-          season.setArtworkUrl(sortedPosters.get(0).getUrl(), MediaFileType.SEASON_POSTER);
-          downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(), MediaFileType.SEASON_POSTER);
-        }
-      }
-
-      // season fanart
-      if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_FANART))) {
-        int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImageFanartSize().getOrder();
-        List<MediaArtwork.ImageSizeAndUrl> sortedFanarts = sortArtworkUrls(seasonArtwork, SEASON_FANART, preferredSizeOrder);
-
-        if (!sortedFanarts.isEmpty()) {
-          season.setArtworkUrl(sortedFanarts.get(0).getUrl(), MediaFileType.SEASON_FANART);
-          downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(), MediaFileType.SEASON_FANART);
-        }
-      }
-
-      // season banner
-      if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_BANNER))) {
-        int preferredSizeOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER; // big enough to catch _all_ sizes
-        List<MediaArtwork.ImageSizeAndUrl> sortedArtwork = sortArtworkUrls(seasonArtwork, SEASON_BANNER, preferredSizeOrder);
-
-        if (!sortedArtwork.isEmpty()) {
-          season.setArtworkUrl(sortedArtwork.get(0).getUrl(), MediaFileType.SEASON_BANNER);
-          downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(), MediaFileType.SEASON_BANNER);
-        }
-      }
-
-      // season thumb
-      if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_THUMB))) {
-        int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImageThumbSize().getOrder();
-        List<MediaArtwork.ImageSizeAndUrl> sortedThumbs = sortArtworkUrls(seasonArtwork, SEASON_THUMB, preferredSizeOrder);
-
-        if (!sortedThumbs.isEmpty()) {
-          season.setArtworkUrl(sortedThumbs.get(0).getUrl(), MediaFileType.SEASON_THUMB);
-          downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(), MediaFileType.SEASON_THUMB);
-        }
-      }
+      downloadMissingArtwork(season, artwork);
     }
 
     // update DB
     tvShow.saveToDb();
     tvShow.writeNFO(); // rewrite NFO to get the urls into the NFO
+  }
+
+  /**
+   * set & download missing artwork for the given season
+   *
+   * @param season
+   *          the season to set the artwork for
+   * @param artwork
+   *          a list of all artworks to be set
+   */
+  public static void downloadMissingArtwork(TvShowSeason season, List<MediaArtwork> artwork) {
+    List<MediaArtwork> seasonArtwork = artwork.stream().filter(mediaArtwork -> mediaArtwork.getSeason() == season.getSeason()).toList();
+
+    // season poster
+    if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_POSTER))) {
+      int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImagePosterSize().getOrder();
+      List<MediaArtwork.ImageSizeAndUrl> sortedPosters = sortArtworkUrls(seasonArtwork, SEASON_POSTER, preferredSizeOrder);
+
+      if (!sortedPosters.isEmpty()) {
+        season.setArtworkUrl(sortedPosters.get(0).getUrl(), MediaFileType.SEASON_POSTER);
+        downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames(), MediaFileType.SEASON_POSTER);
+      }
+    }
+
+    // season fanart
+    if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_FANART))) {
+      int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImageFanartSize().getOrder();
+      List<MediaArtwork.ImageSizeAndUrl> sortedFanarts = sortArtworkUrls(seasonArtwork, SEASON_FANART, preferredSizeOrder);
+
+      if (!sortedFanarts.isEmpty()) {
+        season.setArtworkUrl(sortedFanarts.get(0).getUrl(), MediaFileType.SEASON_FANART);
+        downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames(), MediaFileType.SEASON_FANART);
+      }
+    }
+
+    // season banner
+    if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_BANNER))) {
+      int preferredSizeOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER; // big enough to catch _all_ sizes
+      List<MediaArtwork.ImageSizeAndUrl> sortedArtwork = sortArtworkUrls(seasonArtwork, SEASON_BANNER, preferredSizeOrder);
+
+      if (!sortedArtwork.isEmpty()) {
+        season.setArtworkUrl(sortedArtwork.get(0).getUrl(), MediaFileType.SEASON_BANNER);
+        downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames(), MediaFileType.SEASON_BANNER);
+      }
+    }
+
+    // season thumb
+    if (StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_THUMB))) {
+      int preferredSizeOrder = TvShowModuleManager.getInstance().getSettings().getImageThumbSize().getOrder();
+      List<MediaArtwork.ImageSizeAndUrl> sortedThumbs = sortArtworkUrls(seasonArtwork, SEASON_THUMB, preferredSizeOrder);
+
+      if (!sortedThumbs.isEmpty()) {
+        season.setArtworkUrl(sortedThumbs.get(0).getUrl(), MediaFileType.SEASON_THUMB);
+        downloadSeasonArtwork(season, TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames(), MediaFileType.SEASON_THUMB);
+      }
+    }
   }
 
   private static void setBestPoster(TvShow tvShow, List<MediaArtwork> artwork, boolean overwrite) {
@@ -311,22 +323,46 @@ public class TvShowArtworkHelper {
    * @return the found artwork or null
    */
   public static List<MediaArtwork.ImageSizeAndUrl> sortArtworkUrls(List<MediaArtwork> artwork, MediaArtworkType type, int sizeOrder) {
-    List<MediaArtwork> artworkForType = new ArrayList<>(artwork.stream().filter(art -> art.getType() == type).toList());
+    // artwork w/o FFmpeg
+    List<MediaArtwork> artworkForType = new ArrayList<>(artwork.stream()
+        .filter(art -> !"ffmpeg".equalsIgnoreCase(art.getProviderId()) && art.getType() == type)
+        .sorted((o1, o2) -> o2.getLikes() - o1.getLikes()) // descending
+        .toList());
 
-    if (artworkForType.isEmpty()) {
+    // FFmpeg artwork
+    List<MediaArtwork> artworkFromFfmpeg = new ArrayList<>(artwork.stream()
+        .filter(art -> "ffmpeg".equalsIgnoreCase(art.getProviderId()) && art.getType() == type)
+        .sorted((o1, o2) -> o2.getLikes() - o1.getLikes()) // descending
+        .toList());
+
+    MediaArtwork ffmpegArtwork = null;
+
+    if (!artworkFromFfmpeg.isEmpty()) {
+      ffmpegArtwork = artworkFromFfmpeg.get(artworkFromFfmpeg.size() / 2 + 1);
+    }
+
+    if (artworkForType.isEmpty() && ffmpegArtwork == null) {
       return Collections.emptyList();
     }
 
     List<MediaArtwork.ImageSizeAndUrl> sortedArtwork = new ArrayList<>();
 
     if (sizeOrder == 0) {
-      // we do not have any sizeOrder -> we're sorting an artwork without a setting. So pre-sort by biggest artwork first
-      artworkForType.sort((o1, o2) -> Integer.compare(o2.getBiggestArtwork().getWidth(), o1.getBiggestArtwork().getWidth()));
+      // we do not have any sizeOrder -> we're sorting an artwork without a setting. So pre-sort by biggest artwork first (likes desc)
+      artworkForType.sort((o1, o2) -> {
+        int result = Integer.compare(o2.getBiggestArtwork().getWidth(), o1.getBiggestArtwork().getWidth());
+
+        if (result == 0) {
+          result = o2.getLikes() - o1.getLikes();
+        }
+
+        return result;
+      });
     }
 
     List<MediaLanguages> languages = TvShowModuleManager.getInstance().getSettings().getImageScraperLanguages();
 
-    // get the artwork in the chosen language priority
+    // get the artwork in the chosen language/size priority (non FFmpeg)
     for (MediaLanguages language : languages) {
       // the right language and the right resolution
       for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().equals(language.getLanguage())).toList()) {
@@ -338,19 +374,18 @@ public class TvShowArtworkHelper {
       }
     }
 
-    // nothing with the chosen language(s) found - just re-try with empty language in the right resolution
-    if (sortedArtwork.isEmpty()) {
-      for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().equals("")).toList()) {
-        for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : art.getImageSizes()) {
-          if (imageSizeAndUrl.getSizeOrder() == sizeOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
-            sortedArtwork.add(imageSizeAndUrl);
-          }
+    // get the artwork in the chosen size (FFmpeg)
+    if (sortedArtwork.isEmpty() && ffmpegArtwork != null) {
+      // the right language and the right resolution
+      for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : ffmpegArtwork.getImageSizes()) {
+        if (imageSizeAndUrl.getSizeOrder() == sizeOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
+          sortedArtwork.add(imageSizeAndUrl);
         }
       }
     }
 
-    // do we want to take other resolution artwork?
-    if (TvShowModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
+    // do we want to take other resolution artwork? (non FFmpeg)
+    if (sortedArtwork.isEmpty() && TvShowModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
       int newOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER;
       while (newOrder > 1) {
         newOrder = newOrder / 2;
@@ -367,13 +402,25 @@ public class TvShowArtworkHelper {
       }
     }
 
-    // FFmpeg - is there has been no hit, use FFmpeg when available
-    if (sortedArtwork.isEmpty()) {
-      for (MediaArtwork art : artworkForType) {
-        if ("ffmpeg".equalsIgnoreCase(art.getProviderId())) {
-          sortedArtwork.addAll(art.getImageSizes());
+    // do we want to take other resolution artwork? (FFmpeg)
+    if (sortedArtwork.isEmpty() && TvShowModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
+      int newOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER;
+      while (newOrder > 1) {
+        newOrder = newOrder / 2;
+
+        if (ffmpegArtwork != null) {
+          for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : ffmpegArtwork.getImageSizes()) {
+            if (imageSizeAndUrl.getSizeOrder() == newOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
+              sortedArtwork.add(imageSizeAndUrl);
+            }
+          }
         }
       }
+    }
+
+    // FFmpeg - is there has been no hit, use FFmpeg when available
+    if (sortedArtwork.isEmpty() && ffmpegArtwork != null) {
+      sortedArtwork.addAll(ffmpegArtwork.getImageSizes());
     }
 
     // should we fall back to _any_ artwork?
@@ -587,26 +634,44 @@ public class TvShowArtworkHelper {
     }
 
     for (TvShowSeason season : tvShow.getSeasons()) {
-      if (config.contains(TvShowScraperMetadataConfig.SEASON_POSTER)
-          && !TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames().isEmpty()
-          && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_POSTER))) {
+      if (hasMissingArtwork(season, config)) {
         return true;
       }
-      if (config.contains(TvShowScraperMetadataConfig.SEASON_FANART)
-          && !TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames().isEmpty()
-          && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_FANART))) {
-        return true;
-      }
-      if (config.contains(TvShowScraperMetadataConfig.SEASON_BANNER)
-          && !TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames().isEmpty()
-          && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_BANNER))) {
-        return true;
-      }
-      if (config.contains(TvShowScraperMetadataConfig.SEASON_THUMB)
-          && !TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames().isEmpty()
-          && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_THUMB))) {
-        return true;
-      }
+    }
+
+    return false;
+  }
+
+  /**
+   * detect if there is missing artwork for the given season
+   *
+   * @param season
+   *          the season to check artwork for
+   * @return true/false
+   */
+  public static boolean hasMissingArtwork(TvShowSeason season, List<TvShowScraperMetadataConfig> config) {
+    if (config.contains(TvShowScraperMetadataConfig.SEASON_POSTER)
+        && !TvShowModuleManager.getInstance().getSettings().getSeasonPosterFilenames().isEmpty()
+        && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_POSTER))) {
+      return true;
+    }
+
+    if (config.contains(TvShowScraperMetadataConfig.SEASON_FANART)
+        && !TvShowModuleManager.getInstance().getSettings().getSeasonFanartFilenames().isEmpty()
+        && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_FANART))) {
+      return true;
+    }
+
+    if (config.contains(TvShowScraperMetadataConfig.SEASON_BANNER)
+        && !TvShowModuleManager.getInstance().getSettings().getSeasonBannerFilenames().isEmpty()
+        && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_BANNER))) {
+      return true;
+    }
+
+    if (config.contains(TvShowScraperMetadataConfig.SEASON_THUMB)
+        && !TvShowModuleManager.getInstance().getSettings().getSeasonThumbFilenames().isEmpty()
+        && StringUtils.isBlank(season.getArtworkFilename(MediaFileType.SEASON_THUMB))) {
+      return true;
     }
 
     return false;
@@ -664,7 +729,7 @@ public class TvShowArtworkHelper {
       String seasonArtworkUrl = tvShowSeason.getArtworkUrl(mediaFileType);
 
       for (ITvShowSeasonFileNaming fileNaming : fileNamings) {
-        String filename = fileNaming.getFilename(tvShowSeason, Utils.getArtworkExtensionFromUrl(seasonArtworkUrl));
+        String filename = fileNaming.getFilename(tvShowSeason, Utils.getArtworkExtensionFromUrl(seasonArtworkUrl), false);
         if (StringUtils.isBlank(filename)) {
           LOGGER.warn("empty filename for artwork: {} - {}", fileNaming.name(), tvShowSeason); // NOSONAR
           MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, tvShowSeason, "tvshow.seasondownload.failed"));

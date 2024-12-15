@@ -16,6 +16,7 @@
 package org.tinymediamanager.ui.dialogs;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ import org.tinymediamanager.core.TmmResourceBundle;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.license.License;
 import org.tinymediamanager.ui.MainWindow;
+import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.TmmUIHelper;
 import org.tinymediamanager.ui.components.ReadOnlyTextArea;
 
@@ -58,50 +60,57 @@ public class UnlockDialog extends TmmDialog {
 
     JPanel panelContent = new JPanel();
     getContentPane().add(panelContent, BorderLayout.CENTER);
-    panelContent.setLayout(new MigLayout("", "[][500lp,grow]", "[][][20lp!][10lp:n][20lp!][][100lp:150lp,grow][]"));
+    panelContent.setLayout(new MigLayout("", "[][500lp,grow]", "[]10lp[][][][][10lp:n][20lp!][][100lp:150lp,grow][]"));
     {
-      String text = TmmResourceBundle.getString("tmm.license.hint") + "\n\n";
-
-      LocalDate validUntil = License.getInstance().validUntil();
-      if (validUntil != null) {
-        text += "==> " + TmmResourceBundle.getString("tmm.license.validuntil") + ": "
-            + TmmDateFormat.MEDIUM_DATE_FORMAT.format(Date.valueOf(validUntil)) + " <==\n\n";
-      }
-
-      text += TmmResourceBundle.getString("tmm.license.hint2");
-
-      JTextArea taLicenseHint = new ReadOnlyTextArea(text);
+      JTextArea taLicenseHint = new ReadOnlyTextArea(TmmResourceBundle.getString("tmm.license.hint"));
       taLicenseHint.setLineWrap(true);
       panelContent.add(taLicenseHint, "cell 0 0 2 1,grow, wmin 0");
 
-      JButton btnOpenPaddle = new JButton(TmmResourceBundle.getString("tmm.license.buy"));
-      btnOpenPaddle.addActionListener(e -> {
-        String url = StringEscapeUtils.unescapeHtml4("https://www.tinymediamanager.org/purchase/");
-        try {
-          TmmUIHelper.browseUrl(url);
-        }
-        catch (Exception e1) {
-          LOGGER.error("FAQ", e1);
-          MessageManager.instance
-              .pushMessage(new Message(Message.MessageLevel.ERROR, url, "message.erroropenurl", new String[] { ":", e1.getLocalizedMessage() }));
-        }
-      });
-      panelContent.add(btnOpenPaddle, "cell 0 1 2 1");
+      LocalDate validUntil = License.getInstance().validUntil();
+      if (License.getInstance().isValidLicense() && validUntil != null) {
+        JLabel lblLicenseInfo = new JLabel("==> " + TmmResourceBundle.getString("tmm.license.validuntil") + ": "
+            + TmmDateFormat.MEDIUM_DATE_FORMAT.format(Date.valueOf(validUntil)) + " <==");
+        TmmFontHelper.changeFont(lblLicenseInfo, TmmFontHelper.H2, Font.BOLD);
+        panelContent.add(lblLicenseInfo, "cell 0 1 2 1,grow, wmin 0");
+      } else {
+        JTextArea taPurchaseHint = new ReadOnlyTextArea(TmmResourceBundle.getString("tmm.license.hint2"));
+        taPurchaseHint.setLineWrap(true);
+        panelContent.add(taPurchaseHint, "cell 0 2 2 1,grow, wmin 0");
+
+        JButton btnOpenPaddle = new JButton(TmmResourceBundle.getString("tmm.license.buy"));
+        btnOpenPaddle.addActionListener(e -> {
+          String url = StringEscapeUtils.unescapeHtml4("https://www.tinymediamanager.org/purchase/");
+          try {
+            TmmUIHelper.browseUrl(url);
+          }
+          catch (Exception e1) {
+            LOGGER.error("FAQ", e1);
+            MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, url, "message.erroropenurl",
+                new String[] { ":", e1.getLocalizedMessage() }));
+          }
+        });
+        panelContent.add(btnOpenPaddle, "cell 0 3 2 1");
+      }
     }
     {
       JSeparator separator = new JSeparator();
-      panelContent.add(separator, "cell 0 3 2 1,growx");
+      panelContent.add(separator, "cell 0 5 2 1,growx");
     }
     {
       JLabel lblEnterLicenseCodeT = new JLabel(TmmResourceBundle.getString("tmm.license.code"));
-      panelContent.add(lblEnterLicenseCodeT, "cell 0 4");
+      panelContent.add(lblEnterLicenseCodeT, "cell 0 6");
 
       JTextArea taLicenseCode = new JTextArea();
       taLicenseCode.setLineWrap(true);
 
+      // prefill when called with active license
+      if(License.getInstance().isValidLicense()){
+        taLicenseCode.setText(License.getInstance().getLicenseCode());
+      }
+
       JScrollPane scrollPane = new JScrollPane(taLicenseCode);
       scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      panelContent.add(scrollPane, "cell 0 5 2 2,wmin 0,grow");
+      panelContent.add(scrollPane, "cell 0 7 2 2,wmin 0,grow");
 
       JButton btnUnlock = new JButton(TmmResourceBundle.getString("tmm.license.unlock"));
       btnUnlock.addActionListener(arg0 -> {
@@ -131,7 +140,7 @@ public class UnlockDialog extends TmmDialog {
           JOptionPane.showMessageDialog(UnlockDialog.this, TmmResourceBundle.getString("tmm.license.invalid"));
         }
       });
-      panelContent.add(btnUnlock, "cell 1 7");
+      panelContent.add(btnUnlock, "cell 1 9, trailing");
 
     }
     {

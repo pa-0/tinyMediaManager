@@ -29,6 +29,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
@@ -181,6 +182,8 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
    */
   public MovieChooserDialog(Movie movie, int queueIndex, int queueSize) {
     super(TmmResourceBundle.getString("moviechooser.search") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : ""), "movieChooser");
+    setMinimumSize(new Dimension(800, 600));
+
     movieToScrape = movie;
     mediaScraper = movieList.getDefaultMediaScraper();
     artworkScrapers = movieList.getDefaultArtworkScrapers();

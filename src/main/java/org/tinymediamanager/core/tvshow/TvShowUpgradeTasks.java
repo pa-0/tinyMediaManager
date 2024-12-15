@@ -251,6 +251,22 @@ public class TvShowUpgradeTasks extends UpgradeTasks {
       module.setDbVersion(5007);
     }
 
+    // removed HDR10, when also having HDR10+
+    if (module.getDbVersion() < 5008) {
+      LOGGER.info("performing upgrade to ver: {}", 5008);
+      for (TvShow tvShow : tvShowList.getTvShows()) {
+        for (TvShowEpisode episode : tvShow.getEpisodes()) {
+          if (fixHDR(episode)) {
+            registerForSaving(episode);
+          }
+        }
+        if (fixHDR(tvShow)) {
+          registerForSaving(tvShow);
+        }
+      }
+      module.setDbVersion(5008);
+    }
+
     saveAll();
   }
 

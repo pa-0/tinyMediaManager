@@ -88,6 +88,8 @@ class TvShowScraperNfoSettingsPanel extends JPanel {
   private JCheckBox                            chckbxFirstStudio;
   private JHintCheckBox                        chckbxLockdata;
   private JCheckBox                            chckbxNewEpisodeguideFormat;
+  private JHintCheckBox                        chckbxTrailer;
+  private JHintCheckBox                        chckbxFileinfo;
 
   /**
    * Instantiates a new movie scraper settings panel.
@@ -142,7 +144,7 @@ class TvShowScraperNfoSettingsPanel extends JPanel {
     {
       JPanel panelNfo = new JPanel();
       // 16lp ~ width of the checkbox
-      panelNfo.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][10lp!][][][][][10lp!][][][][][][10lp!][][]"));
+      panelNfo.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][15lp!][][][][][][][15lp!][][][][][][][]"));
       JLabel lblNfoT = new TmmLabel(TmmResourceBundle.getString("Settings.nfo"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelNfo, lblNfoT, true);
       collapsiblePanel.addExtraTitleComponent(new DocsButton("/tvshows/settings#nfo-settings"));
@@ -184,63 +186,74 @@ class TvShowScraperNfoSettingsPanel extends JPanel {
           panel.add(chckbxEpisodeNfo1, "cell 1 2");
         }
 
+        chckbxWriteCleanNfo = new JCheckBox(TmmResourceBundle.getString("Settings.writecleannfo"));
+        panelNfo.add(chckbxWriteCleanNfo, "cell 1 3 2 1");
+
         JLabel lblNfoDatefield = new JLabel(TmmResourceBundle.getString("Settings.dateadded"));
-        panelNfo.add(lblNfoDatefield, "cell 1 4 2 1");
+        panelNfo.add(lblNfoDatefield, "cell 1 5 2 1");
 
         cbDatefield = new JComboBox(DateField.values());
-        panelNfo.add(cbDatefield, "cell 1 4 2 1");
+        panelNfo.add(cbDatefield, "cell 1 5 2 1");
 
         JLabel lblNfoLanguage = new JLabel(TmmResourceBundle.getString("Settings.nfolanguage"));
-        panelNfo.add(lblNfoLanguage, "cell 1 5 2 1");
+        panelNfo.add(lblNfoLanguage, "cell 1 6 2 1");
 
         cbNfoLanguage = new JComboBox(locales.toArray());
-        panelNfo.add(cbNfoLanguage, "cell 1 5 2 1");
+        panelNfo.add(cbNfoLanguage, "cell 1 6 2 1");
 
         JLabel lblNfoLanguageDesc = new JLabel(TmmResourceBundle.getString("Settings.nfolanguage.desc"));
-        panelNfo.add(lblNfoLanguageDesc, "cell 2 6");
+        panelNfo.add(lblNfoLanguageDesc, "cell 2 7");
 
         JLabel lblCertificationFormatT = new JLabel(TmmResourceBundle.getString("Settings.certificationformat"));
-        panelNfo.add(lblCertificationFormatT, "cell 1 7 2 1");
+        panelNfo.add(lblCertificationFormatT, "cell 1 8 2 1");
 
         cbCertificationStyle = new JComboBox();
-        panelNfo.add(cbCertificationStyle, "cell 1 7 2 1, wmin 0");
-
-        chckbxWriteEpisodeguide = new JCheckBox(TmmResourceBundle.getString("Settings.writeepisodeguide"));
-        panelNfo.add(chckbxWriteEpisodeguide, "cell 1 9 2 1");
-
-        chckbxNewEpisodeguideFormat = new JCheckBox(TmmResourceBundle.getString("Settings.writeepisodeguide.newstyle"));
-        panelNfo.add(chckbxNewEpisodeguideFormat, "cell 2 10");
-
-        LinkLabel lblEpisodeGuideLink = new LinkLabel("https://forum.kodi.tv/showthread.php?tid=370489");
-        lblEpisodeGuideLink.addActionListener(arg0 -> {
-          try {
-            TmmUIHelper.browseUrl(lblEpisodeGuideLink.getText());
-          }
-          catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, lblEpisodeGuideLink.getText(), "message.erroropenurl",
-                new String[] { ":", e.getLocalizedMessage() }));//$NON-NLS-1$
-          }
-        });
-        panelNfo.add(lblEpisodeGuideLink, "cell 2 10");
-
-        chckbxWriteDateEnded = new JCheckBox(TmmResourceBundle.getString("Settings.nfo.writeenddate"));
-        panelNfo.add(chckbxWriteDateEnded, "cell 1 11 2 1");
+        panelNfo.add(cbCertificationStyle, "cell 1 8 2 1,wmin 0");
 
         chckbxEmbedAllActors = new JCheckBox(TmmResourceBundle.getString("Settings.nfo.includeallactors"));
-        panelNfo.add(chckbxEmbedAllActors, "cell 1 12 2 1");
+        panelNfo.add(chckbxEmbedAllActors, "cell 1 9 2 1");
 
         chckbxFirstStudio = new JCheckBox(TmmResourceBundle.getString("Settings.singlestudio"));
-        panelNfo.add(chckbxFirstStudio, "cell 1 13 2 1");
-
-        chckbxWriteCleanNfo = new JCheckBox(TmmResourceBundle.getString("Settings.writecleannfo"));
-        panelNfo.add(chckbxWriteCleanNfo, "cell 1 15 2 1");
+        panelNfo.add(chckbxFirstStudio, "cell 1 10 2 1");
       }
+
+      chckbxWriteEpisodeguide = new JCheckBox(TmmResourceBundle.getString("Settings.writeepisodeguide"));
+      panelNfo.add(chckbxWriteEpisodeguide, "cell 1 12 2 1");
+
+      chckbxNewEpisodeguideFormat = new JCheckBox(TmmResourceBundle.getString("Settings.writeepisodeguide.newstyle"));
+      panelNfo.add(chckbxNewEpisodeguideFormat, "cell 2 13");
+
+      LinkLabel lblEpisodeGuideLink = new LinkLabel("https://forum.kodi.tv/showthread.php?tid=370489");
+      lblEpisodeGuideLink.addActionListener(arg0 -> {
+        try {
+          TmmUIHelper.browseUrl(lblEpisodeGuideLink.getText());
+        }
+        catch (Exception e) {
+          LOGGER.error(e.getMessage());
+          MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, lblEpisodeGuideLink.getText(), "message.erroropenurl",
+              new String[] { ":", e.getLocalizedMessage() }));//$NON-NLS-1$
+        }
+      });
+
+      panelNfo.add(lblEpisodeGuideLink, "cell 2 14");
+
+      chckbxTrailer = new JHintCheckBox(TmmResourceBundle.getString("Settings.nfo.trailer"));
+      chckbxTrailer.setToolTipText(TmmResourceBundle.getString("Settings.nfo.trailer.hint"));
+      chckbxTrailer.setHintIcon(IconManager.HINT);
+      panelNfo.add(chckbxTrailer, "cell 1 15 2 1");
+
+      chckbxFileinfo = new JHintCheckBox(TmmResourceBundle.getString("Settings.nfo.fileinfo"));
+      chckbxFileinfo.setToolTipText(TmmResourceBundle.getString("Settings.nfo.fileinfo.hint"));
+      chckbxFileinfo.setHintIcon(IconManager.HINT);
+      panelNfo.add(chckbxFileinfo, "cell 1 16 2 1");
+
+      chckbxWriteDateEnded = new JCheckBox(TmmResourceBundle.getString("Settings.nfo.writeenddate"));
+      panelNfo.add(chckbxWriteDateEnded, "cell 1 17 2 1");
 
       chckbxLockdata = new JHintCheckBox(TmmResourceBundle.getString("Settings.lockdata"));
       chckbxLockdata.setToolTipText(TmmResourceBundle.getString("Settings.lockdata.hint"));
       chckbxLockdata.setHintIcon(IconManager.HINT);
-      panelNfo.add(chckbxLockdata, "cell 1 16 2 1");
+      panelNfo.add(chckbxLockdata, "cell 1 18 2 1");
     }
   }
 
@@ -388,5 +401,15 @@ class TvShowScraperNfoSettingsPanel extends JPanel {
     AutoBinding autoBinding_9 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_9,
         chckbxNewEpisodeguideFormat, jCheckBoxBeanProperty);
     autoBinding_9.bind();
+    //
+    Property tvShowSettingsBeanProperty_2 = BeanProperty.create("nfoWriteTrailer");
+    AutoBinding autoBinding_4 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_2, chckbxTrailer,
+        jCheckBoxBeanProperty);
+    autoBinding_4.bind();
+    //
+    Property tvShowSettingsBeanProperty_10 = BeanProperty.create("nfoWriteFileinfo");
+    AutoBinding autoBinding_10 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, tvShowSettingsBeanProperty_10, chckbxFileinfo,
+        jCheckBoxBeanProperty);
+    autoBinding_10.bind();
   }
 }

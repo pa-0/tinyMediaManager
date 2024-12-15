@@ -99,6 +99,7 @@ public class ToolbarPanel extends JPanel {
     btnUnlock = new ToolbarButton(IconManager.TOOLBAR_UPGRADE, IconManager.TOOLBAR_UPGRADE);
     Action unlockAction = new UnlockAction();
     btnUnlock.setAction(unlockAction);
+    btnUnlock.setToolTipText(TmmResourceBundle.getString("Toolbar.upgrade.desc"));
     panelCenter.add(btnUnlock, "cell 11 0 1 2, center");
 
     btnRenewLicense = new ToolbarButton(IconManager.TOOLBAR_RENEW, IconManager.TOOLBAR_RENEW);

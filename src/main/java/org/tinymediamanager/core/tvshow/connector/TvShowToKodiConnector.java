@@ -161,19 +161,21 @@ public class TvShowToKodiConnector extends TvShowGenericXmlConnector {
 
   @Override
   protected void addTrailer() {
-    Element trailer = document.createElement("trailer");
+    if (TvShowModuleManager.getInstance().getSettings().isNfoWriteTrailer()) {
+      Element trailer = document.createElement("trailer");
 
-    // only add a trailer if there is no physical trailer due to a bug in kodi
-    // https://forum.kodi.tv/showthread.php?tid=348759&pid=2900477#pid2900477
-    if (tvShow.getMediaFiles(MediaFileType.TRAILER).isEmpty()) {
-      for (MediaTrailer mediaTrailer : new ArrayList<>(tvShow.getTrailer())) {
-        if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
-          trailer.setTextContent(prepareTrailerForKodi(mediaTrailer));
-          break;
+      // only add a trailer if there is no physical trailer due to a bug in kodi
+      // https://forum.kodi.tv/showthread.php?tid=348759&pid=2900477#pid2900477
+      if (tvShow.getMediaFiles(MediaFileType.TRAILER).isEmpty()) {
+        for (MediaTrailer mediaTrailer : new ArrayList<>(tvShow.getTrailer())) {
+          if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
+            trailer.setTextContent(prepareTrailerForKodi(mediaTrailer));
+            break;
+          }
         }
       }
+      root.appendChild(trailer);
     }
-    root.appendChild(trailer);
   }
 
   protected String prepareTrailerForKodi(MediaTrailer trailer) {

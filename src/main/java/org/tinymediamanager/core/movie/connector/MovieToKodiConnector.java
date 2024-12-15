@@ -153,19 +153,21 @@ public class MovieToKodiConnector extends MovieGenericXmlConnector {
 
   @Override
   protected void addTrailer() {
-    Element trailer = document.createElement("trailer");
+    if (MovieModuleManager.getInstance().getSettings().isNfoWriteTrailer()) {
+      Element trailer = document.createElement("trailer");
 
-    // only add a trailer if there is no physical trailer due to a bug in kodi
-    // https://forum.kodi.tv/showthread.php?tid=348759&pid=2900477#pid2900477
-    if (movie.getMediaFiles(MediaFileType.TRAILER).isEmpty()) {
-      for (MediaTrailer mediaTrailer : new ArrayList<>(movie.getTrailer())) {
-        if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
-          trailer.setTextContent(prepareTrailerForKodi(mediaTrailer));
-          break;
+      // only add a trailer if there is no physical trailer due to a bug in kodi
+      // https://forum.kodi.tv/showthread.php?tid=348759&pid=2900477#pid2900477
+      if (movie.getMediaFiles(MediaFileType.TRAILER).isEmpty()) {
+        for (MediaTrailer mediaTrailer : new ArrayList<>(movie.getTrailer())) {
+          if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
+            trailer.setTextContent(prepareTrailerForKodi(mediaTrailer));
+            break;
+          }
         }
       }
+      root.appendChild(trailer);
     }
-    root.appendChild(trailer);
   }
 
   protected String prepareTrailerForKodi(MediaTrailer trailer) {
@@ -305,146 +307,148 @@ public class MovieToKodiConnector extends MovieGenericXmlConnector {
    * add the <fileinfo>xx</fileinfo> tag with mediainfo data
    */
   protected void addFileinfo() {
-    Element fileinfo = document.createElement("fileinfo");
-    Element streamdetails = document.createElement("streamdetails");
+    if (MovieModuleManager.getInstance().getSettings().isNfoWriteFileinfo()) {
+      Element fileinfo = document.createElement("fileinfo");
+      Element streamdetails = document.createElement("streamdetails");
 
-    MediaFile vid = movie.getMainVideoFile();
-    if (vid != null) {
-      {
-        Element video = document.createElement("video");
+      MediaFile vid = movie.getMainVideoFile();
+      if (vid != null) {
+        {
+          Element video = document.createElement("video");
 
-        Element codec = document.createElement("codec");
-        // workaround for h265/hevc since Kodi just "knows" hevc
-        // https://forum.kodi.tv/showthread.php?tid=354886&pid=2955329#pid2955329
-        if ("h265".equalsIgnoreCase(vid.getVideoCodec())) {
-          codec.setTextContent("HEVC");
-        }
-        else {
-          codec.setTextContent(vid.getVideoCodec());
-        }
-        video.appendChild(codec);
-
-        Element aspect = document.createElement("aspect");
-        aspect.setTextContent(Float.toString(vid.getAspectRatio()));
-        video.appendChild(aspect);
-
-        Element width = document.createElement("width");
-        width.setTextContent(Integer.toString(vid.getVideoWidth()));
-        video.appendChild(width);
-
-        Element height = document.createElement("height");
-        height.setTextContent(Integer.toString(vid.getVideoHeight()));
-        video.appendChild(height);
-
-        if (movie.isVideoInHDR()) {
-          // basically a TMM string to Kodi skin mapping, but only one
-          Element hdr = document.createElement("hdrtype");
-          if (vid.getHdrFormat().contains("Dolby Vision")) {
-            hdr.setTextContent("dolbyvision");
+          Element codec = document.createElement("codec");
+          // workaround for h265/hevc since Kodi just "knows" hevc
+          // https://forum.kodi.tv/showthread.php?tid=354886&pid=2955329#pid2955329
+          if ("h265".equalsIgnoreCase(vid.getVideoCodec())) {
+            codec.setTextContent("HEVC");
           }
-          else if (vid.getHdrFormat().contains("HLG")) {
-            hdr.setTextContent("hlg");
+          else {
+            codec.setTextContent(vid.getVideoCodec());
           }
-          else if (vid.getHdrFormat().contains("HDR10")) {
-            hdr.setTextContent("hdr10");
+          video.appendChild(codec);
+
+          Element aspect = document.createElement("aspect");
+          aspect.setTextContent(Float.toString(vid.getAspectRatio()));
+          video.appendChild(aspect);
+
+          Element width = document.createElement("width");
+          width.setTextContent(Integer.toString(vid.getVideoWidth()));
+          video.appendChild(width);
+
+          Element height = document.createElement("height");
+          height.setTextContent(Integer.toString(vid.getVideoHeight()));
+          video.appendChild(height);
+
+          if (movie.isVideoInHDR()) {
+            // basically a TMM string to Kodi skin mapping, but only one
+            Element hdr = document.createElement("hdrtype");
+            if (vid.getHdrFormat().contains("Dolby Vision")) {
+              hdr.setTextContent("dolbyvision");
+            }
+            else if (vid.getHdrFormat().contains("HLG")) {
+              hdr.setTextContent("hlg");
+            }
+            else if (vid.getHdrFormat().contains("HDR10")) {
+              hdr.setTextContent("hdr10");
+            }
+            video.appendChild(hdr);
           }
-          video.appendChild(hdr);
+
+          // does not work reliable for disc style movies, MediaInfo and even Kodi write weird values in there
+          if (!movie.isDisc() && !movie.getMainVideoFile().getExtension().equalsIgnoreCase("iso")) {
+            Element durationinseconds = document.createElement("durationinseconds");
+            durationinseconds.setTextContent(Integer.toString(movie.getRuntimeFromMediaFilesInSeconds()));
+            video.appendChild(durationinseconds);
+          }
+
+          Element stereomode = document.createElement("stereomode");
+          // "Spec": https://github.com/xbmc/xbmc/blob/master/xbmc/guilib/StereoscopicsManager.cpp
+          switch (vid.getVideo3DFormat()) {
+            case MediaFileHelper.VIDEO_3D_SBS:
+            case MediaFileHelper.VIDEO_3D_HSBS:
+              stereomode.setTextContent("left_right");
+              break;
+
+            case MediaFileHelper.VIDEO_3D_TAB:
+            case MediaFileHelper.VIDEO_3D_HTAB:
+              stereomode.setTextContent("top_bottom");
+              break;
+
+            default:
+              break;
+          }
+          video.appendChild(stereomode);
+
+          streamdetails.appendChild(video);
         }
 
-        // does not work reliable for disc style movies, MediaInfo and even Kodi write weird values in there
-        if (!movie.isDisc() && !movie.getMainVideoFile().getExtension().equalsIgnoreCase("iso")) {
-          Element durationinseconds = document.createElement("durationinseconds");
-          durationinseconds.setTextContent(Integer.toString(movie.getRuntimeFromMediaFilesInSeconds()));
-          video.appendChild(durationinseconds);
+        for (MediaFileAudioStream audioStream : vid.getAudioStreams()) {
+          Element audio = document.createElement("audio");
+
+          Element codec = document.createElement("codec");
+          codec.setTextContent(audioStream.getCodec().replaceAll("-", "_"));
+          audio.appendChild(codec);
+
+          Element language = document.createElement("language");
+          language.setTextContent(audioStream.getLanguage());
+          audio.appendChild(language);
+
+          Element channels = document.createElement("channels");
+          channels.setTextContent(Integer.toString(audioStream.getAudioChannels()));
+          audio.appendChild(channels);
+
+          streamdetails.appendChild(audio);
         }
 
-        Element stereomode = document.createElement("stereomode");
-        // "Spec": https://github.com/xbmc/xbmc/blob/master/xbmc/guilib/StereoscopicsManager.cpp
-        switch (vid.getVideo3DFormat()) {
-          case MediaFileHelper.VIDEO_3D_SBS:
-          case MediaFileHelper.VIDEO_3D_HSBS:
-            stereomode.setTextContent("left_right");
-            break;
+        // also include external audio files if set
+        if (MovieModuleManager.getInstance().getSettings().isIncludeExternalAudioStreams()) {
+          for (MediaFile audioFile : movie.getMediaFiles(MediaFileType.AUDIO)) {
+            for (MediaFileAudioStream audioStream : vid.getAudioStreams()) {
+              Element audio = document.createElement("audio");
 
-          case MediaFileHelper.VIDEO_3D_TAB:
-          case MediaFileHelper.VIDEO_3D_HTAB:
-            stereomode.setTextContent("top_bottom");
-            break;
+              Element codec = document.createElement("codec");
+              codec.setTextContent(audioStream.getCodec());
+              audio.appendChild(codec);
 
-          default:
-            break;
+              Element language = document.createElement("language");
+              language.setTextContent(audioStream.getLanguage());
+              audio.appendChild(language);
+
+              Element channels = document.createElement("channels");
+              channels.setTextContent(Integer.toString(audioStream.getAudioChannels()));
+              audio.appendChild(channels);
+
+              streamdetails.appendChild(audio);
+            }
+          }
         }
-        video.appendChild(stereomode);
 
-        streamdetails.appendChild(video);
+        for (MediaFileSubtitle sub : vid.getSubtitles()) {
+          Element subtitle = document.createElement("subtitle");
+
+          Element language = document.createElement("language");
+          language.setTextContent(sub.getLanguage());
+          subtitle.appendChild(language);
+
+          streamdetails.appendChild(subtitle);
+        }
       }
 
-      for (MediaFileAudioStream audioStream : vid.getAudioStreams()) {
-        Element audio = document.createElement("audio");
+      // add external subtitles to NFO
+      for (MediaFile mediaFile : movie.getMediaFiles(MediaFileType.SUBTITLE)) {
+        for (MediaFileSubtitle sub : mediaFile.getSubtitles()) {
+          Element subtitle = document.createElement("subtitle");
 
-        Element codec = document.createElement("codec");
-        codec.setTextContent(audioStream.getCodec().replaceAll("-", "_"));
-        audio.appendChild(codec);
+          Element language = document.createElement("language");
+          language.setTextContent(sub.getLanguage());
+          subtitle.appendChild(language);
 
-        Element language = document.createElement("language");
-        language.setTextContent(audioStream.getLanguage());
-        audio.appendChild(language);
-
-        Element channels = document.createElement("channels");
-        channels.setTextContent(Integer.toString(audioStream.getAudioChannels()));
-        audio.appendChild(channels);
-
-        streamdetails.appendChild(audio);
-      }
-
-      // also include external audio files if set
-      if (MovieModuleManager.getInstance().getSettings().isIncludeExternalAudioStreams()) {
-        for (MediaFile audioFile : movie.getMediaFiles(MediaFileType.AUDIO)) {
-          for (MediaFileAudioStream audioStream : vid.getAudioStreams()) {
-            Element audio = document.createElement("audio");
-
-            Element codec = document.createElement("codec");
-            codec.setTextContent(audioStream.getCodec());
-            audio.appendChild(codec);
-
-            Element language = document.createElement("language");
-            language.setTextContent(audioStream.getLanguage());
-            audio.appendChild(language);
-
-            Element channels = document.createElement("channels");
-            channels.setTextContent(Integer.toString(audioStream.getAudioChannels()));
-            audio.appendChild(channels);
-
-            streamdetails.appendChild(audio);
-          }
+          streamdetails.appendChild(subtitle);
         }
       }
 
-      for (MediaFileSubtitle sub : vid.getSubtitles()) {
-        Element subtitle = document.createElement("subtitle");
-
-        Element language = document.createElement("language");
-        language.setTextContent(sub.getLanguage());
-        subtitle.appendChild(language);
-
-        streamdetails.appendChild(subtitle);
-      }
+      fileinfo.appendChild(streamdetails);
+      root.appendChild(fileinfo);
     }
-
-    // add external subtitles to NFO
-    for (MediaFile mediaFile : movie.getMediaFiles(MediaFileType.SUBTITLE)) {
-      for (MediaFileSubtitle sub : mediaFile.getSubtitles()) {
-        Element subtitle = document.createElement("subtitle");
-
-        Element language = document.createElement("language");
-        language.setTextContent(sub.getLanguage());
-        subtitle.appendChild(language);
-
-        streamdetails.appendChild(subtitle);
-      }
-    }
-
-    fileinfo.appendChild(streamdetails);
-    root.appendChild(fileinfo);
   }
 }

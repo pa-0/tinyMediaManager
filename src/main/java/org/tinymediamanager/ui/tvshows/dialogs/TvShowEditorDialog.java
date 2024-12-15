@@ -27,6 +27,7 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -225,6 +226,7 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
   public TvShowEditorDialog(TvShow tvShow, int queueIndex, int queueSize, int selectedTab) {
     super(TmmResourceBundle.getString("tvshow.edit") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : "") + "  < " + tvShow.getPathNIO()
         + " >", "tvShowEditor", tvShow);
+    setMinimumSize(new Dimension(800, 600));
 
     this.tvShowToEdit = tvShow;
     this.queueIndex = queueIndex;

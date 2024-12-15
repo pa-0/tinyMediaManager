@@ -21,8 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.Settings;
 import org.tinymediamanager.core.Utils;
 import org.tinymediamanager.core.entities.MediaEntity;
+import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieScraperMetadataConfig;
@@ -164,6 +168,27 @@ public abstract class UpgradeTasks {
       }
     }
 
+    return changed;
+  }
+
+  /**
+   * removed HDR10, when also having HDR10+
+   * 
+   * @param me
+   * @return
+   */
+  protected static boolean fixHDR(MediaEntity me) {
+    boolean changed = false;
+    for (MediaFile mf : me.getMediaFiles()) {
+      if (mf.isHDR()) {
+        List<String> hdrs = new ArrayList<String>(Arrays.asList(mf.getHdrFormat().split(", "))); // modifyable
+        if (hdrs.contains("HDR10+") && hdrs.contains("HDR10")) {
+          hdrs.remove("HDR10");
+          mf.setHdrFormat(String.join(", ", hdrs));
+          changed = true;
+        }
+      }
+    }
     return changed;
   }
 

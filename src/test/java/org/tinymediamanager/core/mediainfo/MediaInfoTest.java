@@ -650,11 +650,11 @@ public class MediaInfoTest extends BasicTest {
     // Dolby Vision
     mf = new MediaFile(mediainfoFolder.resolve("dolby_vision.avi"));
     MediaFileHelper.gatherMediaInformation(mf, false);
-    assertThat(mf.getHdrFormat()).isEqualTo("Dolby Vision, HDR10+, HDR10");
+    assertThat(mf.getHdrFormat()).isEqualTo("Dolby Vision, HDR10+");
 
     mf = new MediaFile(mediainfoFolder.resolve("dolby_vision2.avi"));
     MediaFileHelper.gatherMediaInformation(mf, false);
-    assertThat(mf.getHdrFormat()).isEqualTo("Dolby Vision, HDR10+, HDR10");
+    assertThat(mf.getHdrFormat()).isEqualTo("Dolby Vision, HDR10+");
 
     // HDR10
     mf = new MediaFile(mediainfoFolder.resolve("hdr10.avi"));
@@ -668,7 +668,7 @@ public class MediaInfoTest extends BasicTest {
     // HDR10+
     mf = new MediaFile(mediainfoFolder.resolve("hdr10plus.avi"));
     MediaFileHelper.gatherMediaInformation(mf, false);
-    assertThat(mf.getHdrFormat()).isEqualTo("HDR10+, HDR10");
+    assertThat(mf.getHdrFormat()).isEqualTo("HDR10+");
 
     // HLG
     mf = new MediaFile(mediainfoFolder.resolve("hlg.avi"));

@@ -25,6 +25,7 @@ import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaFileAudioStream;
 import org.tinymediamanager.core.entities.MediaFileSubtitle;
 import org.tinymediamanager.core.entities.MediaRating;
+import org.tinymediamanager.core.tvshow.TvShowModuleManager;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.w3c.dom.Element;
@@ -122,108 +123,98 @@ public class TvShowEpisodeToKodiConnector extends TvShowEpisodeGenericXmlConnect
    * add the fileinfo structure <fileinfo><streamdetails><video>...</video><audio>...</audio></streamdetails></fileinfo>
    */
   protected void addFileinfo(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
-    Element fileinfo = document.createElement("fileinfo");
-    Element streamdetails = document.createElement("streamdetails");
+    if (TvShowModuleManager.getInstance().getSettings().isNfoWriteFileinfo()) {
+      Element fileinfo = document.createElement("fileinfo");
+      Element streamdetails = document.createElement("streamdetails");
 
-    List<MediaFile> videos = episode.getMediaFiles(MediaFileType.VIDEO);
-    if (!videos.isEmpty()) {
-      MediaFile videoFile = videos.get(0);
-      Element video = document.createElement("video");
+      List<MediaFile> videos = episode.getMediaFiles(MediaFileType.VIDEO);
+      if (!videos.isEmpty()) {
+        MediaFile videoFile = videos.get(0);
+        Element video = document.createElement("video");
 
-      Element codec = document.createElement("codec");
-      // workaround for h265/hevc since Kodi just "knows" hevc
-      // https://forum.kodi.tv/showthread.php?tid=354886&pid=2955329#pid2955329
-      if ("h265".equalsIgnoreCase(videoFile.getVideoCodec())) {
-        codec.setTextContent("HEVC");
-      }
-      else {
-        codec.setTextContent(videoFile.getVideoCodec());
-      }
-      video.appendChild(codec);
-
-      Element aspect = document.createElement("aspect");
-      aspect.setTextContent(String.valueOf(videoFile.getAspectRatio()));
-      video.appendChild(aspect);
-
-      Element width = document.createElement("width");
-      width.setTextContent(String.valueOf(videoFile.getVideoWidth()));
-      video.appendChild(width);
-
-      Element height = document.createElement("height");
-      height.setTextContent(String.valueOf(videoFile.getVideoHeight()));
-      video.appendChild(height);
-
-      if (episode.isVideoInHDR()) {
-        // basically a TMM string to Kodi skin mapping, but only one
-        Element hdr = document.createElement("hdrtype");
-        if (videoFile.getHdrFormat().contains("Dolby Vision")) {
-          hdr.setTextContent("dolbyvision");
+        Element codec = document.createElement("codec");
+        // workaround for h265/hevc since Kodi just "knows" hevc
+        // https://forum.kodi.tv/showthread.php?tid=354886&pid=2955329#pid2955329
+        if ("h265".equalsIgnoreCase(videoFile.getVideoCodec())) {
+          codec.setTextContent("HEVC");
         }
-        else if (videoFile.getHdrFormat().contains("HLG")) {
-          hdr.setTextContent("hlg");
+        else {
+          codec.setTextContent(videoFile.getVideoCodec());
         }
-        else if (videoFile.getHdrFormat().contains("HDR10")) {
-          hdr.setTextContent("hdr10");
+        video.appendChild(codec);
+
+        Element aspect = document.createElement("aspect");
+        aspect.setTextContent(String.valueOf(videoFile.getAspectRatio()));
+        video.appendChild(aspect);
+
+        Element width = document.createElement("width");
+        width.setTextContent(String.valueOf(videoFile.getVideoWidth()));
+        video.appendChild(width);
+
+        Element height = document.createElement("height");
+        height.setTextContent(String.valueOf(videoFile.getVideoHeight()));
+        video.appendChild(height);
+
+        if (episode.isVideoInHDR()) {
+          // basically a TMM string to Kodi skin mapping, but only one
+          Element hdr = document.createElement("hdrtype");
+          if (videoFile.getHdrFormat().contains("Dolby Vision")) {
+            hdr.setTextContent("dolbyvision");
+          }
+          else if (videoFile.getHdrFormat().contains("HLG")) {
+            hdr.setTextContent("hlg");
+          }
+          else if (videoFile.getHdrFormat().contains("HDR10")) {
+            hdr.setTextContent("hdr10");
+          }
+          video.appendChild(hdr);
         }
-        video.appendChild(hdr);
-      }
 
-      // does not work reliable for disc style movies, MediaInfo and even Kodi write weird values in there
-      if (!episode.isDisc() && !episode.getMainVideoFile().getExtension().equalsIgnoreCase("iso")) {
-        Element durationinseconds = document.createElement("durationinseconds");
-        durationinseconds.setTextContent(String.valueOf(episode.getRuntimeFromMediaFiles()));
-        video.appendChild(durationinseconds);
-      }
+        // does not work reliable for disc style movies, MediaInfo and even Kodi write weird values in there
+        if (!episode.isDisc() && !episode.getMainVideoFile().getExtension().equalsIgnoreCase("iso")) {
+          Element durationinseconds = document.createElement("durationinseconds");
+          durationinseconds.setTextContent(String.valueOf(episode.getRuntimeFromMediaFiles()));
+          video.appendChild(durationinseconds);
+        }
 
-      Element stereomode = document.createElement("stereomode");
-      // "Spec": https://github.com/xbmc/xbmc/blob/master/xbmc/guilib/StereoscopicsManager.cpp
-      switch (videoFile.getVideo3DFormat()) {
-        case MediaFileHelper.VIDEO_3D_SBS:
-        case MediaFileHelper.VIDEO_3D_HSBS:
-          stereomode.setTextContent("left_right");
-          break;
+        Element stereomode = document.createElement("stereomode");
+        // "Spec": https://github.com/xbmc/xbmc/blob/master/xbmc/guilib/StereoscopicsManager.cpp
+        switch (videoFile.getVideo3DFormat()) {
+          case MediaFileHelper.VIDEO_3D_SBS:
+          case MediaFileHelper.VIDEO_3D_HSBS:
+            stereomode.setTextContent("left_right");
+            break;
 
-        case MediaFileHelper.VIDEO_3D_TAB:
-        case MediaFileHelper.VIDEO_3D_HTAB:
-          stereomode.setTextContent("top_bottom");
-          break;
+          case MediaFileHelper.VIDEO_3D_TAB:
+          case MediaFileHelper.VIDEO_3D_HTAB:
+            stereomode.setTextContent("top_bottom");
+            break;
 
-        default:
-          break;
-      }
-      video.appendChild(stereomode);
-      streamdetails.appendChild(video);
+          default:
+            break;
+        }
+        video.appendChild(stereomode);
+        streamdetails.appendChild(video);
 
-      for (MediaFileAudioStream as : videoFile.getAudioStreams()) {
-        Element audio = document.createElement("audio");
+        for (MediaFileAudioStream as : videoFile.getAudioStreams()) {
+          Element audio = document.createElement("audio");
 
-        Element audioCodec = document.createElement("codec");
-        audioCodec.setTextContent(as.getCodec().replaceAll("-", "_"));
-        audio.appendChild(audioCodec);
+          Element audioCodec = document.createElement("codec");
+          audioCodec.setTextContent(as.getCodec().replaceAll("-", "_"));
+          audio.appendChild(audioCodec);
 
-        Element language = document.createElement("language");
-        language.setTextContent(as.getLanguage());
-        audio.appendChild(language);
+          Element language = document.createElement("language");
+          language.setTextContent(as.getLanguage());
+          audio.appendChild(language);
 
-        Element channels = document.createElement("channels");
-        channels.setTextContent(String.valueOf(as.getAudioChannels()));
-        audio.appendChild(channels);
+          Element channels = document.createElement("channels");
+          channels.setTextContent(String.valueOf(as.getAudioChannels()));
+          audio.appendChild(channels);
 
-        streamdetails.appendChild(audio);
-      }
+          streamdetails.appendChild(audio);
+        }
 
-      for (MediaFileSubtitle ss : videoFile.getSubtitles()) {
-        Element subtitle = document.createElement("subtitle");
-
-        Element language = document.createElement("language");
-        language.setTextContent(ss.getLanguage());
-        subtitle.appendChild(language);
-
-        streamdetails.appendChild(subtitle);
-      }
-
-      for (MediaFile sub : episode.getMediaFiles(MediaFileType.SUBTITLE)) {
-        for (MediaFileSubtitle ss : sub.getSubtitles()) {
+        for (MediaFileSubtitle ss : videoFile.getSubtitles()) {
           Element subtitle = document.createElement("subtitle");
 
           Element language = document.createElement("language");
@@ -232,10 +223,22 @@ public class TvShowEpisodeToKodiConnector extends TvShowEpisodeGenericXmlConnect
 
           streamdetails.appendChild(subtitle);
         }
-      }
-    }
 
-    fileinfo.appendChild(streamdetails);
-    root.appendChild(fileinfo);
+        for (MediaFile sub : episode.getMediaFiles(MediaFileType.SUBTITLE)) {
+          for (MediaFileSubtitle ss : sub.getSubtitles()) {
+            Element subtitle = document.createElement("subtitle");
+
+            Element language = document.createElement("language");
+            language.setTextContent(ss.getLanguage());
+            subtitle.appendChild(language);
+
+            streamdetails.appendChild(subtitle);
+          }
+        }
+      }
+
+      fileinfo.appendChild(streamdetails);
+      root.appendChild(fileinfo);
+    }
   }
 }

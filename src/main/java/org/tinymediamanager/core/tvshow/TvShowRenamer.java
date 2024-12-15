@@ -913,6 +913,9 @@ public class TvShowRenamer {
       return;
     }
 
+    // store all episodes for this media file
+    List<TvShowEpisode> episodes = TvShowList.getTvEpisodesByFile(episode.getTvShow(), originalVideoMediaFile.getFile());
+
     // make sure we have actual stacking markers
     episode.reEvaluateStacking();
 
@@ -1154,13 +1157,8 @@ public class TvShowRenamer {
     }
 
     if (changeDetected) {
-      // update paths/mfs for the episode
-      List<TvShowEpisode> eps = new ArrayList<>();
-      eps.add(episode);
-
-      // if the files are multi EP files, change all other episodes too
-      eps.addAll(TvShowList.getTvEpisodesByFile(episode.getTvShow(), originalVideoMediaFile.getFile()));
-      for (TvShowEpisode e : eps) {
+      // update paths/mfs for all relevant episodes
+      for (TvShowEpisode e : episodes) {
         e.removeAllMediaFiles();
         e.addToMediaFiles(needed);
         e.setPath(episode.getPath());
@@ -1880,6 +1878,23 @@ public class TvShowRenamer {
     }
 
     return newFiles;
+  }
+
+  /**
+   * generate the season folder name according to the settings
+   *
+   * @param show
+   *          the TV show to generate the season folder for
+   * @param season
+   *          the season to generate the season folder name for
+   * @return the folder name of that season
+   */
+  public static String getSeasonFoldername(TvShow show, TvShowSeason season) {
+    TvShowEpisode firstEpisode = ListUtils.getFirst(season.getEpisodes());
+    if (firstEpisode == null) {
+      return "";
+    }
+    return getSeasonFoldername(TvShowModuleManager.getInstance().getSettings().getRenamerSeasonFoldername(), show, firstEpisode);
   }
 
   /**

@@ -205,6 +205,8 @@ class TmdbArtworkProvider {
         else {
           ma.setLanguage(image.iso_639_1);
         }
+
+        ma.setLikes(image.vote_count);
         ma.setTmdbId(tmdbId);
 
         if (season > -1) {

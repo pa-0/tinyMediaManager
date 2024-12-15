@@ -70,8 +70,8 @@ public class TvShowDownloadMissingArtworkAction extends TmmAction {
     List<TvShowScraperMetadataConfig> tvShowScraperMetadataConfig = dialog.getTvShowScraperMetadataConfig();
     List<TvShowEpisodeScraperMetadataConfig> episodeScraperMetadataConfig = dialog.getTvShowEpisodeScraperMetadataConfig();
 
-    TvShowMissingArtworkDownloadTask task = new TvShowMissingArtworkDownloadTask(selectedObjects.getTvShows(), selectedObjects.getEpisodesRecursive(),
-        options, tvShowScraperMetadataConfig, episodeScraperMetadataConfig);
+    TvShowMissingArtworkDownloadTask task = new TvShowMissingArtworkDownloadTask(selectedObjects.getTvShows(), selectedObjects.getSeasons(),
+        selectedObjects.getEpisodesRecursive(), options, tvShowScraperMetadataConfig, episodeScraperMetadataConfig);
     TmmTaskManager.getInstance().addDownloadTask(task);
   }
 }

@@ -75,6 +75,8 @@ class MovieScraperNfoSettingsPanel extends JPanel {
   private JCheckBox                            chckbxSingleStudio;
   private JCheckBox                            chckbxNfoDiscKodiStyle;
   private JHintCheckBox                        chckbxLockdata;
+  private JHintCheckBox                        chckbxTrailer;
+  private JHintCheckBox                        chckbxFileinfo;
 
   /**
    * Instantiates a new movie scraper settings panel.
@@ -192,7 +194,8 @@ class MovieScraperNfoSettingsPanel extends JPanel {
     setLayout(new MigLayout("", "[600lp,grow]", "[]"));
     {
       JPanel panelNfo = new JPanel();
-      panelNfo.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][][][][][][][][][]")); // 16lp ~ width of the
+      // 16lp ~ width of the
+      panelNfo.setLayout(new MigLayout("hidemode 1, insets 0", "[20lp!][16lp!][grow]", "[][][][][15lp!][][][][][15lp!][][][][15lp!][][][]"));
 
       JLabel lblNfoT = new TmmLabel(TmmResourceBundle.getString("Settings.nfo"), H3);
       CollapsiblePanel collapsiblePanel = new CollapsiblePanel(panelNfo, lblNfoT, true);
@@ -253,19 +256,31 @@ class MovieScraperNfoSettingsPanel extends JPanel {
         chckbxCreateOutline = new JHintCheckBox(TmmResourceBundle.getString("Settings.createoutline"));
         chckbxCreateOutline.setToolTipText(TmmResourceBundle.getString("Settings.createoutline.hint"));
         chckbxCreateOutline.setHintIcon(IconManager.HINT);
-        panelNfo.add(chckbxCreateOutline, "cell 1 9 2 1");
+        panelNfo.add(chckbxCreateOutline, "cell 1 10 2 1");
 
         chckbxOutlineFirstSentence = new JCheckBox(TmmResourceBundle.getString("Settings.outlinefirstsentence"));
-        panelNfo.add(chckbxOutlineFirstSentence, "cell 2 10");
+        panelNfo.add(chckbxOutlineFirstSentence, "cell 2 11");
+
+        chckbxSingleStudio = new JCheckBox(TmmResourceBundle.getString("Settings.singlestudio"));
+        panelNfo.add(chckbxSingleStudio, "cell 1 12 2 1");
       }
 
-      chckbxSingleStudio = new JCheckBox(TmmResourceBundle.getString("Settings.singlestudio"));
-      panelNfo.add(chckbxSingleStudio, "cell 1 11 2 1");
+      {
+        chckbxTrailer = new JHintCheckBox(TmmResourceBundle.getString("Settings.nfo.trailer"));
+        chckbxTrailer.setToolTipText(TmmResourceBundle.getString("Settings.nfo.trailer.hint"));
+        chckbxTrailer.setHintIcon(IconManager.HINT);
+        panelNfo.add(chckbxTrailer, "cell 1 14 2 1");
 
-      chckbxLockdata = new JHintCheckBox(TmmResourceBundle.getString("Settings.lockdata"));
-      chckbxLockdata.setToolTipText(TmmResourceBundle.getString("Settings.lockdata.hint"));
-      chckbxLockdata.setHintIcon(IconManager.HINT);
-      panelNfo.add(chckbxLockdata, "cell 1 12 2 1");
+        chckbxFileinfo = new JHintCheckBox(TmmResourceBundle.getString("Settings.nfo.fileinfo"));
+        chckbxFileinfo.setToolTipText(TmmResourceBundle.getString("Settings.nfo.fileinfo.hint"));
+        chckbxFileinfo.setHintIcon(IconManager.HINT);
+        panelNfo.add(chckbxFileinfo, "cell 1 15 2 1");
+
+        chckbxLockdata = new JHintCheckBox(TmmResourceBundle.getString("Settings.lockdata"));
+        chckbxLockdata.setToolTipText(TmmResourceBundle.getString("Settings.lockdata.hint"));
+        chckbxLockdata.setHintIcon(IconManager.HINT);
+        panelNfo.add(chckbxLockdata, "cell 1 16 2 1");
+      }
     }
   }
 
@@ -358,5 +373,15 @@ class MovieScraperNfoSettingsPanel extends JPanel {
     AutoBinding autoBinding_8 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_7, chckbxLockdata,
         jCheckBoxBeanProperty);
     autoBinding_8.bind();
+    //
+    Property movieSettingsBeanProperty_1 = BeanProperty.create("nfoWriteTrailer");
+    AutoBinding autoBinding_3 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_1, chckbxTrailer,
+        jCheckBoxBeanProperty);
+    autoBinding_3.bind();
+    //
+    Property movieSettingsBeanProperty_8 = BeanProperty.create("nfoWriteFileinfo");
+    AutoBinding autoBinding_10 = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, settings, movieSettingsBeanProperty_8, chckbxFileinfo,
+        jCheckBoxBeanProperty);
+    autoBinding_10.bind();
   }
 }

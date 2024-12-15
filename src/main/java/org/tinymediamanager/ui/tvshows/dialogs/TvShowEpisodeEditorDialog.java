@@ -21,6 +21,7 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -192,6 +193,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
    */
   public TvShowEpisodeEditorDialog(TvShowEpisode episode, int queueIndex, int queueSize, int selectedTab) {
     super(TmmResourceBundle.getString("tvshowepisode.edit") + "  < " + episode.getMainVideoFile().getFilename() + " >", DIALOG_ID, episode);
+    setMinimumSize(new Dimension(800, 600));
 
     // creation of lists
     episodeNumbers = GlazedLists.threadSafeList(new BasicEventList<>());

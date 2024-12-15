@@ -791,14 +791,16 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
    * add the trailer url in <trailer>xxx</trailer>
    */
   protected void addTrailer() {
-    Element trailer = document.createElement("trailer");
-    for (MediaTrailer mediaTrailer : new ArrayList<>(movie.getTrailer())) {
-      if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
-        trailer.setTextContent(mediaTrailer.getUrl());
-        break;
+    if (MovieModuleManager.getInstance().getSettings().isNfoWriteTrailer()) {
+      Element trailer = document.createElement("trailer");
+      for (MediaTrailer mediaTrailer : new ArrayList<>(movie.getTrailer())) {
+        if (mediaTrailer.getInNfo() && mediaTrailer.getUrl().startsWith("http")) {
+          trailer.setTextContent(mediaTrailer.getUrl());
+          break;
+        }
       }
+      root.appendChild(trailer);
     }
-    root.appendChild(trailer);
   }
 
   /**

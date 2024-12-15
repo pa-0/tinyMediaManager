@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,7 @@ import org.tinymediamanager.core.tvshow.TvShowScraperMetadataConfig;
 import org.tinymediamanager.core.tvshow.TvShowSearchAndScrapeOptions;
 import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowEpisode;
+import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 import org.tinymediamanager.scraper.ArtworkSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaScraper;
@@ -54,16 +58,19 @@ import org.tinymediamanager.scraper.interfaces.ITvShowArtworkProvider;
 public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
   private static final Logger                            LOGGER = LoggerFactory.getLogger(TvShowMissingArtworkDownloadTask.class);
 
-  private final Collection<TvShow>                       tvShows;
-  private final Collection<TvShowEpisode>                episodes;
+  private final List<TvShow>                             tvShows;
+  private final List<TvShowSeason>                       seasons;
+  private final List<TvShowEpisode>                      episodes;
   private final TvShowSearchAndScrapeOptions             scrapeOptions;
   private final List<TvShowScraperMetadataConfig>        tvShowScraperMetadataConfig;
   private final List<TvShowEpisodeScraperMetadataConfig> episodeScraperMetadataConfig;
 
-  public TvShowMissingArtworkDownloadTask(Collection<TvShow> tvShows, Collection<TvShowEpisode> episodes, TvShowSearchAndScrapeOptions scrapeOptions,
-      List<TvShowScraperMetadataConfig> tvShowScraperMetadataConfig, List<TvShowEpisodeScraperMetadataConfig> episodeScraperMetadataConfig) {
+  public TvShowMissingArtworkDownloadTask(Collection<TvShow> tvShows, Collection<TvShowSeason> seasons, Collection<TvShowEpisode> episodes,
+      TvShowSearchAndScrapeOptions scrapeOptions, List<TvShowScraperMetadataConfig> tvShowScraperMetadataConfig,
+      List<TvShowEpisodeScraperMetadataConfig> episodeScraperMetadataConfig) {
     super(TmmResourceBundle.getString("task.missingartwork"));
     this.tvShows = new ArrayList<>(tvShows);
+    this.seasons = new ArrayList<>(seasons);
     this.episodes = new ArrayList<>(episodes);
     this.scrapeOptions = scrapeOptions;
     this.tvShowScraperMetadataConfig = tvShowScraperMetadataConfig;
@@ -86,6 +93,9 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
     initThreadPool(3, "scrapeMissingTvShowArtwork");
     start();
 
+    List<TvShowSeason> reducedSeasons = new ArrayList<>(seasons);
+
+    // process every TV show
     for (TvShow show : tvShows) {
       if (cancel) {
         break;
@@ -93,8 +103,33 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
       if (TvShowArtworkHelper.hasMissingArtwork(show, tvShowScraperMetadataConfig)) {
         submitTask(new TvShowWorker(show, scrapeOptions));
       }
+
+      // also remove all seasons which are covered by the TV show itself (since the TV show also processes seasons)
+      reducedSeasons = reducedSeasons.stream().filter(season -> season.getTvShow() != show).toList();
     }
 
+    // process all remaining seasons
+    Map<TvShow, List<TvShowSeason>> seasonMap = reducedSeasons.stream().collect(Collectors.groupingBy(TvShowSeason::getTvShow));
+    for (Map.Entry<TvShow, List<TvShowSeason>> entry : seasonMap.entrySet()) {
+      if (cancel) {
+        break;
+      }
+
+      boolean hasMissingArtwork = false;
+
+      for (TvShowSeason season : entry.getValue()) {
+        if (TvShowArtworkHelper.hasMissingArtwork(season, tvShowScraperMetadataConfig)) {
+          hasMissingArtwork = true;
+          break;
+        }
+      }
+
+      if (hasMissingArtwork) {
+        submitTask(new TvShowSeasonWorker(entry.getKey(), entry.getValue(), scrapeOptions));
+      }
+    }
+
+    // process every episode
     for (TvShowEpisode episode : episodes) {
       if (cancel) {
         break;
@@ -138,13 +173,16 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
     public void run() {
       try {
         // set up scrapers
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         List<MediaArtwork> artwork = new ArrayList<>();
 
-        // scrape providers till one artwork has been found
-        for (MediaScraper artworkScraper : options.getArtworkScrapers()) {
+        // scrape providers till one artwork has been found (in parallel)
+        options.getArtworkScrapers().parallelStream().forEach(artworkScraper -> {
           ITvShowArtworkProvider artworkProvider = (ITvShowArtworkProvider) artworkScraper.getMediaProvider();
           try {
+            lock.writeLock().lock();
             artwork.addAll(artworkProvider.getArtwork(options));
+            lock.writeLock().unlock();
           }
           catch (MissingIdException ignored) {
             LOGGER.debug("no id found for scraper {}", artworkProvider.getProviderInfo());
@@ -157,11 +195,74 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
             MessageManager.instance.pushMessage(
                 new Message(Message.MessageLevel.ERROR, tvShow, "message.scrape.tvshowartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
           }
-        }
+        });
 
         // now set & download the artwork
         if (!artwork.isEmpty()) {
           TvShowArtworkHelper.downloadMissingArtwork(tvShow, artwork);
+        }
+      }
+      catch (Exception e) {
+        LOGGER.error("Thread crashed", e);
+        MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, "TvShowMissingArtwork", "message.scrape.threadcrashed",
+            new String[] { ":", e.getLocalizedMessage() }));
+      }
+    }
+  }
+
+  private static class TvShowSeasonWorker implements Runnable {
+    private final TvShow                        tvShow;
+    private final List<TvShowSeason>            seasons;
+    private final ArtworkSearchAndScrapeOptions options;
+
+    private TvShowSeasonWorker(TvShow tvShow, List<TvShowSeason> seasons, MediaSearchAndScrapeOptions scrapeOptions) {
+      this.tvShow = tvShow;
+      this.seasons = seasons;
+      options = new ArtworkSearchAndScrapeOptions(TV_SHOW);
+      options.setDataFromOtherOptions(scrapeOptions);
+      options.setIds(Collections.emptyMap()); // force clearing of ids
+
+      options.setArtworkType(MediaArtwork.MediaArtworkType.ALL);
+      options.setLanguage(TvShowModuleManager.getInstance().getSettings().getScraperLanguage());
+      options.setFanartSize(TvShowModuleManager.getInstance().getSettings().getImageFanartSize());
+      options.setPosterSize(TvShowModuleManager.getInstance().getSettings().getImagePosterSize());
+      options.setThumbSize(TvShowModuleManager.getInstance().getSettings().getImageThumbSize());
+      options.addIds(tvShow.getIds());
+    }
+
+    @Override
+    public void run() {
+      try {
+        // set up scrapers
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        List<MediaArtwork> artwork = new ArrayList<>();
+
+        // scrape providers till one artwork has been found
+        options.getArtworkScrapers().parallelStream().forEach(artworkScraper -> {
+          ITvShowArtworkProvider artworkProvider = (ITvShowArtworkProvider) artworkScraper.getMediaProvider();
+          try {
+            lock.writeLock().lock();
+            artwork.addAll(artworkProvider.getArtwork(options));
+            lock.writeLock().unlock();
+          }
+          catch (MissingIdException ignored) {
+            LOGGER.debug("no id found for scraper {}", artworkProvider.getProviderInfo());
+          }
+          catch (NothingFoundException e) {
+            LOGGER.debug("did not find artwork for '{}'", tvShow.getTitle());
+          }
+          catch (ScrapeException e) {
+            LOGGER.error("getArtwork", e);
+            MessageManager.instance.pushMessage(
+                new Message(Message.MessageLevel.ERROR, tvShow, "message.scrape.tvshowartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
+          }
+        });
+
+        // now set & download the artwork
+        if (!artwork.isEmpty()) {
+          for (TvShowSeason season : seasons) {
+            TvShowArtworkHelper.downloadMissingArtwork(season, artwork);
+          }
         }
       }
       catch (Exception e) {

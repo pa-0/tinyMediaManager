@@ -25,6 +25,7 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType.THUMB;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -130,6 +131,7 @@ public class MovieSetChooserDialog extends TmmDialog implements ActionListener {
    */
   public MovieSetChooserDialog(MovieSet movieSet, boolean inQueue) {
     super(TmmResourceBundle.getString("movieset.search"), "movieSetChooser");
+    setMinimumSize(new Dimension(800, 600));
 
     movieSetToScrape = movieSet;
 

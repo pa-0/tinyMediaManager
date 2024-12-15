@@ -150,6 +150,8 @@ public final class MovieSettings extends AbstractSettings {
   boolean                                   outlineFirstSentence                   = false;
   boolean                                   nfoWriteSingleStudio                   = false;
   boolean                                   nfoWriteLockdata                       = false;
+  boolean                                   nfoWriteTrailer                        = true;
+  boolean                                   nfoWriteFileinfo                       = true;
 
   // renamer
   boolean                                   renameAfterScrape                      = false;
@@ -1698,6 +1700,26 @@ public final class MovieSettings extends AbstractSettings {
     boolean oldValue = this.nfoWriteLockdata;
     this.nfoWriteLockdata = newValue;
     firePropertyChange("nfoWriteLockdata", oldValue, newValue);
+  }
+
+  public boolean isNfoWriteTrailer() {
+    return nfoWriteTrailer;
+  }
+
+  public void setNfoWriteTrailer(boolean newValue) {
+    boolean oldValue = this.nfoWriteTrailer;
+    this.nfoWriteTrailer = newValue;
+    firePropertyChange("nfoWriteTrailer", oldValue, newValue);
+  }
+
+  public boolean isNfoWriteFileinfo() {
+    return nfoWriteFileinfo;
+  }
+
+  public void setNfoWriteFileinfo(boolean newValue) {
+    boolean oldValue = this.nfoWriteFileinfo;
+    this.nfoWriteFileinfo = newValue;
+    firePropertyChange("nfoWriteFileinfo", oldValue, newValue);
   }
 
   public Locale getNfoLanguage() {

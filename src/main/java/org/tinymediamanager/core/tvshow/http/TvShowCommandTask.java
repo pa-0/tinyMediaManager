@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -522,8 +523,9 @@ class TvShowCommandTask extends TmmThreadPool {
         }
         tvShowSearchAndScrapeConfig.setArtworkScraper(selectedArtworkScrapers);
 
-        activeTask = new TvShowMissingArtworkDownloadTask(getTvShowsForScope(command.scope), getEpisodesForScope(command.scope),
-            tvShowSearchAndScrapeConfig, TvShowModuleManager.getInstance().getSettings().getTvShowScraperMetadataConfig(),
+        activeTask = new TvShowMissingArtworkDownloadTask(getTvShowsForScope(command.scope), Collections.emptyList(),
+            getEpisodesForScope(command.scope), tvShowSearchAndScrapeConfig,
+            TvShowModuleManager.getInstance().getSettings().getTvShowScraperMetadataConfig(),
             TvShowModuleManager.getInstance().getSettings().getEpisodeScraperMetadataConfig());
         activeTask.run();
 

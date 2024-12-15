@@ -448,6 +448,14 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
       ma.setLanguage(LanguageUtils.getIso2LanguageFromLocalizedString(image.language));
     }
 
+    // TVDB is offering something weird here - when the score is > 100000, we substract 100000
+    if (image.score >= 100000) {
+      ma.setLikes(image.score - 100000);
+    }
+    else {
+      ma.setLikes(image.score);
+    }
+
     // get the season number
     if ((ma.getType() == SEASON_BANNER || ma.getType() == SEASON_POSTER || ma.getType() == SEASON_THUMB) && image.season != null) {
       ma.setSeason(image.season);

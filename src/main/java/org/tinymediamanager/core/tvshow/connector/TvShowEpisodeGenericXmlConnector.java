@@ -721,11 +721,13 @@ public abstract class TvShowEpisodeGenericXmlConnector implements ITvShowEpisode
    * add the trailer url in <trailer>xxx</trailer>
    */
   protected void addTrailer(TvShowEpisode episode, TvShowEpisodeNfoParser.Episode parser) {
-    Element trailer = document.createElement("trailer");
-    if (parser != null && StringUtils.isNotBlank(parser.trailer)) {
-      trailer.setTextContent(parser.trailer);
+    if (TvShowModuleManager.getInstance().getSettings().isNfoWriteAllActors()) {
+      Element trailer = document.createElement("trailer");
+      if (parser != null && StringUtils.isNotBlank(parser.trailer)) {
+        trailer.setTextContent(parser.trailer);
+      }
+      root.appendChild(trailer);
     }
-    root.appendChild(trailer);
   }
 
   /**

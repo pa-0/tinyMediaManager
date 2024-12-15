@@ -19,6 +19,7 @@ import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -79,6 +80,7 @@ public class SettingsDialog extends TmmDialog {
 
   private SettingsDialog() {
     super(TmmResourceBundle.getString("tmm.settings"), "settings");
+    setMinimumSize(new Dimension(800, 600));
 
     dataProvider = new TmmSettingsDataProvider();
 

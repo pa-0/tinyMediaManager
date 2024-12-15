@@ -555,7 +555,7 @@ public final class TinyMediaManager {
     Thread.setDefaultUncaughtExceptionHandler(new Log4jBackstop());
 
     try {
-      License.getInstance().init2120();
+      License.getInstance().init2121();
     }
     catch (Exception e) {
       LOGGER.error("Could not initialize license module!");

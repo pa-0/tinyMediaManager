@@ -22,6 +22,7 @@ import static org.tinymediamanager.core.MediaFileType.SEASON_THUMB;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -113,6 +114,7 @@ public class TvShowSeasonEditorDialog extends AbstractEditorDialog {
   public TvShowSeasonEditorDialog(TvShowSeason tvShowSeason, int queueIndex, int queueSize, int selectedTab) {
     super(TmmResourceBundle.getString("tvshowseason.edit") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : ""), "tvShowSeasonEditor",
         tvShowSeason);
+    setMinimumSize(new Dimension(800, 600));
 
     this.tvShowSeasonToEdit = tvShowSeason;
     this.queueIndex = queueIndex;

@@ -287,6 +287,7 @@ public class TvShowTest extends BasicTvShowTest {
     assertEqual("S:3 E:3", detectEpisode("season 3 EP01 EP02 EP03/EP03.avi"));
 
     // multi episode
+    assertEqual("S:1 E:1", detectEpisode("name.s01e01.s01e01.ext")); // double EP
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e01.s01e02.ext"));
     assertEqual("S:1 E:1 E:3", detectEpisode("name.s01e01.s01e03.ext"));// second EP must NOT be subsequent number (ascending)!
     assertEqual("S:1 E:1 E:2", detectEpisode("name.s01e02.s01e01.ext"));// second EP must NOT be subsequent number (ascending)!

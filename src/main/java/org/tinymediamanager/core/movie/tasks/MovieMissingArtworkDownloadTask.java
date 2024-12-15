@@ -17,6 +17,7 @@ package org.tinymediamanager.core.movie.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,6 @@ import org.tinymediamanager.core.Message;
 import org.tinymediamanager.core.Message.MessageLevel;
 import org.tinymediamanager.core.MessageManager;
 import org.tinymediamanager.core.TmmResourceBundle;
-import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.movie.MovieArtworkHelper;
 import org.tinymediamanager.core.movie.MovieModuleManager;
 import org.tinymediamanager.core.movie.MovieScraperMetadataConfig;
@@ -33,7 +33,6 @@ import org.tinymediamanager.core.movie.MovieSearchAndScrapeOptions;
 import org.tinymediamanager.core.movie.entities.Movie;
 import org.tinymediamanager.core.threading.TmmThreadPool;
 import org.tinymediamanager.scraper.ArtworkSearchAndScrapeOptions;
-import org.tinymediamanager.scraper.MediaScraper;
 import org.tinymediamanager.scraper.MediaSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.entities.MediaArtwork;
 import org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType;
@@ -101,15 +100,15 @@ public class MovieMissingArtworkDownloadTask extends TmmThreadPool {
       if (MovieArtworkHelper.hasMissingArtwork(movie, metadataConfig)) {
         try {
           // set up scrapers
+          ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
           List<MediaArtwork> artwork = new ArrayList<>();
+
           ArtworkSearchAndScrapeOptions options = new ArtworkSearchAndScrapeOptions(MediaType.MOVIE);
           options.setDataFromOtherOptions(scrapeOptions);
           options.setArtworkType(MediaArtworkType.ALL);
           options.setIds(movie.getIds());
           if (movie.isStacked()) {
-            ArrayList<MediaFile> mfs = new ArrayList<>();
-            mfs.addAll(movie.getMediaFiles(MediaFileType.VIDEO));
-            options.setId("mediaFile", mfs);
+            options.setId("mediaFile", new ArrayList<>(movie.getMediaFiles(MediaFileType.VIDEO)));
           }
           else {
             options.setId("mediaFile", movie.getMainFile());
@@ -119,15 +118,17 @@ public class MovieMissingArtworkDownloadTask extends TmmThreadPool {
           options.setPosterSize(MovieModuleManager.getInstance().getSettings().getImagePosterSize());
 
           // scrape selected providers
-          for (MediaScraper scraper : options.getArtworkScrapers()) {
+          options.getArtworkScrapers().parallelStream().forEach(scraper -> {
             if ("ffmpeg".equals(scraper.getId())) {
               // do not use FFmpeg here
-              continue;
+              return;
             }
 
             IMovieArtworkProvider artworkProvider = (IMovieArtworkProvider) scraper.getMediaProvider();
             try {
+              lock.writeLock().lock();
               artwork.addAll(artworkProvider.getArtwork(options));
+              lock.writeLock().unlock();
             }
             catch (MissingIdException e) {
               LOGGER.debug("missing ID for scraper {}", artworkProvider.getProviderInfo().getId());
@@ -137,7 +138,7 @@ public class MovieMissingArtworkDownloadTask extends TmmThreadPool {
               MessageManager.instance.pushMessage(
                   new Message(MessageLevel.ERROR, movie, "message.scrape.moviesetartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
             }
-          }
+          });
 
           // now set & download the artwork
           if (!artwork.isEmpty()) {

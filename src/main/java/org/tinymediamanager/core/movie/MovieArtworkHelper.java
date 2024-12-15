@@ -1007,22 +1007,46 @@ public class MovieArtworkHelper {
    * @return the found artwork or null
    */
   public static List<MediaArtwork.ImageSizeAndUrl> sortArtworkUrls(List<MediaArtwork> artwork, MediaArtworkType type, int sizeOrder) {
-    List<MediaArtwork> artworkForType = new ArrayList<>(artwork.stream().filter(art -> art.getType() == type).toList());
+    // artwork w/o FFmpeg
+    List<MediaArtwork> artworkForType = new ArrayList<>(artwork.stream()
+        .filter(art -> !"ffmpeg".equalsIgnoreCase(art.getProviderId()) && art.getType() == type)
+        .sorted((o1, o2) -> o2.getLikes() - o1.getLikes()) // descending
+        .toList());
 
-    if (artwork.isEmpty()) {
+    // FFmpeg artwork
+    List<MediaArtwork> artworkFromFfmpeg = new ArrayList<>(artwork.stream()
+        .filter(art -> "ffmpeg".equalsIgnoreCase(art.getProviderId()) && art.getType() == type)
+        .sorted((o1, o2) -> o2.getLikes() - o1.getLikes()) // descending
+        .toList());
+
+    MediaArtwork ffmpegArtwork = null;
+
+    if (!artworkFromFfmpeg.isEmpty()) {
+      ffmpegArtwork = artworkFromFfmpeg.get(artworkFromFfmpeg.size() / 2 + 1);
+    }
+
+    if (artworkForType.isEmpty() && ffmpegArtwork == null) {
       return Collections.emptyList();
     }
 
     List<MediaArtwork.ImageSizeAndUrl> sortedArtwork = new ArrayList<>();
 
     if (sizeOrder == 0) {
-      // we do not have any sizeOrder -> we're sorting an artwork without a setting. So pre-sort by biggest artwork first
-      artworkForType.sort((o1, o2) -> Integer.compare(o2.getBiggestArtwork().getWidth(), o1.getBiggestArtwork().getWidth()));
+      // we do not have any sizeOrder -> we're sorting an artwork without a setting. So pre-sort by biggest artwork first (likes desc)
+      artworkForType.sort((o1, o2) -> {
+        int result = Integer.compare(o2.getBiggestArtwork().getWidth(), o1.getBiggestArtwork().getWidth());
+
+        if (result == 0) {
+          result = o2.getLikes() - o1.getLikes();
+        }
+
+        return result;
+      });
     }
 
     List<MediaLanguages> languages = MovieSettings.getInstance().getImageScraperLanguages();
 
-    // get the artwork in the chosen language priority
+    // get the artwork in the chosen language/size priority (non FFmpeg)
     for (MediaLanguages language : languages) {
       // the right language and the right resolution
       for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().equals(language.getLanguage())).toList()) {
@@ -1034,9 +1058,9 @@ public class MovieArtworkHelper {
       }
     }
 
-    // nothing with the chosen language(s) found - just re-try with empty language in the right resolution
+    // nothing with the chosen language(s) found - just re-try with empty language in the right resolution (non FFmpeg)
     if (sortedArtwork.isEmpty()) {
-      for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().equals("")).toList()) {
+      for (MediaArtwork art : artworkForType.stream().filter(art -> art.getLanguage().isEmpty()).toList()) {
         for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : art.getImageSizes()) {
           if (imageSizeAndUrl.getSizeOrder() == sizeOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
             sortedArtwork.add(imageSizeAndUrl);
@@ -1045,8 +1069,18 @@ public class MovieArtworkHelper {
       }
     }
 
-    // do we want to take other resolution artwork?
-    if (MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
+    // get the artwork in the chosen size (FFmpeg)
+    if (sortedArtwork.isEmpty() && ffmpegArtwork != null) {
+      // the right language and the right resolution
+      for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : ffmpegArtwork.getImageSizes()) {
+        if (imageSizeAndUrl.getSizeOrder() == sizeOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
+          sortedArtwork.add(imageSizeAndUrl);
+        }
+      }
+    }
+
+    // do we want to take other resolution artwork? (non FFmpeg)
+    if (sortedArtwork.isEmpty() && MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
       int newOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER;
       while (newOrder > 1) {
         newOrder = newOrder / 2;
@@ -1064,13 +1098,25 @@ public class MovieArtworkHelper {
       }
     }
 
-    // FFmpeg - is there has been no hit, use FFmpeg when available
-    if (sortedArtwork.isEmpty()) {
-      for (MediaArtwork art : artworkForType) {
-        if ("ffmpeg".equalsIgnoreCase(art.getProviderId())) {
-          sortedArtwork.addAll(art.getImageSizes());
+    // do we want to take other resolution artwork? (FFmpeg)
+    if (sortedArtwork.isEmpty() && MovieModuleManager.getInstance().getSettings().isImageScraperOtherResolutions()) {
+      int newOrder = MediaArtwork.MAX_IMAGE_SIZE_ORDER;
+      while (newOrder > 1) {
+        newOrder = newOrder / 2;
+
+        if (ffmpegArtwork != null) {
+          for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : ffmpegArtwork.getImageSizes()) {
+            if (imageSizeAndUrl.getSizeOrder() == newOrder && !sortedArtwork.contains(imageSizeAndUrl)) {
+              sortedArtwork.add(imageSizeAndUrl);
+            }
+          }
         }
       }
+    }
+
+    // FFmpeg - is there has been no hit, use FFmpeg when available
+    if (sortedArtwork.isEmpty() && ffmpegArtwork != null) {
+      sortedArtwork.addAll(ffmpegArtwork.getImageSizes());
     }
 
     // should we fall back to _any_ artwork?

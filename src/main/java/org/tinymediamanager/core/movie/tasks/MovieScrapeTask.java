@@ -18,6 +18,7 @@ package org.tinymediamanager.core.movie.tasks;
 import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.swing.SwingUtilities;
 
@@ -29,7 +30,6 @@ import org.tinymediamanager.core.Message.MessageLevel;
 import org.tinymediamanager.core.MessageManager;
 import org.tinymediamanager.core.ScraperMetadataConfig;
 import org.tinymediamanager.core.TmmResourceBundle;
-import org.tinymediamanager.core.entities.MediaFile;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.entities.MediaTrailer;
 import org.tinymediamanager.core.movie.MovieHelpers;
@@ -306,6 +306,7 @@ public class MovieScrapeTask extends TmmThreadPool {
     }
 
     private List<MediaArtwork> getArtwork(Movie movie, MediaMetadata metadata, List<MediaScraper> artworkScrapers) {
+      ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       List<MediaArtwork> artwork = new ArrayList<>();
 
       ArtworkSearchAndScrapeOptions options = new ArtworkSearchAndScrapeOptions(MediaType.MOVIE);
@@ -316,9 +317,7 @@ public class MovieScrapeTask extends TmmThreadPool {
         options.addIds(metadata.getIds());
       }
       if (movie.isStacked()) {
-        ArrayList<MediaFile> mfs = new ArrayList<>();
-        mfs.addAll(movie.getMediaFiles(MediaFileType.VIDEO));
-        options.setId("mediaFile", mfs);
+        options.setId("mediaFile", new ArrayList<>(movie.getMediaFiles(MediaFileType.VIDEO)));
       }
       else {
         options.setId("mediaFile", movie.getMainFile());
@@ -328,15 +327,17 @@ public class MovieScrapeTask extends TmmThreadPool {
       options.setPosterSize(MovieModuleManager.getInstance().getSettings().getImagePosterSize());
 
       // scrape providers
-      for (MediaScraper scraper : artworkScrapers) {
+      artworkScrapers.parallelStream().forEach(scraper -> {
         if ("ffmpeg".equals(scraper.getId())) {
           // do not use FFmpeg here
-          continue;
+          return;
         }
 
         IMovieArtworkProvider artworkProvider = (IMovieArtworkProvider) scraper.getMediaProvider();
         try {
+          lock.writeLock().lock();
           artwork.addAll(artworkProvider.getArtwork(options));
+          lock.writeLock().unlock();
         }
         catch (MissingIdException ignored) {
           // no need to log here
@@ -346,12 +347,13 @@ public class MovieScrapeTask extends TmmThreadPool {
           MessageManager.instance.pushMessage(
               new Message(MessageLevel.ERROR, movie, "message.scrape.movieartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
         }
-      }
+      });
 
       return artwork;
     }
 
     private List<MediaTrailer> getTrailers(Movie movie, MediaMetadata metadata, List<MediaScraper> trailerScrapers) {
+      ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       List<MediaTrailer> trailers = new ArrayList<>();
 
       TrailerSearchAndScrapeOptions options = new TrailerSearchAndScrapeOptions(MediaType.MOVIE);
@@ -362,10 +364,12 @@ public class MovieScrapeTask extends TmmThreadPool {
       }
 
       // scrape trailers
-      for (MediaScraper trailerScraper : trailerScrapers) {
+      trailerScrapers.parallelStream().forEach(trailerScraper -> {
+        IMovieTrailerProvider trailerProvider = (IMovieTrailerProvider) trailerScraper.getMediaProvider();
         try {
-          IMovieTrailerProvider trailerProvider = (IMovieTrailerProvider) trailerScraper.getMediaProvider();
+          lock.writeLock().lock();
           trailers.addAll(trailerProvider.getTrailers(options));
+          lock.writeLock().unlock();
         }
         catch (MissingIdException e) {
           LOGGER.debug("no usable ID found for scraper {}", trailerScraper.getMediaProvider().getProviderInfo().getId());
@@ -375,7 +379,7 @@ public class MovieScrapeTask extends TmmThreadPool {
           MessageManager.instance
               .pushMessage(new Message(MessageLevel.ERROR, movie, "message.scrape.trailerfailed", new String[] { ":", e.getLocalizedMessage() }));
         }
-      }
+      });
 
       return trailers;
     }

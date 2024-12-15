@@ -90,6 +90,17 @@ public class MovieUpgradeTasks extends UpgradeTasks {
       module.setDbVersion(5003);
     }
 
+    // removed HDR10, when also having HDR10+
+    if (module.getDbVersion() < 5004) {
+      LOGGER.info("performing upgrade to ver: {}", 5004);
+      for (Movie movie : movieList.getMovies()) {
+        if (fixHDR(movie)) {
+          registerForSaving(movie);
+        }
+      }
+      module.setDbVersion(5004);
+    }
+
     saveAll();
   }
 

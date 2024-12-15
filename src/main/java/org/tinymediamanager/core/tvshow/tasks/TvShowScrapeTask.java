@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -377,6 +378,7 @@ public class TvShowScrapeTask extends TmmThreadPool {
      * @return the artwork
      */
     private List<MediaArtwork> getArtwork(TvShow tvShow, MediaMetadata metadata) {
+      ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       List<MediaArtwork> artwork = new ArrayList<>();
 
       ArtworkSearchAndScrapeOptions options = new ArtworkSearchAndScrapeOptions(MediaType.TV_SHOW);
@@ -389,10 +391,12 @@ public class TvShowScrapeTask extends TmmThreadPool {
       options.addIds(tvShow.getIds());
 
       // scrape providers till one artwork has been found
-      for (MediaScraper artworkScraper : tvShowScrapeParams.scrapeOptions.getArtworkScrapers()) {
+      tvShowScrapeParams.scrapeOptions.getArtworkScrapers().parallelStream().forEach(artworkScraper -> {
         ITvShowArtworkProvider artworkProvider = (ITvShowArtworkProvider) artworkScraper.getMediaProvider();
         try {
+          lock.writeLock().lock();
           artwork.addAll(artworkProvider.getArtwork(options));
+          lock.writeLock().unlock();
         }
         catch (MissingIdException ignored) {
           LOGGER.debug("no id avaiable for scraper {}", artworkScraper.getId());
@@ -405,11 +409,13 @@ public class TvShowScrapeTask extends TmmThreadPool {
           MessageManager.instance.pushMessage(
               new Message(Message.MessageLevel.ERROR, tvShow, "message.scrape.tvshowartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
         }
-      }
+      });
+
       return artwork;
     }
 
     private List<MediaTrailer> getTrailers(TvShow tvShow, MediaMetadata metadata, List<MediaScraper> trailerScrapers) {
+      ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       List<MediaTrailer> trailers = new ArrayList<>();
 
       TrailerSearchAndScrapeOptions options = new TrailerSearchAndScrapeOptions(MediaType.TV_SHOW);
@@ -422,10 +428,12 @@ public class TvShowScrapeTask extends TmmThreadPool {
       }
 
       // scrape trailers
-      for (MediaScraper trailerScraper : trailerScrapers) {
+      trailerScrapers.parallelStream().forEach(trailerScraper -> {
+        ITvShowTrailerProvider trailerProvider = (ITvShowTrailerProvider) trailerScraper.getMediaProvider();
         try {
-          ITvShowTrailerProvider trailerProvider = (ITvShowTrailerProvider) trailerScraper.getMediaProvider();
+          lock.writeLock().lock();
           trailers.addAll(trailerProvider.getTrailers(options));
+          lock.writeLock().unlock();
         }
         catch (MissingIdException e) {
           LOGGER.debug("no usable ID found for scraper {}", trailerScraper.getMediaProvider().getProviderInfo().getId());
@@ -435,7 +443,7 @@ public class TvShowScrapeTask extends TmmThreadPool {
           MessageManager.instance
               .pushMessage(new Message(MessageLevel.ERROR, tvShow, "message.scrape.trailerfailed", new String[] { ":", e.getLocalizedMessage() }));
         }
-      }
+      });
 
       return trailers;
     }

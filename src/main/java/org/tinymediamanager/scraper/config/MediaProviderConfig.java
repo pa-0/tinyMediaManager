@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -463,6 +464,20 @@ public class MediaProviderConfig {
    */
   public void addSelect(String key, String keyDescription, String[] possibleValues, String defaultValue) {
     addSelect(key, keyDescription, Arrays.asList(possibleValues), defaultValue);
+  }
+
+  /**
+   * adds a value selection to the configuration (List version)
+   *
+   * @param key
+   *          the config key
+   * @param possibleValues
+   *          a list of possible values
+   * @param defaultValue
+   *          the default value
+   */
+  public void addSelect(String key, Set<String> possibleValues, String defaultValue) {
+    addSelect(key, "", possibleValues.toArray(new String[0]), defaultValue);
   }
 
   /**

@@ -30,6 +30,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -189,6 +190,7 @@ public class TvShowChooserDialog extends TmmDialog implements ActionListener {
    */
   public TvShowChooserDialog(TvShow tvShow, int queueIndex, int queueSize) {
     super(TmmResourceBundle.getString("tvshowchooser.search") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : ""), "tvShowChooser");
+    setMinimumSize(new Dimension(800, 600));
 
     mediaScraper = tvShowList.getDefaultMediaScraper();
     artworkScrapers = tvShowList.getDefaultArtworkScrapers();

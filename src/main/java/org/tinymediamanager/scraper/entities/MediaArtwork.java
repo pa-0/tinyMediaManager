@@ -465,17 +465,25 @@ public class MediaArtwork {
       }
     }
 
-    if (languageMatched && sizeMatched) {
-      score += 90;
-    }
-    else if (languageMatched) {
-      score += 50;
-    }
-    else if (sizeMatched) {
-      score += 40;
+    // ffmpeg should get at most a score for size (reduced to sort it below other same sized artwork)
+    if ("ffmpeg".equals(providerId)) {
+      if (sizeMatched) {
+        score += 30;
+      }
     }
     else {
-      // well... not a single preference matched
+      if (languageMatched && sizeMatched) {
+        score += 90;
+      }
+      else if (languageMatched) {
+        score += 50;
+      }
+      else if (sizeMatched) {
+        score += 40;
+      }
+      else {
+        // well... not a single preference matched
+      }
     }
 
     if (isAnimated()) {

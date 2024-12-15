@@ -27,6 +27,7 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -229,6 +230,7 @@ public class MovieEditorDialog extends AbstractEditorDialog {
   public MovieEditorDialog(Movie movie, int queueIndex, int queueSize, int selectedTab) {
     super(TmmResourceBundle.getString("movie.edit") + (queueSize > 1 ? " " + (queueIndex + 1) + "/" + queueSize : "") + "  < " + movie.getPathNIO()
         + " >", "movieEditor", movie);
+    setMinimumSize(new Dimension(800, 600));
 
     // creation of lists
     cast = new ObservableElementList<>(GlazedLists.threadSafeList(new BasicEventList<>()), GlazedLists.beanConnector(Person.class));

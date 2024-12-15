@@ -39,6 +39,8 @@ import org.tinymediamanager.license.License;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.TmmFontHelper;
 import org.tinymediamanager.ui.TmmUIHelper;
+import org.tinymediamanager.ui.actions.UnlockAction;
+import org.tinymediamanager.ui.components.FlatButton;
 import org.tinymediamanager.ui.components.LinkLabel;
 import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.images.Logo;
@@ -97,6 +99,12 @@ public class AboutDialog extends TmmDialog {
       if (validUntil != null) {
         lblLicense.setText(
             TmmResourceBundle.getString("tmm.license.validuntil") + ": " + TmmDateFormat.MEDIUM_DATE_FORMAT.format(Date.valueOf(validUntil)));
+        JButton btnLicenseInfo = new FlatButton("");
+        btnLicenseInfo.setAction(new UnlockAction());
+        btnLicenseInfo.setText(null);
+        btnLicenseInfo.setIcon(IconManager.INFO);
+        btnLicenseInfo.setToolTipText(TmmResourceBundle.getString("tmm.license.view"));
+        contentPanel.add(btnLicenseInfo, "cell 2 6");
       }
       else {
         lblLicense.setText(TmmResourceBundle.getString("tmm.license.unregistered"));
