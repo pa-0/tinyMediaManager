@@ -68,13 +68,13 @@ public interface IAddon {
       return executable.toString();
     }
 
-    // 2. look in the shipped addon folder
+    // 2. look in the shipped addon folder (legacy)
     executable = Paths.get(TmmOsUtils.getNativeFolderName()).resolve("addons").toAbsolutePath().resolve(executableFilename);
     if (Files.exists(executable)) {
       return executable.toString();
     }
 
-    // 3. look in the addon folder in the tmm root
+    // 3. look in the addon folder in the tmm root (legacy)
     executable = Paths.get("addons").toAbsolutePath().resolve(executableFilename);
     if (Files.exists(executable)) {
       return executable.toString();

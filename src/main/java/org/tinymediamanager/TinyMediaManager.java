@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -67,6 +66,7 @@ import org.tinymediamanager.core.tvshow.tasks.TvShowUpdateDatasourceTask;
 import org.tinymediamanager.license.License;
 import org.tinymediamanager.scraper.MediaProviders;
 import org.tinymediamanager.scraper.util.LanguageUtils;
+import org.tinymediamanager.thirdparty.ExternalTools;
 import org.tinymediamanager.thirdparty.KodiRPC;
 import org.tinymediamanager.thirdparty.upnp.Upnp;
 import org.tinymediamanager.ui.MainWindow;
@@ -212,7 +212,7 @@ public final class TinyMediaManager {
                 // is the license about to running out?
                 if (License.getInstance().isValidLicense()) {
                   LocalDate validUntil = License.getInstance().validUntil();
-                  if (validUntil != null && validUntil.minus(7, ChronoUnit.DAYS).isBefore(LocalDate.now())) {
+                  if (validUntil != null && validUntil.minusDays(7).isBefore(LocalDate.now())) {
                     SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(window, TmmResourceBundle.getString("tmm.renewlicense")
                         .replace("{}", TmmDateFormat.MEDIUM_DATE_FORMAT.format(Date.valueOf(validUntil)))));
                   }
@@ -410,6 +410,10 @@ public final class TinyMediaManager {
       Settings.getInstance().setCurrentVersion();
       Settings.getInstance().saveSettings();
     }
+
+    // external tools
+    TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("ffmpeg"));
+    TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("yt-dlp"));
   }
 
   private void loadInternals() {

@@ -185,12 +185,10 @@ public class FFmpeg {
       return response;
     }
     finally {
-      if (process != null) {
-        process.destroy();
-        // Process must be destroyed before closing streams, can't use try-with-resources,
-        // as resources are closing when leaving try block, before finally
-        IOUtils.close(process.getErrorStream());
-      }
+      process.destroy();
+      // Process must be destroyed before closing streams, can't use try-with-resources,
+      // as resources are closing when leaving try block, before finally
+      IOUtils.close(process.getErrorStream());
     }
   }
 

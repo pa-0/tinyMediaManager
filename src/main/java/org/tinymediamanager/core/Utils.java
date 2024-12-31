@@ -93,6 +93,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.translate.UnicodeUnescaper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.Globals;
@@ -1158,6 +1159,24 @@ public class Utils {
   }
 
   /**
+   * <b>PHYSICALLY</b> deletes a complete directory<br>
+   *
+   * @param folder
+   *          the folder to be deleted
+   * @return true/false if successful
+   */
+  public static boolean deleteDirectorySafely(Path folder) {
+    try {
+      deleteDirectoryRecursive(folder);
+      return true;
+    }
+    catch (Exception e) {
+      LOGGER.error("Could not delete folder '{}' - '{}'", folder, e.getMessage());
+      return false;
+    }
+  }
+
+  /**
    * <b>PHYSICALLY</b> deletes a complete directory by moving it to datasource backup folder<br>
    * DS\.backup\&lt;foldername&gt;<br>
    * maintaining its originating directory
@@ -1509,25 +1528,29 @@ public class Utils {
     try {
       Files.walkFileTree(dir, new FileVisitor<>() {
 
+        @NotNull
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
           Files.delete(dir);
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) {
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
           Files.delete(file);
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        public FileVisitResult visitFileFailed(Path file, @NotNull IOException exc) {
           LOGGER.warn("Could not delete {} - {}", file, exc.getMessage());
           return FileVisitResult.CONTINUE;
         }
@@ -1558,6 +1581,7 @@ public class Utils {
     try {
       Files.walkFileTree(dir, new FileVisitor<>() {
 
+        @NotNull
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
           if (isFolderEmpty(dir)) {
@@ -1566,18 +1590,21 @@ public class Utils {
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) {
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
           return FileVisitResult.CONTINUE;
         }
 
+        @NotNull
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        public FileVisitResult visitFileFailed(Path file, @NotNull IOException exc) {
           return FileVisitResult.CONTINUE;
         }
       });
@@ -1700,8 +1727,9 @@ public class Utils {
 
         // walk the zip file tree and copy files to the destination
         Files.walkFileTree(root, new SimpleFileVisitor<>() {
+          @NotNull
           @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
             final Path destFile = Paths.get(destDir.toString(), file.toString());
             LOGGER.debug("Extracting file {} to {}", file, destFile);
             Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
@@ -1709,8 +1737,9 @@ public class Utils {
             return FileVisitResult.CONTINUE;
           }
 
+          @NotNull
           @Override
-          public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+          public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
             final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
             if (!Files.exists(dirToCreate)) {
               LOGGER.debug("Creating directory {}", dirToCreate);
@@ -1764,8 +1793,9 @@ public class Utils {
 
         // walk the zip file tree and copy files to the destination
         Files.walkFileTree(root, new SimpleFileVisitor<>() {
+          @NotNull
           @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
             if (file.toString().equals(fileToExtract.toString())) {
               LOGGER.debug("Extracting file {} to {}", file, destFile);
               Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
@@ -1774,8 +1804,9 @@ public class Utils {
             return FileVisitResult.CONTINUE;
           }
 
+          @NotNull
           @Override
-          public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+          public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
           }
         });
@@ -2034,8 +2065,9 @@ public class Utils {
     }
     try {
       Files.walkFileTree(root, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new AbstractFileVisitor() {
+        @NotNull
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
           if (Utils.isRegularFile(file)) {
             filesFound.add(file);
           }
@@ -2124,8 +2156,9 @@ public class Utils {
       this.targetPath = targetPath;
     }
 
+    @NotNull
     @Override
-    public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(final Path dir, @NotNull final BasicFileAttributes attrs) {
       if (sourcePath == null) {
         sourcePath = dir;
       }
@@ -2144,8 +2177,9 @@ public class Utils {
       return FileVisitResult.CONTINUE;
     }
 
+    @NotNull
     @Override
-    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(final Path file, @NotNull final BasicFileAttributes attrs) throws IOException {
       Files.copy(file, targetPath.resolve(sourcePath.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
       fixDateAttributes(file, targetPath);
       return FileVisitResult.CONTINUE;
@@ -2193,8 +2227,9 @@ public class Utils {
       this.regexList = regexList;
     }
 
+    @NotNull
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
+    public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attr) {
       for (String regex : regexList) {
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(file.getFileName().toString());
@@ -2205,8 +2240,9 @@ public class Utils {
       return CONTINUE;
     }
 
+    @NotNull
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes var2) {
+    public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes var2) {
       // if we're in a disc folder, don't walk further
       if (dir.getFileName() != null && dir.getFileName().toString().matches(DISC_FOLDER_REGEX)) {
         return SKIP_SUBTREE;

@@ -37,6 +37,7 @@ public final class Globals {
   public static final String   CACHE_FOLDER;
   public static final String   BACKUP_FOLDER;
   public static final String   LOG_FOLDER;
+  public static final String   ADDON_FOLDER;
 
   static {
     // first we look for a dedicated folder property
@@ -45,6 +46,7 @@ public final class Globals {
     String cacheFolder = System.getProperty("tmm.cachefolder");
     String backupFolder = System.getProperty("tmm.backupfolder");
     String logFolder = System.getProperty("tmm.logfolder");
+    String addonFolder = System.getProperty("tmm.addonfolder");
 
     READ_ONLY = !isTmmDirWritable();
 
@@ -93,6 +95,14 @@ public final class Globals {
     }
     else {
       LOG_FOLDER = Paths.get(contentFolder, "logs").toAbsolutePath().normalize().toString();
+    }
+
+    // addons
+    if (StringUtils.isNotBlank(addonFolder)) {
+      ADDON_FOLDER = addonFolder;
+    }
+    else {
+      ADDON_FOLDER = Paths.get(contentFolder, "addons").toAbsolutePath().normalize().toString();
     }
   }
 

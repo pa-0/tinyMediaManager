@@ -16,6 +16,7 @@
 
 package org.tinymediamanager.updater;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URL;
@@ -59,14 +60,8 @@ public class UpdateCheck {
     Path digestFile = getFile("digest.txt");
     LOGGER.info("Checking for updates...");
 
-    List<String> updateUrls = new ArrayList<>();
-    try (Scanner scanner = new Scanner(getdownFile.toFile())) {
-      while (scanner.hasNextLine()) {
-        String[] kv = scanner.nextLine().split("=");
-        if ("appbase".equals(kv[0].strip()) || "mirror".equals(kv[0].strip())) {
-          updateUrls.add(kv[1].strip());
-        }
-      }
+    try {
+      List<String> updateUrls = parseUpdateUrls();
 
       boolean valid = false;
       String remoteDigest = "";
@@ -190,6 +185,25 @@ public class UpdateCheck {
     return false;
   }
 
+  public static List<String> parseUpdateUrls() {
+    Path getdownFile = getFile("getdown.txt");
+
+    List<String> updateUrls = new ArrayList<>();
+    try (Scanner scanner = new Scanner(getdownFile.toFile())) {
+      while (scanner.hasNextLine()) {
+        String[] kv = scanner.nextLine().split("=");
+        if ("appbase".equals(kv[0].strip()) || "mirror".equals(kv[0].strip())) {
+          updateUrls.add(kv[1].strip());
+        }
+      }
+    }
+    catch (FileNotFoundException e) {
+      // ignore
+    }
+
+    return updateUrls;
+  }
+
   /**
    * get the changelog for the new update
    * 
@@ -221,7 +235,7 @@ public class UpdateCheck {
   // try reading data from our backup config file; thanks to funny windows
   // bullshit, we have to do this backup file fiddling in case we got screwed while
   // updating getdown.txt during normal operation
-  private Path getFile(String file) {
+  private static Path getFile(String file) {
     Path ret = Paths.get(file);
     if (!Files.exists(ret)) {
       ret = Paths.get(file + "_old");

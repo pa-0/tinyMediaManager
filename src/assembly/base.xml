@@ -11,6 +11,7 @@
             <includes>
                 <include>LICENSE*</include>
                 <include>changelog*</include>
+                <include>external-tools.json</include>
             </includes>
         </fileSet>
         <fileSet>
