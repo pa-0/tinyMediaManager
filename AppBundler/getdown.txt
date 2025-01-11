@@ -40,12 +40,6 @@ resource = [windows-amd64] jre/windows_x64.tar.xz
 resource = [linux-amd64] jre/linux_x64.tar.xz
 resource = [linux-arm] jre/linux_aarch64.tar.xz
 
-## FFmpeg addon - will be mixed into the path by the ant build
-# DO NOT MAKE uresource HERE, BECAUSE UNTAR OF SYMLINKS DOES NOT WORK IN JAVA
-resource = [windows-amd64] native/windows/addons/ffmpeg-windows_x64.tar.xz
-resource = [linux-amd64] native/linux/addons/ffmpeg-linux_x64.tar.xz
-resource = [linux-aarch64] native/arm/addons/ffmpeg-linux_aarch64.tar.xz
-
 # translations
 %LOCALES%
 
