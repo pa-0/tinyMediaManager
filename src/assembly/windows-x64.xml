@@ -40,10 +40,6 @@
             <outputDirectory>/tinyMediaManager/jre</outputDirectory>
         </file>
         <file>
-            <source>${project.build.directory}/addons/ffmpeg-windows_x64.tar.xz.sha256</source>
-            <outputDirectory>/tinyMediaManager/native/windows/addons</outputDirectory>
-        </file>
-        <file>
             <source>${project.build.directory}/${project.artifactId}-${project.version}-templates.tar.bz2.sha256
             </source>
             <outputDirectory>/tinyMediaManager/templates</outputDirectory>

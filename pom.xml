@@ -86,7 +86,6 @@
         <slf4j.version>2.0.9</slf4j.version>
         <release.version>2.5.3</release.version>
         <jre.version>21.0.4</jre.version>
-        <ffmpeg.version>6.0</ffmpeg.version>
         <launcher.version>5.0.6</launcher.version>
         <flatlaf.version>3.5.4</flatlaf.version>
         <jackson.version>2.15.2</jackson.version>
@@ -926,109 +925,6 @@
                                         </artifactItem>
                                     </artifactItems>
                                     <overWriteReleases>false</overWriteReleases>
-                                    <overWriteSnapshots>true</overWriteSnapshots>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-addons</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <!-- FFmpeg -->
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-windows_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-linux_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-linux_aarch64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-macos_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-macos_aarch64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <outputDirectory>${project.build.directory}/addons</outputDirectory>
-                                    <overWriteReleases>false</overWriteReleases>
-                                    <overWriteSnapshots>true</overWriteSnapshots>
-                                    <stripVersion>true</stripVersion>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>unpack-addons</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <!-- FFmpeg -->
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-windows_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                            <outputDirectory>
-                                                ${project.build.directory}/windows-x64/native/windows/addons
-                                            </outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-linux_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                            <outputDirectory>${project.build.directory}/linux-x64/native/linux/addons
-                                            </outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-linux_aarch64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                            <outputDirectory>
-                                                ${project.build.directory}/linux-aarch64/native/arm/addons
-                                            </outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-macos_x64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                            <outputDirectory>${project.build.directory}/macos-x64/native/mac/addons
-                                            </outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.tinymediamanager.addons</groupId>
-                                            <artifactId>ffmpeg-macos_aarch64</artifactId>
-                                            <version>${ffmpeg.version}</version>
-                                            <type>tar.xz</type>
-                                            <outputDirectory>
-                                                ${project.build.directory}/macos-aarch64/native/mac/addons
-                                            </outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <overWriteReleases>true</overWriteReleases>
                                     <overWriteSnapshots>true</overWriteSnapshots>
                                 </configuration>
                             </execution>

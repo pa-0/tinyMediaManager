@@ -64,10 +64,6 @@
             <destName>tinyMediaManager</destName>
         </file>
         <file>
-            <source>${project.build.directory}/addons/ffmpeg-macos_x64.tar.xz.sha256</source>
-            <outputDirectory>tinyMediaManager.app/Contents/Resources/Java/native/mac/addons</outputDirectory>
-        </file>
-        <file>
             <source>${project.build.directory}/${project.artifactId}-${project.version}-templates.tar.bz2.sha256
             </source>
             <outputDirectory>tinyMediaManager.app/Contents/Resources/Java/templates</outputDirectory>
