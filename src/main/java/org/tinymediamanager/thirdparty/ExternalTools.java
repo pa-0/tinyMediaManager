@@ -181,6 +181,8 @@ public class ExternalTools {
       throw new Exception("no download for the given os/arch found");
     }
 
+    Path addonFolder = Paths.get(Globals.ADDON_FOLDER);
+
     // download to temp folder
     Path tempFile = Paths.get(Utils.getTempFolder(), UrlUtil.getFilename(toolUrl.url));
     try {
@@ -195,13 +197,13 @@ public class ExternalTools {
 
         // extract the file if it is an archive
         Path destinationFolder = tempFile.resolveSibling(UrlUtil.getBasename(toolUrl.url));
+
         try {
           // unzip
           Utils.unzip(tempFile, destinationFolder);
 
           // and move the needed file from the extract
-          Path addonFolder = Paths.get(Globals.ADDON_FOLDER);
-          Path source = destinationFolder.resolve(toolUrl.filenameInArchive);
+          Path source = Paths.get(destinationFolder.toString(), toolUrl.filenameInArchive);
           Path destinationFilename = addonFolder.resolve(getOsSpecificFilename(externalTool));
 
           if (Files.exists(destinationFilename)) {
@@ -227,11 +229,17 @@ public class ExternalTools {
         /*
          * Plain executable file
          */
+
         // and move the needed file from the extract
         Path destinationFilename = Paths.get(Globals.ADDON_FOLDER, getOsSpecificFilename(externalTool));
 
         if (Files.exists(destinationFilename)) {
           Utils.deleteFileSafely(destinationFilename);
+        }
+
+        // create addon folder when needed
+        if (!Files.exists(addonFolder)) {
+          Files.createDirectory(addonFolder);
         }
 
         if (Utils.moveFileSafe(tempFile, destinationFilename)) {
