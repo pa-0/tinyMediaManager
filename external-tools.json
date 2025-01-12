@@ -7,7 +7,7 @@
       {
         "arch" : "windows-amd64",
         "url" : "https://github.com/GyanD/codexffmpeg/releases/download/7.1/ffmpeg-7.1-essentials_build.zip",
-        "filenameInArchive": "/ffmpeg-7.0.2-essentials_build/bin/ffmpeg.exe"
+        "filenameInArchive": "/ffmpeg-7.1-essentials_build/bin/ffmpeg.exe"
       },
       {
         "arch" : "macos-amd64",
