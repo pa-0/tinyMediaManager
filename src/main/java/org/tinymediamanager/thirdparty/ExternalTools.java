@@ -200,16 +200,22 @@ public class ExternalTools {
           Utils.unzip(tempFile, destinationFolder);
 
           // and move the needed file from the extract
+          Path addonFolder = Paths.get(Globals.ADDON_FOLDER);
           Path source = destinationFolder.resolve(toolUrl.filenameInArchive);
-          Path destinationFilename = Paths.get(Globals.ADDON_FOLDER, getOsSpecificFilename(externalTool));
+          Path destinationFilename = addonFolder.resolve(getOsSpecificFilename(externalTool));
 
           if (Files.exists(destinationFilename)) {
             Utils.deleteFileSafely(destinationFilename);
           }
 
+          // create addon folder when needed
+          if (!Files.exists(addonFolder)) {
+            Files.createDirectory(addonFolder);
+          }
+
           if (Utils.moveFileSafe(source, destinationFilename)) {
             // copying good - write the version file
-            Utils.writeStringToFile(Paths.get(Globals.ADDON_FOLDER, toolName + ".ver"), externalTool.version);
+            Utils.writeStringToFile(addonFolder.resolve(toolName + ".ver"), externalTool.version);
           }
         }
         finally {
