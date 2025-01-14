@@ -47,8 +47,10 @@ import com.fasterxml.jackson.databind.ObjectReader;
  * @author Manuel Laggner
  */
 public class ExternalTools {
-  private final String       urlAsString;
-  private List<ExternalTool> externalTools = null;
+  private static final Logger LOGGER        = LoggerFactory.getLogger(ExternalTools.class);
+
+  private final String        urlAsString;
+  private List<ExternalTool>  externalTools = null;
 
   /**
    * Main-Constructor
@@ -216,7 +218,10 @@ public class ExternalTools {
           }
 
           if (Utils.moveFileSafe(source, destinationFilename)) {
-            // copying good - write the version file
+            // copying good - make executable and write the version file
+            if (!destinationFilename.toFile().setExecutable(true)) {
+              LOGGER.debug("Could not make '{}' executable", destinationFilename);
+            }
             Utils.writeStringToFile(addonFolder.resolve(toolName + ".ver"), externalTool.version);
           }
         }
@@ -243,7 +248,10 @@ public class ExternalTools {
         }
 
         if (Utils.moveFileSafe(tempFile, destinationFilename)) {
-          // copying good - write the version file
+          // copying good - make executable and write the version file
+          if (!destinationFilename.toFile().setExecutable(true)) {
+            LOGGER.debug("Could not make '{}' executable", destinationFilename);
+          }
           Utils.writeStringToFile(Paths.get(Globals.ADDON_FOLDER, toolName + ".ver"), externalTool.version);
         }
       }
