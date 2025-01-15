@@ -52,6 +52,8 @@ import org.tinymediamanager.scraper.interfaces.ITvShowMetadataProvider;
 import org.tinymediamanager.scraper.interfaces.ITvShowSubtitleProvider;
 import org.tinymediamanager.scraper.interfaces.ITvShowTrailerProvider;
 import org.tinymediamanager.scraper.kodi.KodiMetadataProvider;
+import org.tinymediamanager.scraper.moviefone.MoviefoneMovieTrailerProvider;
+import org.tinymediamanager.scraper.moviefone.MoviefoneTvShowTrailerProvider;
 import org.tinymediamanager.scraper.moviemeter.MovieMeterMovieMetadataProvider;
 import org.tinymediamanager.scraper.mpdbtv.MpdbMovieArtworkMetadataProvider;
 import org.tinymediamanager.scraper.mpdbtv.MpdbMovieMetadataProvider;
@@ -160,6 +162,7 @@ public class MediaProviders {
     loadProvider(TmdbMovieTrailerProvider.class);
     loadProvider(HdTrailersNetMovieTrailerProvider.class);
     loadProvider(ImdbMovieTrailerProvider.class);
+    loadProvider(MoviefoneMovieTrailerProvider.class);
 
     // addons
     loadAddonsForInterface(addons, IMovieTrailerProvider.class);
@@ -226,6 +229,7 @@ public class MediaProviders {
     /////////////////////////////////////////////
     loadProvider(TmdbTvShowTrailerProvider.class);
     loadProvider(ImdbTvShowTrailerProvider.class);
+    loadProvider(MoviefoneTvShowTrailerProvider.class);
 
     // addons
     loadAddonsForInterface(addons, ITvShowTrailerProvider.class);
