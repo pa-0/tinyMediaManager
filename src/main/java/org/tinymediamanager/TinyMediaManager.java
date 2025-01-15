@@ -71,6 +71,7 @@ import org.tinymediamanager.thirdparty.KodiRPC;
 import org.tinymediamanager.thirdparty.upnp.Upnp;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.TmmTaskbar;
+import org.tinymediamanager.ui.TmmUIHelper;
 import org.tinymediamanager.ui.TmmUILayoutStore;
 import org.tinymediamanager.ui.TmmUILogCollector;
 import org.tinymediamanager.ui.dialogs.AboutDialog;
@@ -411,9 +412,11 @@ public final class TinyMediaManager {
       Settings.getInstance().saveSettings();
     }
 
-    // external tools
-    TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("ffmpeg"));
-    TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("yt-dlp"));
+    // check for external tools upgrade (force on upgrade and update check)
+    if (newVersion || TmmUIHelper.shouldCheckForUpdate()) {
+      TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("ffmpeg"));
+      TmmTaskManager.getInstance().addDownloadTask(new ExternalTools.ExternalToolsUpgradeTask("yt-dlp"));
+    }
   }
 
   private void loadInternals() {

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.Settings;
@@ -126,12 +127,20 @@ public abstract class UpgradeTasks {
       MovieModuleManager.getInstance().getSettings().removeMovieCheckArtwork(MovieScraperMetadataConfig.LOGO);
       TvShowModuleManager.getInstance().getSettings().removeTvShowCheckArtwork(TvShowScraperMetadataConfig.LOGO);
     }
+
+    if (StrgUtils.compareVersion(v, "5.1.1") < 0) {
+      // remove old addons from the native folder (only Windows & Linux)
+      if (!SystemUtils.IS_OS_MAC) {
+        Utils.deleteDirectorySafely(Paths.get(TmmOsUtils.getNativeFolderName(), "addons"));
+      }
+    }
   }
 
   /**
    * Fix some known rating problems min/max values
    * 
    * @param me
+   *          the {@link MediaEntity}
    * @return true, if something detected (call save)
    */
   protected static boolean fixRatings(MediaEntity me) {
@@ -175,6 +184,7 @@ public abstract class UpgradeTasks {
    * removed HDR10, when also having HDR10+
    * 
    * @param me
+   *          the {@link MediaEntity}
    * @return
    */
   protected static boolean fixHDR(MediaEntity me) {
