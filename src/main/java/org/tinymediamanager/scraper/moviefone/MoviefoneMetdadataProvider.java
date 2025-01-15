@@ -60,7 +60,6 @@ abstract class MoviefoneMetdadataProvider implements IMediaProvider {
 
   @Override
   public boolean isActive() {
-    return true;
-    // return isFeatureEnabled() && isApiKeyAvailable(null);
+    return isFeatureEnabled() && isApiKeyAvailable(null);
   }
 }
