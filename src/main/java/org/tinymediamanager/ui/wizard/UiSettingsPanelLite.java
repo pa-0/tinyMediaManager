@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,8 +316,7 @@ class UiSettingsPanelLite extends JPanel {
   /**
    * Proxy mouse click events from any {@link JComponent} to any other clickable {@link AbstractButton}.
    * <p>
-   * This allows the user to click on an {@link ImageLabel} in order to select its corresponding {@link JRadioButton},
-   * for example.
+   * This allows the user to click on an {@link ImageLabel} in order to select its corresponding {@link JRadioButton}, for example.
    */
   private static class MouseClickEventProxy extends MouseAdapter {
     private final AbstractButton button;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,8 +142,7 @@ public class ImageLabel extends JComponent {
   }
 
   /**
-   * Register a {@link MouseListener} that will only be invoked when the mouse event occurs inside the bounds of the
-   * rendered image.
+   * Register a {@link MouseListener} that will only be invoked when the mouse event occurs inside the bounds of the rendered image.
    */
   public void addBoundedMouseListener(MouseListener listener) {
     boundedMouseListeners.add(listener);
@@ -838,12 +837,11 @@ public class ImageLabel extends JComponent {
   }
 
   /**
-   * A {@link MouseAdapter} implementation that proxies events to child listeners **IFF** the event occurs inside the
-   * bounds of the rendered image.
+   * A {@link MouseAdapter} implementation that proxies events to child listeners **IFF** the event occurs inside the bounds of the rendered image.
    */
   private class BoundedMouseListener extends MouseAdapter {
     private int scale(int dimension, double scale) {
-      return (int)(dimension / (scale == 0 ? 1 : scale));
+      return (int) (dimension / (scale == 0 ? 1 : scale));
     }
 
     private boolean contains(MouseEvent e) {
@@ -857,7 +855,8 @@ public class ImageLabel extends JComponent {
         Rectangle rect = new Rectangle(0, 0, width, height);
         Point mouseLocationRelativeToLabel = e.getPoint();
         return rect.contains(mouseLocationRelativeToLabel);
-      } catch (Throwable t) {
+      }
+      catch (Throwable t) {
         // Ignore
       }
 

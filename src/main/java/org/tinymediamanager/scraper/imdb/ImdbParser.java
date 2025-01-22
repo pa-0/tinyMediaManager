@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1543,6 +1543,7 @@ public abstract class ImdbParser {
         String director = directorElement.text().strip();
 
         Person cm = new Person(Person.Type.DIRECTOR, director);
+        cm.setRole("Director");
         // profile path
         Element anchor = directorElement.getElementsByAttributeValueStarting("href", "/name/").first();
         if (anchor != null) {
@@ -1593,6 +1594,7 @@ public abstract class ImdbParser {
       for (Element writerElement : writersElements) {
         String writer = cleanString(writerElement.ownText());
         Person cm = new Person(WRITER, writer);
+        cm.setRole("Writer");
         // profile path
         Element anchor = writerElement.getElementsByAttributeValueStarting("href", "/name/").first();
         if (anchor != null) {
@@ -1619,16 +1621,31 @@ public abstract class ImdbParser {
       producersElement = producersElement.nextElementSibling();
     }
     if (producersElement != null) {
-      Elements producersElements = producersElement.getElementsByAttributeValueStarting("href", "/name/");
-
-      for (Element producerElement : producersElements) {
-        String producer = cleanString(producerElement.ownText());
-        Person cm = new Person(PRODUCER, producer);
+      // <tr>
+      // <td class="name">
+      // <a href="/name/nm0164613/?ref_=tt_rv">William Paul Clark</a>
+      // </td>
+      // <td>...</td>
+      // <td>associate producer</td>
+      // </tr>
+      Elements rows = producersElement.getElementsByTag("tr");
+      for (Element row : rows) {
+        Elements tds = row.getElementsByTag("td");
+        Person cm = new Person(PRODUCER);
+        for (Element td : tds) {
+          String val = td.text();
+          if (cm.getName().isBlank()) {
+            cm.setName(val);
+          }
+          else {
+            cm.setRole(val);
+          }
+        }
         md.addCastMember(cm);
       }
     }
 
-    // producers
+    // production companies
     Elements prodCompHeaderElements = doc.getElementsByClass("ipl-list-title");
     Element prodCompHeaderElement = null;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -98,6 +100,7 @@ import org.tinymediamanager.scraper.http.Url;
 import org.tinymediamanager.scraper.interfaces.IMediaArtworkProvider;
 import org.tinymediamanager.scraper.util.ListUtils;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
+import org.tinymediamanager.ui.ArtworkDragAndDropListener;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.TmmFontHelper;
@@ -447,6 +450,7 @@ public class ImageChooserDialog extends TmmDialog {
 
       setBottomInformationPanel(infoPanel);
     }
+
     {
       JButton cancelButton = new JButton(TmmResourceBundle.getString("Button.cancel"));
       Action actionCancel = new CancelAction();
@@ -464,6 +468,22 @@ public class ImageChooserDialog extends TmmDialog {
       okButton.setAction(actionOK);
       okButton.setActionCommand("OK");
       addDefaultButton(okButton);
+    }
+
+    {
+      new DropTarget(this, new ArtworkDragAndDropListener(imageLabel) {
+        @Override
+        public void drop(DropTargetDropEvent dtde) {
+          super.drop(dtde);
+
+          // cancel the task and close the dialog
+          if (task != null) {
+            task.cancel(true);
+          }
+
+          setVisible(false);
+        }
+      });
     }
   }
 

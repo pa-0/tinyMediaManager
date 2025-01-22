@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@
 package org.tinymediamanager.scraper.ofdb;
 
 import java.io.InterruptedIOException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -37,21 +39,29 @@ import org.tinymediamanager.core.entities.MediaGenres;
 import org.tinymediamanager.core.entities.MediaRating;
 import org.tinymediamanager.core.entities.Person;
 import org.tinymediamanager.core.movie.MovieSearchAndScrapeOptions;
+import org.tinymediamanager.scraper.ArtworkSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaSearchResult;
+import org.tinymediamanager.scraper.entities.MediaArtwork;
+import org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkType;
 import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
+import org.tinymediamanager.scraper.http.OnDiskCachedUrl;
+import org.tinymediamanager.scraper.http.Url;
+import org.tinymediamanager.scraper.interfaces.IMovieArtworkProvider;
+import org.tinymediamanager.scraper.interfaces.IMovieImdbMetadataProvider;
 import org.tinymediamanager.scraper.interfaces.IMovieMetadataProvider;
+import org.tinymediamanager.scraper.util.MetadataUtil;
 import org.tinymediamanager.scraper.util.StrgUtils;
-import org.tinymediamanager.scraper.util.UrlUtil;
 
 /**
  * the class {@link OfdbMovieMetadataProvider} is used to gather meta data from ofdb
  * 
- * @author Manuel Laggner
+ * @author Manuel Laggner, Myron Boyle
  */
-public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements IMovieMetadataProvider {
+public class OfdbMovieMetadataProvider extends OfdbMetadataProvider
+    implements IMovieMetadataProvider, IMovieImdbMetadataProvider, IMovieArtworkProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(OfdbMovieMetadataProvider.class);
 
   @Override
@@ -59,12 +69,6 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     return "movie";
   }
 
-  /*
-   * <meta property="og:title" content="Bourne Vermaächtnis, Das (2012)" /> <meta property="og:type" content="movie" /> <meta property="og:url"
-   * content="http://www.ofdb.de/film/226745,Das-Bourne-Vermächtnis" /> <meta property="og:image" content="http://img.ofdb.de/film/226/226745.jpg" />
-   * <meta property="og:site_name" content="OFDb" /> <meta property="fb:app_id" content="198140443538429" /> <script
-   * src="http://www.ofdb.de/jscripts/vn/immer_oben.js" type="text/javascript"></script>
-   */
   @Override
   public MediaMetadata getMetadata(MovieSearchAndScrapeOptions options) throws ScrapeException {
     LOGGER.debug("getMetadata() {}", options);
@@ -74,26 +78,35 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     }
 
     // we have 3 entry points here
-    // a) getMetadata has been called with an ofdbId
-    // b) getMetadata has been called with an imdbId
-    // c) getMetadata has been called from a previous search
+    // a) getMetadata has been called from a previous search, get either url or ID
+    // b) getMetadata has been called with an ofdbId - get detail page direct
+    // c) getMetadata has been called with an imdbId - we need to search first!
+
+    // https://www.ofdb.de/suchergebnis/?tt0499549
+    // https://www.ofdb.de/film/188514,Avatar-Aufbruch-nach-Pandora/ just ID is relevant, title in url can be empty
+
+    // trailers barely available and async loaded... search for "video_layer"
 
     String detailUrl = "";
 
     // case a)
-    String ofdbId = options.getIdAsString(getId());
+    if (options.getSearchResult() != null) {
+      detailUrl = options.getSearchResult().getUrl();
+    }
 
-    if (StringUtils.isNotBlank(ofdbId)) {
+    // case b)
+    String ofdbId = options.getIdAsString(getId());
+    if (detailUrl.isBlank() && StringUtils.isNotBlank(ofdbId)) {
       try {
-        detailUrl = getApiKey() + "/view.php?page=film&fid=" + ofdbId;
+        detailUrl = getApiKey() + "film/" + ofdbId;
       }
       catch (Exception e) {
         throw new ScrapeException(e);
       }
     }
 
-    // case b)
-    if (options.getSearchResult() == null && StringUtils.isNotBlank(options.getIdAsString(MediaMetadata.IMDB))) {
+    // case c)
+    if (detailUrl.isBlank() && StringUtils.isNotBlank(options.getImdbId())) {
       try {
         SortedSet<MediaSearchResult> results = search(options);
         if (!results.isEmpty()) {
@@ -106,11 +119,6 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       }
     }
 
-    // case c)
-    if (options.getSearchResult() != null) {
-      detailUrl = options.getSearchResult().getUrl();
-    }
-
     // we can only work further if we got a search result on ofdb.de
     if (StringUtils.isBlank(detailUrl)) {
       LOGGER.warn("We did not get any useful movie url");
@@ -120,20 +128,17 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     MediaMetadata md = new MediaMetadata(getId());
     md.setScrapeOptions(options);
 
-    // generic Elements used all over
-    Elements el = null;
+    // ID if not supplied
     if (StringUtils.isBlank(ofdbId)) {
       ofdbId = StrgUtils.substr(detailUrl, "film\\/(\\d+),");
-      if (StringUtils.isBlank(ofdbId)) {
-        ofdbId = StrgUtils.substr(detailUrl, "fid=(\\d+)");
-      }
     }
     md.setId(getId(), ofdbId);
 
     Document doc = null;
     LOGGER.trace("get details page: {}", detailUrl);
     try {
-      doc = UrlUtil.parseDocumentFromUrl(detailUrl);
+      Url u = new OnDiskCachedUrl(detailUrl, 1, TimeUnit.DAYS); // we need a forced cache here
+      doc = Jsoup.parse(u.getInputStream(), "UTF-8", "");
     }
     catch (InterruptedException | InterruptedIOException e) {
       // do not swallow these Exceptions
@@ -148,85 +153,118 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       throw new ScrapeException(new Exception("we did not receive a valid web page"));
     }
 
-    // parse details
+    // **********************************************
+    // parse main page
+    // **********************************************
 
-    // IMDB ID "http://www.imdb.com/Title?1194173"
-    el = doc.getElementsByAttributeValueContaining("href", "imdb.com");
-    if (!el.isEmpty()) {
-      md.setId(MediaMetadata.IMDB, "tt" + StrgUtils.substr(el.first().attr("href"), "\\?(\\d+)"));
+    // IMDB ID "http://www.imdb.com/title/tt1194173"
+    Elements els = doc.getElementsByAttributeValueContaining("href", "imdb.com");
+    if (!els.isEmpty()) {
+      md.setId(MediaMetadata.IMDB, "tt" + StrgUtils.substr(els.first().attr("href"), "title/tt(\\d+)"));
     }
 
     // title / year
-    // <meta property="og:title" content="Bourne Vermächtnis, Das (2012)" />
-    el = doc.getElementsByAttributeValue("property", "og:title");
-    if (!el.isEmpty()) {
-      String[] ty = parseTitle(el.first().attr("content"));
+    // <h1 itemprop="name">Avatar - Aufbruch nach Pandora (2009)</h1>
+    els = doc.getElementsByAttributeValue("itemprop", "name");
+    if (!els.isEmpty()) {
+      String[] ty = parseTitle(els.first().text());
       md.setTitle(StrgUtils.removeCommonSortableName(ty[0]));
-      try {
-        md.setYear(Integer.parseInt(ty[1]));
-      }
-      catch (Exception ignored) {
-        // the default value is just fine
-      }
+      md.setYear(MetadataUtil.parseInt(ty[1], 0));
     }
-    // another year position
-    if (md.getYear() == 0) {
-      // <a href="view.php?page=blaettern&Kat=Jahr&Text=2012">2012</a>
-      el = doc.getElementsByAttributeValueContaining("href", "Kat=Jahr");
-      try {
-        md.setYear(Integer.parseInt(el.first().text()));
-      }
-      catch (Exception ignored) {
-        // the default value is just fine
+
+    // FIXME: do testing with and w/o image chooser!
+
+    // <img src="./images/film.370px/188/188514.jpg" class="img-max" itemprop="image"> ~370x530
+    // <img src="./images/film/188/188514.jpg" class="img-max" itemprop="image"> ~500x700
+    // <img src="./images/poster.370px/387/387637.jpg" class="img-max" itemprop="image">
+    // NOTE:
+    // having multiple sizes is a bit problematic in TMM, as only the previewed one is being added with correct dimension to ImageChooser dropdown
+    // for all the others, we don't have any sizes, so the do not look good in GUI, and won't be choosen by automatic downloader
+    // so we now just add the BEST image available (since we only have ONE poster and ONE fanart - this should be doable)
+    Element el = doc.getElementsByAttributeValue("itemprop", "image").first();
+    if (el != null) {
+      String imgUrl = el.attr("src").replace("./", "");
+      if (!imgUrl.isBlank()) {
+        imgUrl = getApiKey() + imgUrl;
+        MediaArtwork ma = new MediaArtwork(ID, MediaArtworkType.POSTER);
+        int width = MetadataUtil.parseInt(StrgUtils.substr(imgUrl, "\\.(\\d+)px/"), 370);// usually 370px
+        ma.setOriginalUrl(imgUrl.replace("." + width + "px", "")); // w/o px seems to be biggest
+        ma.addImageSize(0, 0, imgUrl.replace("." + width + "px", ""), MediaArtwork.PosterSizes.BIG.getOrder());
+        // ma.addImageSize(width, 530, imgUrl, MediaArtwork.PosterSizes.getSizeOrder(width));
+        // ma.addImageSize(185, 278, imgUrl.replace("." + width + "px", ".185px"), MediaArtwork.PosterSizes.getSizeOrder(185));
+        md.addMediaArt(ma);
       }
     }
 
-    // original title (has to be searched with a regexp)
-    // <tr valign="top">
-    // <td nowrap=""><font class="Normal" face="Arial,Helvetica,sans-serif"
-    // size="2">Originaltitel:</font></td>
-    // <td>&nbsp;&nbsp;</td>
-    // <td width="99%"><font class="Daten" face="Arial,Helvetica,sans-serif"
-    // size="2"><b>Brave</b></font></td>
-    // </tr>
-    String originalTitle = StrgUtils.substr(doc.body().html(), "(?s)Originaltitel.*?<b>(.*?)</b>");
-    if (!originalTitle.isEmpty()) {
-      md.setOriginalTitle(StrgUtils.removeCommonSortableName(originalTitle));
+    // <div class="header-moviedetail" id="HeaderFilmBild" style="background-image: url(./images/backdrop.870px/188/188514.jpg)">
+    el = doc.getElementById("HeaderFilmBild");
+    if (el != null) {
+      String style = el.attr("style").replace("./", "");
+      String imgUrl = getApiKey() + StrgUtils.substr(style, "\\((.*?)\\)"); // everything between CSS url parentheses
+      MediaArtwork ma = new MediaArtwork(ID, MediaArtworkType.BACKGROUND);
+      int width = MetadataUtil.parseInt(StrgUtils.substr(imgUrl, "\\.(\\d+)px/"), 870); // usually 870px
+      ma.setOriginalUrl(imgUrl.replace("." + width + "px", ""));
+      // ma.addImageSize(width, 0, imgUrl, MediaArtwork.FanartSizes.getSizeOrder(width));
+      ma.addImageSize(0, 0, imgUrl.replace("." + width + "px", ""), MediaArtwork.FanartSizes.LARGE.getOrder());
+      md.addMediaArt(ma);
     }
 
-    // Production: <a href="view.php?page=blaettern&amp;Kat=Land&amp;Text=Argentinien">Argentinien</a>
-    el = doc.getElementsByAttributeValueContaining("href", "Kat=Land");
-    for (Element g : el) {
-      md.addCountry(g.ownText());
+    els = doc.getElementsByAttributeValue("itemprop", "genre");
+    for (Element genre : els) {
+      md.addGenre(getTmmGenre(genre.text()));
     }
 
-    // Genre: <a href="view.php?page=genre&Genre=Action">Action</a>
-    el = doc.getElementsByAttributeValueContaining("href", "page=genre");
-    for (Element g : el) {
-      md.addGenre(getTmmGenre(g.text()));
+    els = doc.getElementsByAttributeValue("itemprop", "countryOfOrigin");
+    for (Element cntr : els) {
+      md.addCountry(cntr.text());
+    }
+
+    // An other weird quirk :(
+    // usually you have well formed key/value pairs in form of dt/dd
+    // but here we have some repeated DDs we need to skip/ignore....
+    Element dl = doc.getElementsByClass("dl-horizontal").first();
+    String lastTagName = "";
+    String key = "";
+    String val = "";
+    for (Element e : dl.children()) {
+      if (!e.tagName().equals(lastTagName)) {
+        if (e.tagName().equalsIgnoreCase("dt")) {
+          key = e.text();
+        }
+        else if (e.tagName().equalsIgnoreCase("dd")) {
+          val = e.text();
+          // if we set the val, we have already set the key, so HERE we have a valid key/value pair
+          LOGGER.trace(" " + key + " | " + val);
+          if (key.equals("Originaltitel:")) {
+            md.setOriginalTitle(val);
+          }
+          else if (key.equals("Erscheinungsjahr:")) {
+            if (md.getYear() == 0) {
+              md.setYear(MetadataUtil.parseInt(val, 0));
+            }
+          }
+          // else... other data already captured elswhere
+        }
+      }
+      lastTagName = e.tagName();
     }
 
     // rating
-    // <div itemtype="http://schema.org/AggregateRating" itemscope="" itemprop="aggregateRating">
-    // Note: <span itemprop="ratingValue">8.74</span><meta itemprop="worstRating" content="1"><meta itemprop="bestRating" content="10">
-    // &nbsp;•&nbsp;&nbsp;Stimmen: <span itemprop="ratingCount">2187</span>
-    // &nbsp;•&nbsp;&nbsp;Platz: 19 &nbsp;•&nbsp;&nbsp;Ihre Note: --</div>
+    // does only work sometimes; seems to be an asnc call in Custom_film.min.js
     try {
-      MediaRating rating = new MediaRating("odfb");
-      el = doc.getElementsByAttributeValue("itemprop", "ratingValue");
-      if (!el.isEmpty()) {
+      MediaRating rating = new MediaRating(ID);
+      el = doc.getElementsByAttributeValue("itemprop", "ratingValue").first();
+      if (el != null) {
         String r = el.text();
         if (!r.isEmpty()) {
           rating.setRating(Float.parseFloat(r));
           rating.setMaxValue(10);
         }
       }
-      el = doc.getElementsByAttributeValue("itemprop", "ratingCount");
-      if (!el.isEmpty()) {
-        String r = el.text();
-        if (!r.isEmpty()) {
-          rating.setVotes(Integer.parseInt(r));
-        }
+      el = doc.getElementsByAttributeValue("itemprop", "ratingCount").first();
+      if (el != null) {
+        String r = el.attr("content");
+        rating.setVotes(MetadataUtil.parseInt(r, 0));
       }
       md.addRating(rating);
     }
@@ -234,20 +272,27 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       LOGGER.trace("could not parse rating: {}", e.getMessage());
     }
 
-    // get PlotLink; open url and parse
-    // <a href="plot/22523,31360,Die-Bourne-Identität"><b>[mehr]</b></a>
+    // parse cutoff plot from main page, better than nothing
+    el = doc.getElementsByAttributeValue("itemprop", "description").first();
+    if (el != null) {
+      md.setPlot(el.text());
+    }
+    // **********************************************
+    // parse dedicated plot page
+    // **********************************************
+    // <a href="https://www.ofdb.de/film/188514,390613,Avatar-Aufbruch-nach-Pandora/plot/">Weiterlesen</a>
     LOGGER.trace("parse plot");
-    el = doc.getElementsByAttributeValueMatching("href", "plot\\/\\d+,");
-    if (!el.isEmpty()) {
+    el = doc.getElementsByAttributeValueMatching("href", "/plot/").first();
+    if (el != null) {
       try {
-        String plotUrl = getApiKey() + "/" + el.first().attr("href");
-        Document plot = UrlUtil.parseDocumentFromUrl(plotUrl);
-
-        Elements block = plot.getElementsByClass("Blocksatz"); // first
-        // "Blocksatz" is plot
-        String p = block.first().text(); // remove all html stuff
-        p = p.substring(p.indexOf("Mal gelesen") + 12); // remove "header"
-        md.setPlot(p);
+        String plotUrl = el.attr("href");
+        Url u = new OnDiskCachedUrl(plotUrl, 1, TimeUnit.DAYS); // we need a forced cache here
+        Document plot = Jsoup.parse(u.getInputStream(), "UTF-8", "");
+        el = plot.getElementsByTag("h4").first();
+        String text = el.text().replace("...", "");
+        el = el.nextElementSibling();
+        text += el.text().replace("... ", "");
+        md.setPlot(text);
       }
       catch (InterruptedException | InterruptedIOException e) {
         // do not swallow these Exceptions
@@ -260,9 +305,13 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
 
     doc = null;
     try {
-      String movieDetail = getApiKey() + "/view.php?page=film_detail&fid=" + ofdbId;
+      if (detailUrl.endsWith("/")) {
+        detailUrl = detailUrl.substring(0, detailUrl.length() - 1);
+      }
+      String movieDetail = detailUrl + "/details";
       LOGGER.trace("parse movie detail: {}", movieDetail);
-      doc = UrlUtil.parseDocumentFromUrl(movieDetail);
+      Url u = new OnDiskCachedUrl(movieDetail, 1, TimeUnit.DAYS); // we need a forced cache here
+      doc = Jsoup.parse(u.getInputStream(), "UTF-8", "");
     }
     catch (InterruptedException | InterruptedIOException e) {
       // do not swallow these Exceptions
@@ -272,13 +321,77 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       LOGGER.error("failed to get detail page: {}", e.getMessage());
     }
 
-    if (doc != null) {
-      parseCast(doc.getElementsContainingOwnText("Regie"), Person.Type.DIRECTOR, md);
-      parseCast(doc.getElementsContainingOwnText("Darsteller"), Person.Type.ACTOR, md);
-      parseCast(doc.getElementsContainingOwnText("Stimme/Sprecher"), Person.Type.ACTOR, md);
-      parseCast(doc.getElementsContainingOwnText("Synchronstimme (deutsch)"), Person.Type.ACTOR, md);
-      parseCast(doc.getElementsContainingOwnText("Drehbuchautor(in)"), Person.Type.WRITER, md);
-      parseCast(doc.getElementsContainingOwnText("Produzent(in)"), Person.Type.PRODUCER, md);
+    // **********************************************
+    // parse detail page for actor/crew
+    // **********************************************
+    // https://www.ofdb.de/film/188514,Avatar-Aufbruch-nach-Pandora/details/
+    el = doc.getElementsByClass("flagline-lg").first();
+    if (el != null) {
+      el = el.parent();
+      // now we have the root node with all the actor DIVs, delimited by sporadically H5s...
+      // parse them in a row...
+      Person.Type type = Person.Type.OTHER;
+      String crewRole = "";
+      for (Element tag : el.children()) {
+        if (tag.tagName().equals("h5")) {
+          if (tag.text().contains("Regie")) {
+            type = Person.Type.DIRECTOR;
+            crewRole = "Regie";
+          }
+          else if (tag.text().contains("Darsteller") || tag.text().contains("Stimme/Sprecher")) // animation has no cast
+          {
+            type = Person.Type.ACTOR;
+            crewRole = "";
+          }
+          else if (tag.text().contains("Drehbuchautor")) {
+            type = Person.Type.WRITER;
+            crewRole = "Drehbuchautor";
+          }
+          else if (tag.text().contains("Produzent")) {
+            type = Person.Type.PRODUCER;
+            crewRole = "Produzent";
+          }
+          else {
+            type = Person.Type.OTHER;
+            continue; // we usually do not save other crew members... as we have no place to display them yet.
+            // Komponist(in)
+            // Cutter (Schnitt)
+            // Stunts
+            // Second Unit-Regisseur(in)
+            // Casting
+            // Soundtrack
+            // Stimme/Sprecher
+            // Synchronstimme (deutsch)
+          }
+        }
+        else if (tag.tagName().equals("div") && tag.attr("class").contains("row")) {
+          // bit complicated here, but we have 2-3 different styles to parse
+          Person p = new Person(type);
+          el = tag.getElementsByTag("h4").first();
+          if (el != null) {
+            p.setName(el.text());
+          }
+          el = el.parent(); // a href
+          if (!el.attr("href").equals("#")) {
+            p.setProfileUrl(el.attr("href"));
+            String id = StrgUtils.substr(el.attr("href"), "person/(\\d+),");
+            p.setId(ID, id);
+          }
+          p.setRole(crewRole); // set our default; will be overwritten below, if other
+          el = el.nextElementSibling(); // P with role (if avail)
+          if (el != null) {
+            p.setRole(el.ownText()); // but not surrounding tags
+          }
+
+          el = tag.getElementsByTag("img").first();
+          if (el != null && !el.attr("src").contains("platzhalter")) {
+            String imgUrl = getApiKey() + el.attr("src").replace("./", "");
+            p.setThumbUrl(imgUrl);
+          }
+
+          md.addCastMember(p);
+        }
+      }
     }
 
     return md;
@@ -287,7 +400,6 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
   @Override
   public SortedSet<MediaSearchResult> search(MovieSearchAndScrapeOptions options) throws ScrapeException {
     LOGGER.debug("search(): {}", options);
-
     if (!isActive()) {
       throw new ScrapeException(new FeatureNotEnabledException(this));
     }
@@ -295,24 +407,33 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     SortedSet<MediaSearchResult> results = new TreeSet<>();
 
     String searchQuery = options.getSearchQuery();
-    String imdb = "";
-    Elements filme = null;
+    String imdb = options.getImdbId();
     Exception savedException = null;
-    /*
-     * Kat = All | Titel | Person | DTitel | OTitel | Regie | Darsteller | Song | Rolle | EAN| IMDb | Google
-     * http://www.ofdb.de//view.php?page=suchergebnis &Kat=xxxxxxxxx&SText=yyyyyyyyyyy
-     */
-    // 1. search with imdbId
+    // https://www.ofdb.de/suchergebnis/?tt0499549 titel, personen/name, EAN nummer, IMDB Ids (tt, nm)
+
+    // 1. do we have an OFDB id? Get metadata direct
+    String ofdbId = options.getIdAsString(ID);
+    if (ofdbId != null) {
+      LOGGER.debug("found ofdbId {} - getting direct", ofdbId);
+      MediaMetadata md = getMetadata(options);
+      MediaSearchResult msr = new MediaSearchResult(ID, MediaType.MOVIE);
+      msr.mergeFrom(md);
+      msr.setScore(1.0f);
+      results.add(msr);
+      return results;
+    }
+
+    // 2. search with imdbId
+    int count = 0;
+    Element tbody = null;
     if (StringUtils.isNotEmpty(options.getImdbId())) {
       try {
-        imdb = options.getImdbId();
         LOGGER.debug("search with imdbId: {}", imdb);
-
-        Document doc = UrlUtil.parseDocumentFromUrl(getApiKey() + "/view.php?page=suchergebnis&Kat=IMDb&SText=" + imdb);
-
-        // only look for movie links
-        filme = doc.getElementsByAttributeValueMatching("href", "film\\/\\d+,");
-        LOGGER.debug("found {} search results", filme.size());
+        Url u = new OnDiskCachedUrl(getApiKey() + "suchergebnis/?" + imdb, 1, TimeUnit.DAYS); // we need a forced cache here
+        Document doc = Jsoup.parse(u.getInputStream(), "UTF-8", "");
+        tbody = doc.getElementById("TabelleBody");
+        count = tbody == null ? 0 : tbody.getElementsByTag("tr").size();
+        LOGGER.debug("found {} search result", count);
       }
       catch (InterruptedException | InterruptedIOException e) {
         // do not swallow these Exceptions
@@ -324,18 +445,16 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       }
     }
 
-    // 2. search for search string
-    if ((filme == null || filme.isEmpty()) && StringUtils.isNotBlank(options.getSearchQuery())) {
+    // 3. search for search string
+    if (count == 0 && StringUtils.isNotBlank(options.getSearchQuery())) {
       try {
-        String searchString = getApiKey() + "/view.php?page=suchergebnis&Kat=All&SText="
-            + URLEncoder.encode(cleanSearch(searchQuery), StandardCharsets.UTF_8);
-        LOGGER.debug("search for everything: {}", searchQuery);
-
-        Document doc = UrlUtil.parseDocumentFromUrl(searchString);
-
-        // only look for movie links
-        filme = doc.getElementsByAttributeValueMatching("href", "film\\/\\d+,");
-        LOGGER.debug("found {} search results", filme.size());
+        LOGGER.debug("search for: {}", searchQuery);
+        Url u = new OnDiskCachedUrl(getApiKey() + "suchergebnis/?" + URLEncoder.encode(cleanSearch(searchQuery), StandardCharsets.UTF_8), 1,
+            TimeUnit.DAYS); // we need a forced cache here
+        Document doc = Jsoup.parse(u.getInputStream(), "UTF-8", "");
+        tbody = doc.getElementById("TabelleBody");
+        count = tbody == null ? 0 : tbody.getElementsByTag("tr").size();
+        LOGGER.debug("found {} search results", count);
       }
       catch (InterruptedException | InterruptedIOException e) {
         // do not swallow these Exceptions
@@ -348,60 +467,62 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     }
 
     // if there has been a saved exception and we did not find anything - throw the exception
-    if ((filme == null || filme.isEmpty()) && savedException != null) {
+    if (count == 0 && savedException != null) {
       throw new ScrapeException(savedException);
     }
-
-    if (filme == null || filme.isEmpty()) {
+    if (count == 0) {
       LOGGER.debug("nothing found :(");
       return results;
     }
 
-    // <a href="film/22523,Die-Bourne-Identität"
-    // onmouseover="Tip('<img src=&quot;images/film/22/22523.jpg&quot;
-    // width=&quot;120&quot; height=&quot;170&quot;>',SHADOW,true)">Bourne
-    // Identität, Die<font size="1"> / Bourne Identity, The</font> (2002)</a>
-    HashSet<String> foundResultUrls = new HashSet<>();
-    for (Element a : filme) {
+    // <tr>
+    // <td>Match%</td>
+    // <td>Titel/Name</td>
+    // <td>Jahr</td>
+    // </tr>
+    for (Element row : tbody.getElementsByTag("tr")) {
       try {
-        MediaSearchResult sr = new MediaSearchResult(getId(), MediaType.MOVIE);
-        if (StringUtils.isNotEmpty(imdb)) {
-          sr.setIMDBId(imdb);
-        }
-        sr.setId(StrgUtils.substr(a.toString(), "film\\/(\\d+),")); // OFDB ID
-        sr.setTitle(StringEscapeUtils.unescapeHtml4(StrgUtils.removeCommonSortableName(StrgUtils.substr(a.toString(), ".*>(.*?)(\\[.*?\\])?<font"))));
-        LOGGER.debug("found movie {}", sr.getTitle());
-        sr.setOriginalTitle(StringEscapeUtils.unescapeHtml4(StrgUtils.removeCommonSortableName(StrgUtils.substr(a.toString(), ".*> / (.*?)</font"))));
-        try {
-          sr.setYear(Integer.parseInt(StrgUtils.substr(a.toString(), "font> \\((.*?)\\)<\\/a")));
-        }
-        catch (Exception e) {
-          LOGGER.trace("could not parse year: {}", e.getMessage());
-        }
+        Elements cols = row.getElementsByTag("td");
+        if (cols.size() == 3) {
+          MediaSearchResult sr = new MediaSearchResult(ID, MediaType.MOVIE);
 
-        sr.setUrl(getApiKey() + "/" + StrgUtils.substr(a.toString(), "href=\\\"(.*?)\\\""));
-        sr.setPosterUrl(getApiKey() + "/images" + StrgUtils.substr(a.toString(), "images(.*?)\\&quot"));
+          // https://www.ofdb.de/film/188514,Avatar-Aufbruch-nach-Pandora
+          String url = cols.get(1).getElementsByTag("a").first().attr("href");
+          sr.setUrl(url);
+          String id = StrgUtils.substr(url, "film/(\\d+),");
+          if (id.isBlank()) {
+            LOGGER.info("ignoring non-movie result: {}", url);
+            continue;
+          }
+          sr.setId(ID, id);
 
-        // check if it has at least a title and url
-        if (StringUtils.isBlank(sr.getTitle()) || StringUtils.isBlank(sr.getUrl())) {
-          continue;
-        }
+          String yearText = cols.get(2).text();
+          if (!yearText.isBlank()) {
+            int year = MetadataUtil.parseInt(yearText);
+            sr.setYear(year);
+          }
 
-        // OFDB could provide linke twice - check if that has been already added
-        if (foundResultUrls.contains(sr.getUrl())) {
-          continue;
-        }
-        foundResultUrls.add(sr.getUrl());
+          // weird HTML :/ tag in attr
+          // <span class="tooltipster" title="<img ... src='./images/film.185px/188/188514.jpg'>">Avatar - Aufbruch nach Pandora</span>
+          Element span = cols.get(1).getElementsByClass("tooltipster").first();
+          String title = span.text();
+          sr.setTitle(title);
+          String img = span.attr("title");
+          String imgUrl = StrgUtils.substr(img, "src='\\.\\/(.*?)\\'");
+          if (imgUrl != null && !imgUrl.isBlank()) {
+            sr.setPosterUrl(getApiKey() + imgUrl);
+          }
 
-        if (StringUtils.isNotBlank(sr.getIMDBId()) && imdb.equals(sr.getIMDBId())) {
-          // perfect match
-          sr.setScore(1);
+          // use scraper score: 87% -> 0.87
+          NumberFormat defaultFormat = new DecimalFormat();
+          Number score = defaultFormat.parse(cols.get(0).text());
+          sr.setScore(score.floatValue() / 100);
+
+          results.add(sr);
         }
         else {
-          // compare score based on names
-          sr.calculateScore(options);
+          LOGGER.trace("unexpected columns - {}", cols);
         }
-        results.add(sr);
       }
       catch (Exception e) {
         LOGGER.warn("error parsing movie result: {}", e.getMessage());
@@ -437,68 +558,6 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     return v;
   }
 
-  // parse actors
-  // find the header
-  // go up until TR table row
-  // get next TR for casts entries
-  private void parseCast(Elements el, Person.Type type, MediaMetadata md) {
-    if (el != null && !el.isEmpty()) {
-      Element castEl = null;
-      for (Element element : el) {
-        if (!element.tagName().equals("option")) { // we get more, just do not take the optionbox
-          castEl = element;
-        }
-      }
-      if (castEl == null) {
-        LOGGER.debug("meh, no {} found", type.name());
-        return;
-      }
-      // walk up to table TR...
-      while (!((castEl == null) || (castEl.tagName().equalsIgnoreCase("tr")))) {
-        castEl = castEl.parent();
-      }
-      // ... and take the next table row ^^
-      Element tr = castEl.nextElementSibling();
-
-      if (tr != null) {
-        for (Element a : tr.getElementsByAttributeValue("valign", "middle")) {
-          String act = a.toString();
-          String aname = StrgUtils.substr(act, "alt=\"(.*?)\"");
-          if (!aname.isEmpty()) {
-            Person cm = new Person(type);
-            cm.setName(aname);
-            String id = StrgUtils.substr(act, "id=(.*?)[^\"]\">");
-            if (!id.isEmpty()) {
-              cm.setId(getId(), id);
-              // thumb
-              // http://www.ofdb.de/thumbnail.php?cover=images%2Fperson%2F7%2F7689.jpg&size=6
-              // fullsize ;) http://www.ofdb.de/images/person/7/7689.jpg
-              try {
-                String imgurl = URLDecoder.decode(StrgUtils.substr(act, "images%2Fperson%2F(.*?)&amp;size"), "UTF-8");
-                if (!imgurl.isEmpty()) {
-                  imgurl = getApiKey() + "/images/person/" + imgurl;
-                }
-                cm.setThumbUrl(imgurl);
-              }
-              catch (Exception e) {
-                LOGGER.trace("could not parse thumb url: {}", e.getMessage());
-              }
-              // profile path
-              Element profileAnchor = a.getElementsByAttributeValueStarting("href", "view.php?page=person").first();
-              if (profileAnchor != null) {
-                cm.setProfileUrl(getApiKey() + profileAnchor.attr("href"));
-              }
-            }
-            String arole = StrgUtils.substr(act, "\\.\\.\\. (.*?)</font>").replaceAll("<[^>]*>", "");
-            cm.setRole(arole);
-
-            md.addCastMember(cm);
-          }
-        }
-      }
-    }
-  }
-
   /*
    * Maps scraper Genres to internal TMM genres
    */
@@ -517,7 +576,7 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
     } else if (genre.equals("Animation")) {
       g = MediaGenres.ANIMATION;
     } else if (genre.equals("Anime")) {
-      g = MediaGenres.ANIMATION;
+      g = MediaGenres.ANIME;
     } else if (genre.equals("Biographie")) {
       g = MediaGenres.BIOGRAPHY;
     } else if (genre.equals("Dokumentation")) {
@@ -590,15 +649,24 @@ public class OfdbMovieMetadataProvider extends OfdbMetadataProvider implements I
       g = MediaGenres.THRILLER;
     } else if (genre.equals("Tierfilm")) {
       g = MediaGenres.ANIMAL;
+    } else if (genre.equals("Webminiserie")) {
+      g = MediaGenres.SERIES;
     } else if (genre.equals("Webserie")) {
       g = MediaGenres.SERIES;
     } else if (genre.equals("Western")) {
       g = MediaGenres.WESTERN;
     }
-    // @formatter:on
     if (g == null) {
       g = MediaGenres.getGenre(genre);
     }
     return g;
+  }
+
+  @Override
+  public List<MediaArtwork> getArtwork(ArtworkSearchAndScrapeOptions options) throws ScrapeException, MissingIdException {
+    MovieSearchAndScrapeOptions movie = new MovieSearchAndScrapeOptions();
+    movie.setDataFromOtherOptions(options);
+    MediaMetadata md = getMetadata(movie);
+    return md.getMediaArt(options.getArtworkType());
   }
 }

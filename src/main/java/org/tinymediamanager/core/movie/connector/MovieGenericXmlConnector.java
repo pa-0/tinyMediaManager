@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -606,12 +606,18 @@ public abstract class MovieGenericXmlConnector implements IMovieConnector {
     Element playcount = document.createElement("playcount");
     int playCountFromNFO = parser != null ? parser.playcount : 0;
 
-    // take the higher value (tmm DB vs NFO)
-    playCountFromNFO = Math.max(movie.getPlaycount(), playCountFromNFO);
-
-    // if watched, make sure at least having a playcount of 1
     if (movie.isWatched()) {
-      playCountFromNFO = Math.max(playCountFromNFO, 1);
+      // take the higher value (tmm DB vs NFO)
+      playCountFromNFO = Math.max(movie.getPlaycount(), playCountFromNFO);
+
+      // if watched, make sure at least having a playcount of 1
+      if (movie.isWatched()) {
+        playCountFromNFO = Math.max(playCountFromNFO, 1);
+      }
+    }
+    else {
+      // not watched? playcount must be 0
+      playCountFromNFO = 0;
     }
 
     playcount.setTextContent(Integer.toString(playCountFromNFO));

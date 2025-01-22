@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -337,7 +337,6 @@ public class MovieScrapeTask extends TmmThreadPool {
         try {
           lock.writeLock().lock();
           artwork.addAll(artworkProvider.getArtwork(options));
-          lock.writeLock().unlock();
         }
         catch (MissingIdException ignored) {
           // no need to log here
@@ -346,6 +345,9 @@ public class MovieScrapeTask extends TmmThreadPool {
           LOGGER.error("getArtwork", e);
           MessageManager.instance.pushMessage(
               new Message(MessageLevel.ERROR, movie, "message.scrape.movieartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
+        }
+        finally {
+          lock.writeLock().unlock();
         }
       });
 
@@ -369,7 +371,6 @@ public class MovieScrapeTask extends TmmThreadPool {
         try {
           lock.writeLock().lock();
           trailers.addAll(trailerProvider.getTrailers(options));
-          lock.writeLock().unlock();
         }
         catch (MissingIdException e) {
           LOGGER.debug("no usable ID found for scraper {}", trailerScraper.getMediaProvider().getProviderInfo().getId());
@@ -378,6 +379,9 @@ public class MovieScrapeTask extends TmmThreadPool {
           LOGGER.error("getTrailers", e);
           MessageManager.instance
               .pushMessage(new Message(MessageLevel.ERROR, movie, "message.scrape.trailerfailed", new String[] { ":", e.getLocalizedMessage() }));
+        }
+        finally {
+          lock.writeLock().unlock();
         }
       });
 

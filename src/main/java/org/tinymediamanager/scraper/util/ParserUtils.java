@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +255,8 @@ public class ParserUtils {
     }
     else {
       ret[0] = name.toString().strip();
+      // remove AKAs
+      ret[0] = ret[0].replaceFirst("(?i) aka .*", "");
     }
     ret[1] = year.strip();
     LOGGER.trace("Movie title should be: \"{}\", from {}", ret[0], ret[1]);

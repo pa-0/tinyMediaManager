@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -249,10 +249,12 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
 
         case 1:
           member = new Person(DIRECTOR);
+          member.setRole(character.peopleType);
           break;
 
         case 2:
           member = new Person(WRITER);
+          member.setRole(character.peopleType);
           break;
 
         case 3:
@@ -267,6 +269,7 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
 
         case 7:
           member = new Person(PRODUCER);
+          member.setRole(character.peopleType);
           break;
 
         default:
@@ -321,7 +324,7 @@ abstract class TheTvDbMetadataProvider implements IMediaProvider {
 
         case 4: // Official Website
         case 5: // Facebook
-        case 6: // Twitter
+        case 6: // X (Twitter)
         case 7: // Reddit
         case 8: // Fan Site
         case 9: // Instagram

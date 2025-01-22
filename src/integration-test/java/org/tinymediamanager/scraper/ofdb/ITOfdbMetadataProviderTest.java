@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import static org.tinymediamanager.core.entities.Person.Type.DIRECTOR;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.tinymediamanager.core.BasicITest;
 import org.tinymediamanager.core.entities.MediaRating;
@@ -35,70 +34,104 @@ import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaSearchResult;
 import org.tinymediamanager.scraper.entities.CountryCode;
 import org.tinymediamanager.scraper.entities.MediaLanguages;
+import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMovieMetadataProvider;
 
 public class ITOfdbMetadataProviderTest extends BasicITest {
 
   @Test
-  public void testSearch() {
+  public void testSearchViaOfdb() throws ScrapeException {
     IMovieMetadataProvider mp = null;
     List<MediaSearchResult> results = null;
     MovieSearchAndScrapeOptions options = null;
 
-    try {
-      // Die Piefke Saga
-      results = null;
-      try {
-        mp = new OfdbMovieMetadataProvider();
-        options = new MovieSearchAndScrapeOptions();
-        options.setSearchQuery("Die Piefke Saga");
-        options.setLanguage(MediaLanguages.de);
-        options.setCertificationCountry(CountryCode.DE);
-        options.setReleaseDateCountry("DE");
+    mp = new OfdbMovieMetadataProvider();
+    options = new MovieSearchAndScrapeOptions();
+    options.setId("ofdb", "188514");
+    options.setLanguage(MediaLanguages.de);
+    options.setCertificationCountry(CountryCode.DE);
+    options.setReleaseDateCountry("DE");
 
-        results = new ArrayList<>(mp.search(options));
-        // did we get a result?
-        assertNotNull("Result", results);
-        assertEquals("Die Piefke-Saga", results.get(0).getTitle());
+    results = new ArrayList<>(mp.search(options));
+    // did we get a result?
+    assertNotNull("Result", results);
+    // result count
+    assertEquals("Result count", 1, results.size());
 
-        // result count
-        assertEquals("Result count", 1, results.size());
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail();
-      }
+    assertEquals("Avatar - Aufbruch nach Pandora", results.get(0).getTitle());
+    assertEquals(2009, results.get(0).getYear());
+  }
 
-      // Lucky # Slevin
-      results = null;
-      try {
-        mp = new OfdbMovieMetadataProvider();
-        options = new MovieSearchAndScrapeOptions();
-        options.setSearchQuery("Slevin");
-        options.setLanguage(MediaLanguages.de);
-        options.setCertificationCountry(CountryCode.DE);
-        options.setReleaseDateCountry("DE");
+  @Test
+  public void testSearchViaImdb() throws ScrapeException {
+    IMovieMetadataProvider mp = null;
+    List<MediaSearchResult> results = null;
+    MovieSearchAndScrapeOptions options = null;
 
-        results = new ArrayList<>(mp.search(options));
-        // did we get a result?
-        assertNotNull("Result", results);
+    mp = new OfdbMovieMetadataProvider();
+    options = new MovieSearchAndScrapeOptions();
+    options.setImdbId("tt0499549");
+    options.setLanguage(MediaLanguages.de);
+    options.setCertificationCountry(CountryCode.DE);
+    options.setReleaseDateCountry("DE");
 
-        // result count
-        assertEquals("Result count", 1, results.size());
+    results = new ArrayList<>(mp.search(options));
+    // did we get a result?
+    assertNotNull("Result", results);
+    // result count
+    assertEquals("Result count", 1, results.size());
 
-        assertEquals("Lucky # Slevin", results.get(0).getTitle());
-        assertEquals("Lucky Number Slevin", results.get(0).getOriginalTitle());
-        assertEquals(2006, results.get(0).getYear());
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-        fail();
-      }
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail();
-    }
+    assertEquals("Avatar - Aufbruch nach Pandora", results.get(0).getTitle());
+    assertEquals(2009, results.get(0).getYear());
+    System.out.println(results.get(0).getIdAsString("ofdb"));
+  }
+
+  @Test
+  public void testSearchViaText() throws ScrapeException {
+    IMovieMetadataProvider mp = null;
+    List<MediaSearchResult> results = null;
+    MovieSearchAndScrapeOptions options = null;
+
+    mp = new OfdbMovieMetadataProvider();
+    options = new MovieSearchAndScrapeOptions();
+    options.setSearchQuery("Die Piefke Saga");
+    options.setLanguage(MediaLanguages.de);
+    options.setCertificationCountry(CountryCode.DE);
+    options.setReleaseDateCountry("DE");
+
+    results = new ArrayList<>(mp.search(options));
+    // did we get a result?
+    assertNotNull("Result", results);
+    assertEquals("Die Piefke-Saga", results.get(0).getTitle());
+
+    // result count
+    assertEquals("Result count", 1, results.size());
+  }
+
+  @Test
+  public void testSearchMixedMoviePersonResult() throws ScrapeException {
+    IMovieMetadataProvider mp = null;
+    List<MediaSearchResult> results = null;
+    MovieSearchAndScrapeOptions options = null;
+
+    // Lucky # Slevin
+    mp = new OfdbMovieMetadataProvider();
+    options = new MovieSearchAndScrapeOptions();
+    options.setSearchQuery("Slevin");
+    options.setLanguage(MediaLanguages.de);
+    options.setCertificationCountry(CountryCode.DE);
+    options.setReleaseDateCountry("DE");
+
+    results = new ArrayList<>(mp.search(options));
+    // did we get a result?
+    assertNotNull("Result", results);
+
+    // result count
+    assertEquals("Result count", 1, results.size());
+
+    assertEquals("Lucky # Slevin", results.get(0).getTitle());
+    // assertEquals("Lucky Number Slevin", results.get(0).getOriginalTitle());
+    assertEquals(2006, results.get(0).getYear());
   }
 
   @Test

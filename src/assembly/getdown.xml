@@ -49,20 +49,6 @@
             <outputDirectory>/templates</outputDirectory>
         </file>
 
-        <!-- ADDONS -->
-        <file>
-            <source>${project.build.directory}/addons/ffmpeg-linux_aarch64.tar.xz</source>
-            <outputDirectory>/native/arm/addons</outputDirectory>
-        </file>
-        <file>
-            <source>${project.build.directory}/addons/ffmpeg-linux_x64.tar.xz</source>
-            <outputDirectory>/native/linux/addons</outputDirectory>
-        </file>
-        <file>
-            <source>${project.build.directory}/addons/ffmpeg-windows_x64.tar.xz</source>
-            <outputDirectory>/native/windows/addons</outputDirectory>
-        </file>
-
         <!-- LAUNCHER -->
         <file>
             <source>${project.build.directory}/launcher/linux_arm/tinyMediaManager</source>

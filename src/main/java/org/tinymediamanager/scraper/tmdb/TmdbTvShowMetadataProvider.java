@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -956,6 +956,7 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
       else {
         continue;
       }
+      cm.setRole(crewMember.job);
       cm.setId(getProviderInfo().getId(), crewMember.id);
       cm.setName(crewMember.name);
 
@@ -1483,6 +1484,7 @@ public class TmdbTvShowMetadataProvider extends TmdbMetadataProvider implements 
         else {
           continue;
         }
+        cm.setRole(crewMember.job);
         cm.setId(getProviderInfo().getId(), crewMember.id);
         cm.setName(crewMember.name);
 

@@ -69,92 +69,92 @@ build-mac:
     # push the build to the webserver
     - lftp -c "${LFTP_OPTIONS} open -u ${FTP_USER_TEST},${FTP_PASSWORD_TEST} -p 23 sftp://${FTP_HOST}; mirror -Rv dist/ ./upload/v5/dist; chmod -R g+w ./upload/v5"
 
-deploy-docker-amd64:
-  stage: deploy
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.1-debug
-    entrypoint: [ "" ]
-  variables:
-    IMAGE_NAME: tinymediamanager/tinymediamanager
-  needs:
-    - build
-  tags:
-    - tmm # force running on own runners
-  script:
-    # create login credentials
-    - echo -e $DOCKERHUB_AUTH > /kaniko/.docker/config.json
-
-    # copy data
-    - tar xJf dist/tinyMediaManager*linux-amd64.tar.xz -C target/docker/
-    - cd target/docker
-
-    # build image
-    - VERSION=$(grep 'human.version' 'tinyMediaManager/version' | cut -d'=' -f2)
-    - |
-      /kaniko/executor \
-      --context "${CI_PROJECT_DIR}/target/docker" \
-      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
-      --custom-platform=linux/amd64/ \
-      --destination "${IMAGE_NAME}:5-test-amd64"
-
-    #--destination "${IMAGE_NAME}:${$VERSION}" \
-
-deploy-docker-arm64:
-  stage: deploy
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.1-debug
-    entrypoint: [ "" ]
-  variables:
-    IMAGE_NAME: tinymediamanager/tinymediamanager
-  needs:
-    - build
-  tags:
-    - tmm-arm64 # force running on own runners
-  script:
-    # create login credentials
-    - echo -e $DOCKERHUB_AUTH > /kaniko/.docker/config.json
-
-    # copy data
-    - tar xJf dist/tinyMediaManager*linux-arm64.tar.xz -C target/docker/
-    - cd target/docker
-    - mv tinyMediaManager/tinyMediaManager-arm tinyMediaManager/tinyMediaManager
-
-    # build image
-    - VERSION=$(grep 'human.version' 'tinyMediaManager/version' | cut -d'=' -f2)
-    - |
-      /kaniko/executor \
-      --context "${CI_PROJECT_DIR}/target/docker" \
-      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
-      --custom-platform=linux/arm64/ \
-      --destination "${IMAGE_NAME}:5-test-arm64"
-
-    #--destination "${IMAGE_NAME}:${$VERSION}" \
-
-deploy-docker:
-  stage: deploy
-  image:
-    name: curlimages/curl:8.1.1
-  needs:
-    - deploy-docker-amd64
-    - deploy-docker-arm64
-  dependencies: [ ]  # do not download any artifacts
-  tags:
-    - tmm # force running on own runners
-  script:
-    - cd /tmp
-    - curl -s -L https://github.com/estesp/manifest-tool/releases/download/v2.0.8/binaries-manifest-tool-2.0.8.tar.gz | tar xvz
-    - mv manifest-tool-linux-amd64 manifest-tool
-    - chmod +x manifest-tool
-
-    # create the manifest for multiarch tag
-    - ./manifest-tool --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD push from-args
-      --platforms linux/amd64,linux/arm64
-      --template tinymediamanager/tinymediamanager:5-test-ARCH
-      --target tinymediamanager/tinymediamanager:5-test
-    - ./manifest-tool --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD push from-args
-      --platforms linux/amd64,linux/arm64
-      --template tinymediamanager/tinymediamanager:5-test-ARCH
-      --target tinymediamanager/tinymediamanager:latest-test
+#deploy-docker-amd64:
+#  stage: deploy
+#  image:
+#    name: gcr.io/kaniko-project/executor:v1.9.1-debug
+#    entrypoint: [ "" ]
+#  variables:
+#    IMAGE_NAME: tinymediamanager/tinymediamanager
+#  needs:
+#    - build
+#  tags:
+#    - tmm # force running on own runners
+#  script:
+#    # create login credentials
+#    - echo -e $DOCKERHUB_AUTH > /kaniko/.docker/config.json
+#
+#    # copy data
+#    - tar xJf dist/tinyMediaManager*linux-amd64.tar.xz -C target/docker/
+#    - cd target/docker
+#
+#    # build image
+#    - VERSION=$(grep 'human.version' 'tinyMediaManager/version' | cut -d'=' -f2)
+#    - |
+#      /kaniko/executor \
+#      --context "${CI_PROJECT_DIR}/target/docker" \
+#      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
+#      --custom-platform=linux/amd64/ \
+#      --destination "${IMAGE_NAME}:5-test-amd64"
+#
+#    #--destination "${IMAGE_NAME}:${$VERSION}" \
+#
+#deploy-docker-arm64:
+#  stage: deploy
+#  image:
+#    name: gcr.io/kaniko-project/executor:v1.9.1-debug
+#    entrypoint: [ "" ]
+#  variables:
+#    IMAGE_NAME: tinymediamanager/tinymediamanager
+#  needs:
+#    - build
+#  tags:
+#    - tmm-arm64 # force running on own runners
+#  script:
+#    # create login credentials
+#    - echo -e $DOCKERHUB_AUTH > /kaniko/.docker/config.json
+#
+#    # copy data
+#    - tar xJf dist/tinyMediaManager*linux-arm64.tar.xz -C target/docker/
+#    - cd target/docker
+#    - mv tinyMediaManager/tinyMediaManager-arm tinyMediaManager/tinyMediaManager
+#
+#    # build image
+#    - VERSION=$(grep 'human.version' 'tinyMediaManager/version' | cut -d'=' -f2)
+#    - |
+#      /kaniko/executor \
+#      --context "${CI_PROJECT_DIR}/target/docker" \
+#      --dockerfile "${CI_PROJECT_DIR}/target/docker/Dockerfile" \
+#      --custom-platform=linux/arm64/ \
+#      --destination "${IMAGE_NAME}:5-test-arm64"
+#
+#    #--destination "${IMAGE_NAME}:${$VERSION}" \
+#
+#deploy-docker:
+#  stage: deploy
+#  image:
+#    name: curlimages/curl:8.1.1
+#  needs:
+#    - deploy-docker-amd64
+#    - deploy-docker-arm64
+#  dependencies: [ ]  # do not download any artifacts
+#  tags:
+#    - tmm # force running on own runners
+#  script:
+#    - cd /tmp
+#    - curl -s -L https://github.com/estesp/manifest-tool/releases/download/v2.0.8/binaries-manifest-tool-2.0.8.tar.gz | tar xvz
+#    - mv manifest-tool-linux-amd64 manifest-tool
+#    - chmod +x manifest-tool
+#
+#    # create the manifest for multiarch tag
+#    - ./manifest-tool --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD push from-args
+#      --platforms linux/amd64,linux/arm64
+#      --template tinymediamanager/tinymediamanager:5-test-ARCH
+#      --target tinymediamanager/tinymediamanager:5-test
+#    - ./manifest-tool --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD push from-args
+#      --platforms linux/amd64,linux/arm64
+#      --template tinymediamanager/tinymediamanager:5-test-ARCH
+#      --target tinymediamanager/tinymediamanager:latest-test
 
 deploy:
   stage: deploy

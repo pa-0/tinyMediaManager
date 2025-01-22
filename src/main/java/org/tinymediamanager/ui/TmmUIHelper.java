@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.FontUIResource;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -92,11 +93,11 @@ public class TmmUIHelper {
   public static void setLookAndFeel() {
     // load font settings
     try {
-      FlatInterFont.install();
+      FlatInterFont.installLazy();
 
       // sanity check
       Font font = Font.decode(Settings.getInstance().getFontFamily());
-      Font savedFont = new Font(font.getFamily(), font.getStyle(), Settings.getInstance().getFontSize());
+      FontUIResource savedFont = new FontUIResource(font.getFamily(), font.getStyle(), Settings.getInstance().getFontSize());
 
       UIManager.put("defaultFont", savedFont);
     }

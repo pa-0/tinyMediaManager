@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,21 @@ public class StrgUtils {
     REPLACEMENTS.put(0x167, new Replacement("t"));
     REPLACEMENTS.put(0x141, new Replacement("L"));
     REPLACEMENTS.put(0x142, new Replacement("l"));
+
+    // various apostrophes https://www.compart.com/de/unicode/U+2019
+    REPLACEMENTS.put(0x2018, new Replacement("'"));
+    REPLACEMENTS.put(0x2019, new Replacement("'"));
+    REPLACEMENTS.put(0x2032, new Replacement("'"));
+    REPLACEMENTS.put(0x02BC, new Replacement("'"));
+    REPLACEMENTS.put(0x05F3, new Replacement("'"));
+    REPLACEMENTS.put(0xA78C, new Replacement("'"));
+
+    REPLACEMENTS.put(0x201C, new Replacement("\""));
+    REPLACEMENTS.put(0x201D, new Replacement("\""));
+    REPLACEMENTS.put(0x02DD, new Replacement("\""));
+    REPLACEMENTS.put(0x05F4, new Replacement("\""));
+    REPLACEMENTS.put(0x2033, new Replacement("\"")); // interestingly, this results in 2x 0x2032?!?
+    REPLACEMENTS.put(0x3003, new Replacement("\""));
   }
 
   private static String[] buildCommonTitlePrefixes() {
@@ -388,7 +403,7 @@ public class StrgUtils {
 
   /**
    * This method takes an input String and replaces all special characters like umlauts, accented or other letter with diacritical marks with their
-   * basic ascii equivalents. Originally written by Jens Hausherr (https://github.com/jabbrwcky), modified by Manuel Laggner
+   * basic ascii equivalents. Originally written by Jens Hausherr (https://gist.github.com/jabbrwcky/2111727), modified by Manuel Laggner and Myron.
    * 
    * @param input
    *          String to convert
@@ -424,6 +439,10 @@ public class StrgUtils {
       }
       else {
         char c = target[i];
+        // System.out.println(c + " - " + encodeHex(c));
+        // https://www.compart.com/de/unicode/block/U+0000
+        // https://www.compart.com/de/unicode/block/U+0080
+        // TODO: 2 IFs are kinda overlapping, and clarify why we need control chars?!
         if ((c > 0x20 && c < 0x40) || (c > 0x7a && c < 0xc0) || (c > 0x5a && c < 0x61) || c == 0xd7 || c == 0xf7) {
           result.append(c);
         }
@@ -461,6 +480,13 @@ public class StrgUtils {
               else {
                 result.append(c);
               }
+          }
+        }
+        else {
+          // None of our expected blocks? check replacer and add if found
+          Replacement rep = REPLACEMENTS.get(Integer.valueOf(c));
+          if (rep != null) {
+            result.append(uppercase ? rep.UPPER : rep.LOWER);
           }
         }
       }

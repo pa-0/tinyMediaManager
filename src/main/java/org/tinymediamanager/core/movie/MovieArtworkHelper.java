@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1122,7 +1122,17 @@ public class MovieArtworkHelper {
     // should we fall back to _any_ artwork?
     if (MovieModuleManager.getInstance().getSettings().isImageScraperFallback()) {
       for (MediaArtwork art : artworkForType) {
-        for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : art.getImageSizes()) {
+        if (!art.getImageSizes().isEmpty()) {
+          for (MediaArtwork.ImageSizeAndUrl imageSizeAndUrl : art.getImageSizes()) {
+            if (!sortedArtwork.contains(imageSizeAndUrl)) {
+              sortedArtwork.add(imageSizeAndUrl);
+            }
+          }
+        }
+        else {
+          // we forgot to specify a MA with ImageSizeANdUrl - create a dummy one
+          LOGGER.trace("MediaArtwork w/o imageSizeAndUrl - this should not be! {}", art);
+          MediaArtwork.ImageSizeAndUrl imageSizeAndUrl = new MediaArtwork.ImageSizeAndUrl(0, 0, art.getOriginalUrl());
           if (!sortedArtwork.contains(imageSizeAndUrl)) {
             sortedArtwork.add(imageSizeAndUrl);
           }

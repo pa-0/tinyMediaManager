@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,11 +81,11 @@ import ca.odell.glazedlists.matchers.TextMatcherEditor;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
 
 /**
- * A modified version of Glazedlists AutoCompleteSupport - to support the autocomplete behavior in check combo boxes too
+ * A modified version of Glazedlists AutocompleteSupport - to support the autocomplete behavior in check combo boxes too
  *
  * @author James Lemieux, Manuel Laggner
  */
-public final class AutoCompleteSupport<E> {
+public final class AutocompleteSupport<E> {
 
   private static final ParsePosition      PARSE_POSITION                  = new ParsePosition(0);
   private static final Class<?>[]         VALUE_OF_SIGNATURE              = { String.class };
@@ -310,7 +310,7 @@ public final class AutoCompleteSupport<E> {
   private Action                          originalAquaSelectPreviousAction;
 
   /**
-   * This private constructor creates an AutoCompleteSupport object which adds autocompletion functionality to the given <code>comboBox</code>. In
+   * This private constructor creates an AutocompleteSupport object which adds autocompletion functionality to the given <code>comboBox</code>. In
    * particular, a custom {@link ComboBoxModel} is installed behind the <code>comboBox</code> containing the given <code>items</code>. The
    * <code>filterator</code> is consulted in order to extract searchable text from each of the <code>items</code>. Non-null <code>format</code>
    * objects are used to convert ComboBoxModel elements to Strings and back again for various functions like filtering, editing, and rendering.
@@ -324,7 +324,7 @@ public final class AutoCompleteSupport<E> {
    * @param format
    *          converts combobox elements into strings and vice versa
    */
-  private AutoCompleteSupport(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator, Format format) {
+  private AutocompleteSupport(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator, Format format) {
     this.comboBox = comboBox;
     this.originalComboBoxEditable = comboBox.isEditable();
     this.originalModel = comboBox.getModel();
@@ -340,7 +340,7 @@ public final class AutoCompleteSupport<E> {
     this.doNotTogglePopup = !isTableCellEditor;
 
     // lock the items list for reading since we want to prevent writes
-    // from occurring until we fully initialize this AutoCompleteSupport
+    // from occurring until we fully initialize this AutocompleteSupport
     items.getReadWriteLock().readLock().lock();
     try {
       // build the ComboBoxModel capable of filtering its values
@@ -575,7 +575,7 @@ public final class AutoCompleteSupport<E> {
    * @throws IllegalStateException
    *           if this method is called from any Thread other than the Swing Event Dispatch Thread
    */
-  public static <E> AutoCompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items) {
+  public static <E> AutocompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items) {
     return install(comboBox, items, null);
   }
 
@@ -608,7 +608,7 @@ public final class AutoCompleteSupport<E> {
    * @throws IllegalStateException
    *           if this method is called from any Thread other than the Swing Event Dispatch Thread
    */
-  public static <E> AutoCompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator) {
+  public static <E> AutocompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator) {
     return install(comboBox, items, filterator, null);
   }
 
@@ -661,8 +661,8 @@ public final class AutoCompleteSupport<E> {
    * @throws IllegalStateException
    *           if this method is called from any Thread other than the Swing Event Dispatch Thread
    */
-  public static <E> AutoCompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator, Format format) {
-    return new AutoCompleteSupport<>(comboBox, items, filterator, format);
+  public static <E> AutocompleteSupport<E> install(JComboBox<E> comboBox, EventList<E> items, TextFilterator<? super E> filterator, Format format) {
+    return new AutocompleteSupport<>(comboBox, items, filterator, format);
   }
 
   /**
@@ -674,8 +674,8 @@ public final class AutoCompleteSupport<E> {
    *          a message to the programmer explaining the environmental invariant that was violated
    */
   private void throwIllegalStateException(String message) {
-    final String exceptionMsg = message + "\n" + "In order for AutoCompleteSupport to continue to "
-        + "work, the following invariants must be maintained after " + "AutoCompleteSupport.install() has been called:\n"
+    final String exceptionMsg = message + "\n" + "In order for AutocompleteSupport to continue to "
+        + "work, the following invariants must be maintained after " + "AutocompleteSupport.install() has been called:\n"
         + "* the ComboBoxModel may not be removed\n"
         + "* the AbstractDocument behind the JTextField can be changed but must be changed to some subclass of AbstractDocument\n"
         + "* the DocumentFilter on the AbstractDocument behind the JTextField may not be removed\n";
@@ -701,7 +701,7 @@ public final class AutoCompleteSupport<E> {
   }
 
   /**
-   * Returns the autocompleting {@link JComboBox} or <code>null</code> if {@link AutoCompleteSupport} has been {@link #uninstall}ed.
+   * Returns the autocompleting {@link JComboBox} or <code>null</code> if {@link AutocompleteSupport} has been {@link #uninstall}ed.
    */
   public JComboBox<E> getComboBox() {
     return this.comboBox;
@@ -1025,7 +1025,7 @@ public final class AutoCompleteSupport<E> {
   public void uninstall() {
 
     if (this.comboBox == null) {
-      throw new IllegalStateException("This AutoCompleteSupport has already been uninstalled");
+      throw new IllegalStateException("This AutocompleteSupport has already been uninstalled");
     }
 
     items.getReadWriteLock().readLock().lock();
@@ -1169,7 +1169,7 @@ public final class AutoCompleteSupport<E> {
     }
 
     /**
-     * Overridden because AutoCompleteSupport needs absolute control over when a JComboBox's ActionListeners are notified.
+     * Overridden because AutocompleteSupport needs absolute control over when a JComboBox's ActionListeners are notified.
      */
     @Override
     public void setSelectedItem(Object selected) {
@@ -1197,7 +1197,7 @@ public final class AutoCompleteSupport<E> {
 
     /**
      * Overridden because ListEvents produce ListDataEvents from this ComboBoxModel, which notify the BasicComboBoxUI of the data change, which in
-     * turn tries to set the text of the ComboBoxEditor to match the text of the selected item. We don't want that. AutoCompleteSupport is the
+     * turn tries to set the text of the ComboBoxEditor to match the text of the selected item. We don't want that. AutocompleteSupport is the
      * ultimate authority on the text value in the ComboBoxEditor. We override this method to set doNotChangeDocument to ensure that attempts to
      * change the ComboBoxEditor's Document are ignored and our control is absolute.
      */
@@ -1775,7 +1775,7 @@ public final class AutoCompleteSupport<E> {
   }
 
   /**
-   * This KeyListener handles the case when the user hits the backspace key and the {@link AutoCompleteSupport} is strict. Normally backspace would
+   * This KeyListener handles the case when the user hits the backspace key and the {@link AutocompleteSupport} is strict. Normally backspace would
    * delete the selected text, if it existed, or delete the character immediately preceding the cursor. In strict mode the ComboBoxEditor must always
    * contain a value from the ComboBoxModel, so the backspace key <strong>NEVER</strong> alters the Document. Rather, it alters the text selection to
    * include one more character to the left. This is a nice compromise, since the editor continues to retain a valid value from the ComboBoxModel, but
@@ -1882,8 +1882,8 @@ public final class AutoCompleteSupport<E> {
 
   /**
    * To emulate Firefox behaviour, all text in the ComboBoxEditor is selected from beginning to end when the ComboBoxEditor gains focus if the value
-   * returned from {@link AutoCompleteSupport#getSelectsTextOnFocusGain()} allows this behaviour. In addition, the JPopupMenu is hidden when the
-   * ComboBoxEditor loses focus if the value returned from {@link AutoCompleteSupport#getHidesPopupOnFocusLost()} allows this behaviour.
+   * returned from {@link AutocompleteSupport#getSelectsTextOnFocusGain()} allows this behaviour. In addition, the JPopupMenu is hidden when the
+   * ComboBoxEditor loses focus if the value returned from {@link AutocompleteSupport#getHidesPopupOnFocusLost()} allows this behaviour.
    */
   private class ComboBoxEditorFocusHandler extends FocusAdapter {
     @Override
@@ -2067,25 +2067,25 @@ public final class AutoCompleteSupport<E> {
   }
 
   /**
-   * This extension of DefaultCellEditor exists solely to provide a handle to the AutoCompleteSupport object that is providing autocompletion
+   * This extension of DefaultCellEditor exists solely to provide a handle to the AutocompleteSupport object that is providing autocompletion
    * capabilities to the JComboBox.
    */
   public static class AutoCompleteCellEditor<E> extends DefaultCellEditor {
-    private final AutoCompleteSupport<E> autoCompleteSupport;
+    private final AutocompleteSupport<E> autoCompleteSupport;
 
     /**
      * Construct a TableCellEditor using the JComboBox supplied by the given <code>autoCompleteSupport</code>. Specifically, the JComboBox is
-     * retrieved using {@link AutoCompleteSupport#getComboBox()}.
+     * retrieved using {@link AutocompleteSupport#getComboBox()}.
      */
-    public AutoCompleteCellEditor(AutoCompleteSupport<E> autoCompleteSupport) {
+    public AutoCompleteCellEditor(AutocompleteSupport<E> autoCompleteSupport) {
       super(autoCompleteSupport.getComboBox());
       this.autoCompleteSupport = autoCompleteSupport;
     }
 
     /**
-     * Returns the AutoCompleteSupport object that controls the autocompletion behaviour for the JComboBox.
+     * Returns the AutocompleteSupport object that controls the autocompletion behaviour for the JComboBox.
      */
-    public AutoCompleteSupport<E> getAutoCompleteSupport() {
+    public AutocompleteSupport<E> getAutoCompleteSupport() {
       return autoCompleteSupport;
     }
   }

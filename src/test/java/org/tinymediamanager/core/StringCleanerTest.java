@@ -81,7 +81,9 @@ public class StringCleanerTest extends BasicTest {
       { "T", "T", "Ţ", "Ŧ" }, //
       { "t", "t", "ţ", "ŧ" }, //
       { "Y", "Y", "Ý" }, //
-      { "y", "y", "ý", "ÿ" } //
+      { "y", "y", "ý", "ÿ" }, //
+      { "'", "'", "’", "‘", "ʼ", "ꞌ", "′", "׳" }, // single quote (CAUTION: RTL char!!!)
+      { "\"", "\"", "“", "”", "〃", "״" }, // double quote (CAUTION: RTL char!!!)
   };
 
   /**

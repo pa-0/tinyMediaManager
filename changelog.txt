@@ -1,3 +1,25 @@
+Version 5.1.1
+=======================
++ [Tools] added enhanced management of external tools like FFmpeg/yt-dlp:
+  these tools are now decoupled of tinyMediaManager itself which offers the benefit of earlier updates
++ [UI] added drag and drop for artwork files (thx @acdvorak)
+  You can now drag and drop artwork files from the file explorer directly into the editors/image chooser
+x [Movies/TV shows] always write playcount = 0 to the NFO when the movie/episode is not watched
+x [Movies/TV shows] prevent stuck threads on scrape errors #2824
+x [OFDB] refactor/reactivate german scraper
+x [TVDB] fixed scraping of episode original title #2810
+x [TVDB] fixed scraping of more alternative episode groups #2820
+x [TVDB] fixed translations for alternative orderings #2811
+x [TVDB] register as trailer provider
+x [hd-trailers] invalidate most links, since all outdated
+x [UI] fixed adding of new genres/tags via [+] button
+x [UI] fixed updating the TV show tree when changing an episode to uncategorized
+x [UI] do not remove scraping presets for episode thumbs #2807
+x [Scrapers] parse crew job/role information
+x [UDS] ignore AKA titles if found #2816
+x [renamer] also normalize apostrophes when ASCII replacement is used #2799
+
+
 Version 5.1
 =======================
 + [Experimental] undo renaming: you can now undo the last renamer run

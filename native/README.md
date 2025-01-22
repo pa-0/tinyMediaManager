@@ -24,7 +24,10 @@ docker run --rm -v "$PWD":/work dockcross/linux-arm64 bash -c '$CC  -ansi -std=g
 
 ## FFmpeg
 
-* Windows - 64 bit, https://www.gyan.dev/ffmpeg/builds/
-* Linux - 64 bit & armhf, https://johnvansickle.com/ffmpeg/
-* macOS - https://evermeet.cx/ffmpeg/
+* Windows 
+  * 64 bit, https://www.gyan.dev/ffmpeg/builds/
+* Linux 
+  * amd64/arm64 https://ffmpeg.martin-riedl.de/
+* macOS
+  * amd64/arm64 https://ffmpeg.martin-riedl.de/
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,8 @@ import org.tinymediamanager.ui.components.JHintCheckBox;
 import org.tinymediamanager.ui.components.JHintLabel;
 import org.tinymediamanager.ui.components.SquareIconButton;
 import org.tinymediamanager.ui.components.TmmLabel;
-import org.tinymediamanager.ui.components.combobox.AutoCompleteSupport;
 import org.tinymediamanager.ui.components.combobox.AutocompleteComboBox;
+import org.tinymediamanager.ui.components.combobox.AutocompleteSupport;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -158,7 +158,7 @@ class MovieUiSettingsPanel extends JPanel {
 
         // set text combobox text input to ""
         if (editorComponent instanceof JTextField) {
-          AutoCompleteSupport<String> autoCompleteSupport = cbRating.getAutoCompleteSupport();
+          AutocompleteSupport<String> autoCompleteSupport = cbRating.getAutoCompleteSupport();
           autoCompleteSupport.setFirstItem(null);
           cbRating.setSelectedIndex(0);
           autoCompleteSupport.removeFirstItem();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,10 +236,6 @@ public class TvShowScrapeMetadataDialog extends TmmDialog {
     if (cbEpisodeScraperConfig != null) {
       List<TvShowEpisodeScraperMetadataConfig> config = new ArrayList<>(
           TvShowModuleManager.getInstance().getSettings().getEpisodeScraperMetadataConfig());
-      // if automatic artwork scrape is not wanted, strip out artwork options
-      if (!TvShowModuleManager.getInstance().getSettings().isScrapeBestImage()) {
-        config.removeAll(TvShowEpisodeScraperMetadataConfig.valuesForType(ScraperMetadataConfig.Type.ARTWORK));
-      }
       cbEpisodeScraperConfig.setSelectedItems(config);
     }
     chckbxDoNotOverwrite.setSelected(TvShowModuleManager.getInstance().getSettings().isDoNotOverwriteExistingData());

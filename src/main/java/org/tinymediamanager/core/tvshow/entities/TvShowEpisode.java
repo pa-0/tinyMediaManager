@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -716,9 +716,10 @@ public class TvShowEpisode extends MediaEntity implements Comparable<TvShowEpiso
       firePropertyChange(TITLE_FOR_UI, existingEpisodeNumber.episode(), episode.episode());
     }
     else {
-      firePropertyChange(EPISODE, -1, episode.episode());
-      firePropertyChange(SEASON, -1, episode.season());
-      firePropertyChange(TITLE_FOR_UI, -1, episode.episode());
+      // use Integer.MIN_VALUE here to force update firing of the events
+      firePropertyChange(EPISODE, Integer.MIN_VALUE, episode.episode());
+      firePropertyChange(SEASON, Integer.MIN_VALUE, episode.season());
+      firePropertyChange(TITLE_FOR_UI, Integer.MIN_VALUE, episode.episode());
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -96,6 +98,7 @@ import org.tinymediamanager.scraper.entities.MediaEpisodeGroup;
 import org.tinymediamanager.scraper.entities.MediaEpisodeNumber;
 import org.tinymediamanager.scraper.entities.MediaType;
 import org.tinymediamanager.thirdparty.trakttv.TvShowSyncTraktTvTask;
+import org.tinymediamanager.ui.ArtworkDragAndDropListener;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.ShadowLayerUI;
@@ -115,8 +118,8 @@ import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.TmmObligatoryTextArea;
 import org.tinymediamanager.ui.components.TmmRoundTextArea;
 import org.tinymediamanager.ui.components.TmmTabbedPane;
-import org.tinymediamanager.ui.components.combobox.AutoCompleteSupport;
 import org.tinymediamanager.ui.components.combobox.AutocompleteComboBox;
+import org.tinymediamanager.ui.components.combobox.AutocompleteSupport;
 import org.tinymediamanager.ui.components.datepicker.DatePicker;
 import org.tinymediamanager.ui.components.datepicker.YearSpinner;
 import org.tinymediamanager.ui.components.table.MouseKeyboardSortingStrategy;
@@ -176,13 +179,13 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
   private JTextArea                                tfStudio;
   private JList<MediaGenres>                       listGenres;
   private AutocompleteComboBox<MediaGenres>        cbGenres;
-  private AutoCompleteSupport<MediaGenres>         cbGenresAutoCompleteSupport;
+  private AutocompleteSupport<MediaGenres>         cbGenresAutocompleteSupport;
   private JSpinner                                 spRating;
   private JComboBox<MediaCertification>            cbCertification;
   private JComboBox<MediaAiredStatus>              cbStatus;
 
   private AutocompleteComboBox<String>             cbTags;
-  private AutoCompleteSupport<String>              cbTagsAutoCompleteSupport;
+  private AutocompleteSupport<String>              cbTagsAutocompleteSupport;
   private JList<String>                            listTags;
   private JSpinner                                 spDateAdded;
   private JSpinner                                 spTop250;
@@ -375,6 +378,16 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
         }
       }
     });
+
+    // register dnd listener
+    registerDropTarget(lblPoster, tfPoster);
+    registerDropTarget(lblFanart, tfFanart);
+    registerDropTarget(lblBanner, tfBanner);
+    registerDropTarget(lblClearart, tfClearArt);
+    registerDropTarget(lblClearlogo, tfClearLogo);
+    registerDropTarget(lblThumb, tfThumb);
+    registerDropTarget(lblKeyart, tfKeyart);
+    registerDropTarget(lblCharacterart, tfCharacterart);
 
     tabbedPane.setSelectedIndex(selectedTab);
   }
@@ -726,7 +739,7 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
         details2Panel.add(btnMoveGenreDown, "cell 0 3,alignx right,aligny top");
 
         cbGenres = new AutocompleteComboBox(MediaGenres.values());
-        cbGenresAutoCompleteSupport = cbGenres.getAutoCompleteSupport();
+        cbGenresAutocompleteSupport = cbGenres.getAutoCompleteSupport();
         InputMap im = cbGenres.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object enterAction = im.get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         cbGenres.getActionMap().put(enterAction, new AddGenreAction());
@@ -758,7 +771,7 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
         details2Panel.add(btnMoveTagDown, "cell 3 3,alignx right,aligny top");
 
         cbTags = new AutocompleteComboBox<>(tvShowList.getTagsInTvShows());
-        cbTagsAutoCompleteSupport = cbTags.getAutoCompleteSupport();
+        cbTagsAutocompleteSupport = cbTags.getAutoCompleteSupport();
         InputMap im = cbTags.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object enterAction = im.get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         cbTags.getActionMap().put(enterAction, new AddTagAction());
@@ -1167,6 +1180,16 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
 
   }
 
+  private void registerDropTarget(ImageLabel imageLabel, JTextField textField) {
+    new DropTarget(imageLabel, new ArtworkDragAndDropListener(imageLabel) {
+      @Override
+      public void drop(DropTargetDropEvent dtde) {
+        super.drop(dtde);
+        updateArtworkUrl(imageLabel, textField);
+      }
+    });
+  }
+
   private void updateArtworkUrl(ImageLabel imageLabel, JTextField textField) {
     if (StringUtils.isNotBlank(imageLabel.getImageUrl())) {
       textField.setText(imageLabel.getImageUrl());
@@ -1548,9 +1571,9 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
 
         // set text combobox text input to ""
         if (editorComponent instanceof JTextField) {
-          cbGenresAutoCompleteSupport.setFirstItem(null);
+          cbGenresAutocompleteSupport.setFirstItem(null);
           cbGenres.setSelectedIndex(0);
-          cbGenresAutoCompleteSupport.removeFirstItem();
+          cbGenresAutocompleteSupport.removeFirstItem();
         }
       }
     }
@@ -1649,9 +1672,9 @@ public class TvShowEditorDialog extends AbstractEditorDialog {
 
         // set text combobox text input to ""
         if (editorComponent instanceof JTextField) {
-          cbTagsAutoCompleteSupport.setFirstItem("");
+          cbTagsAutocompleteSupport.setFirstItem("");
           cbTags.setSelectedIndex(0);
-          cbTagsAutoCompleteSupport.removeFirstItem();
+          cbTagsAutocompleteSupport.removeFirstItem();
         }
       }
     }

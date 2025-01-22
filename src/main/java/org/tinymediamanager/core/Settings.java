@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,8 @@ public final class Settings extends AbstractSettings {
   private boolean                                          useInternalMediaFramework    = true;
   private String                                           mediaFramework               = "";
   private Integer                                          ffmpegPercentage             = 50;
+  private boolean                                          useInternalYtDlp             = true;
+  private String                                           externalYtDlpPath            = "";
 
   private String                                           theme                        = "Light";
   private int                                              fontSize                     = 12;
@@ -968,6 +970,26 @@ public final class Settings extends AbstractSettings {
 
   public Integer getFfmpegPercentage() {
     return ffmpegPercentage;
+  }
+
+  public boolean isUseInternalYtDlp() {
+    return useInternalYtDlp;
+  }
+
+  public void setUseInternalYtDlp(boolean newValue) {
+    boolean oldValue = this.useInternalYtDlp;
+    this.useInternalYtDlp = newValue;
+    firePropertyChange("useInternalYtDlp", oldValue, newValue);
+  }
+
+  public String getExternalYtDlpPath() {
+    return externalYtDlpPath;
+  }
+
+  public void setExternalYtDlpPath(String newValue) {
+    String oldValue = this.externalYtDlpPath;
+    this.externalYtDlpPath = newValue;
+    firePropertyChange("externalYtDlpPath", oldValue, newValue);
   }
 
   public String getMediaPlayer() {

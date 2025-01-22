@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,6 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
           try {
             lock.writeLock().lock();
             artwork.addAll(artworkProvider.getArtwork(options));
-            lock.writeLock().unlock();
           }
           catch (MissingIdException ignored) {
             LOGGER.debug("no id found for scraper {}", artworkProvider.getProviderInfo());
@@ -194,6 +193,9 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
             LOGGER.error("getArtwork", e);
             MessageManager.instance.pushMessage(
                 new Message(Message.MessageLevel.ERROR, tvShow, "message.scrape.tvshowartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
+          }
+          finally {
+            lock.writeLock().unlock();
           }
         });
 
@@ -243,7 +245,6 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
           try {
             lock.writeLock().lock();
             artwork.addAll(artworkProvider.getArtwork(options));
-            lock.writeLock().unlock();
           }
           catch (MissingIdException ignored) {
             LOGGER.debug("no id found for scraper {}", artworkProvider.getProviderInfo());
@@ -255,6 +256,9 @@ public class TvShowMissingArtworkDownloadTask extends TmmThreadPool {
             LOGGER.error("getArtwork", e);
             MessageManager.instance.pushMessage(
                 new Message(Message.MessageLevel.ERROR, tvShow, "message.scrape.tvshowartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
+          }
+          finally {
+            lock.writeLock().unlock();
           }
         });
 

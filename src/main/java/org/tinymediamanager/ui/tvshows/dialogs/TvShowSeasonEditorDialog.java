@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import static org.tinymediamanager.core.MediaFileType.SEASON_THUMB;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -58,6 +60,7 @@ import org.tinymediamanager.core.tvshow.entities.TvShow;
 import org.tinymediamanager.core.tvshow.entities.TvShowSeason;
 import org.tinymediamanager.scraper.entities.MediaArtwork;
 import org.tinymediamanager.scraper.entities.MediaType;
+import org.tinymediamanager.ui.ArtworkDragAndDropListener;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.ShadowLayerUI;
@@ -136,6 +139,12 @@ public class TvShowSeasonEditorDialog extends AbstractEditorDialog {
       tfThumb.setText(tvShowSeason.getArtworkUrl(SEASON_THUMB));
       tfBanner.setText(tvShowSeason.getArtworkUrl(SEASON_BANNER));
     }
+
+    // register dnd listener
+    registerDropTarget(lblPoster, tfPoster);
+    registerDropTarget(lblFanart, tfFanart);
+    registerDropTarget(lblBanner, tfBanner);
+    registerDropTarget(lblThumb, tfThumb);
 
     tabbedPane.setSelectedIndex(selectedTab);
   }
@@ -383,6 +392,16 @@ public class TvShowSeasonEditorDialog extends AbstractEditorDialog {
           JComponent.WHEN_IN_FOCUSED_WINDOW);
       addDefaultButton(okButton);
     }
+  }
+
+  private void registerDropTarget(ImageLabel imageLabel, JTextField textField) {
+    new DropTarget(imageLabel, new ArtworkDragAndDropListener(imageLabel) {
+      @Override
+      public void drop(DropTargetDropEvent dtde) {
+        super.drop(dtde);
+        updateArtworkUrl(imageLabel, textField);
+      }
+    });
   }
 
   private void updateArtworkUrl(ImageLabel imageLabel, JTextField textField) {

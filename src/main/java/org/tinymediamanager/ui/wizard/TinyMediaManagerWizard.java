@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,8 @@ public class TinyMediaManagerWizard extends TmmDialog {
       activePanelIndex--;
       if (activePanelIndex > 0) {
         btnBack.setEnabled(true);
-      } else {
+      }
+      else {
         btnBack.setEnabled(false);
       }
       setNextButtonLabel();
@@ -158,7 +159,8 @@ public class TinyMediaManagerWizard extends TmmDialog {
     void setButtonLabel() {
       if (isLastPanel()) {
         putValue(NAME, TmmResourceBundle.getString("wizard.finish"));
-      } else {
+      }
+      else {
         putValue(NAME, TmmResourceBundle.getString("wizard.next"));
       }
     }
@@ -176,7 +178,8 @@ public class TinyMediaManagerWizard extends TmmDialog {
 
         // close the wizard
         TinyMediaManagerWizard.this.setVisible(false);
-      } else {
+      }
+      else {
         btnBack.setEnabled(true);
         setNextButtonLabel();
 

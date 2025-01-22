@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,12 +185,10 @@ public class FFmpeg {
       return response;
     }
     finally {
-      if (process != null) {
-        process.destroy();
-        // Process must be destroyed before closing streams, can't use try-with-resources,
-        // as resources are closing when leaving try block, before finally
-        IOUtils.close(process.getErrorStream());
-      }
+      process.destroy();
+      // Process must be destroyed before closing streams, can't use try-with-resources,
+      // as resources are closing when leaving try block, before finally
+      IOUtils.close(process.getErrorStream());
     }
   }
 

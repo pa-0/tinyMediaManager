@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 
 package org.tinymediamanager.scraper.thetvdb.entities;
 
+// https://api4.thetvdb.com/v4/seasons/types
 public enum SeasonType {
   DEFAULT("default"),
-  OFFICIAL("official"),
-  DVD("dvd"),
-  ABSOLUTE("absolute"),
-  ALTERNATE("alternate"),
-  REGIONAL("regional");
+  OFFICIAL("official"), // 1
+  DVD("dvd"), // 2
+  ABSOLUTE("absolute"), // 3
+  ALTERNATE("alternate"), // 4
+  REGIONAL("regional"), // 5
+  ALT_DVD("altdvd"), // 6
+  ALT_TWO("alttwo"); // 7
 
   private final String value;
 

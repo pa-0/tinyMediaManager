@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import static org.tinymediamanager.scraper.entities.MediaArtwork.MediaArtworkTyp
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -68,6 +70,7 @@ import org.tinymediamanager.core.movie.entities.MovieSet;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaScraper;
 import org.tinymediamanager.scraper.entities.MediaType;
+import org.tinymediamanager.ui.ArtworkDragAndDropListener;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.components.FlatButton;
@@ -573,6 +576,15 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
     tableMovies.getTableHeader().getColumnModel().getColumn(2).setHeaderValue(TmmResourceBundle.getString("metatag.watched"));
 
     tabbedPane.setSelectedIndex(selectedTab);
+
+    // register dnd listener
+    registerDropTarget(lblPoster, tfPoster);
+    registerDropTarget(lblFanart, tfFanart);
+    registerDropTarget(lblBanner, tfBanner);
+    registerDropTarget(lblClearart, tfClearArt);
+    registerDropTarget(lblClearlogo, tfClearLogo);
+    registerDropTarget(lblThumb, tfThumb);
+    registerDropTarget(lblDisc, tfDisc);
   }
 
   /**
@@ -596,6 +608,16 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
     }
 
     return ids;
+  }
+
+  private void registerDropTarget(ImageLabel imageLabel, JTextField textField) {
+    new DropTarget(imageLabel, new ArtworkDragAndDropListener(imageLabel) {
+      @Override
+      public void drop(DropTargetDropEvent dtde) {
+        super.drop(dtde);
+        updateArtworkUrl(imageLabel, textField);
+      }
+    });
   }
 
   private void updateArtworkUrl(ImageLabel imageLabel, JTextField textField) {
@@ -715,8 +737,7 @@ public class MovieSetEditorDialog extends AbstractEditorDialog {
   private void processArtwork(MediaFileType type, ImageLabel imageLabel, JTextField textField) {
     if (StringUtils.isAllBlank(imageLabel.getImagePath(), imageLabel.getImageUrl())
         && StringUtils.isNotBlank(movieSetToEdit.getArtworkFilename(type))) {
-      // artwork has been explicitly deleted - we need to remove the artwork url too, since this is a fallback
-      movieSetToEdit.removeArtworkUrl(type);
+      // artwork has been explicitly deleted
       movieSetToEdit.deleteMediaFiles(type);
     }
 

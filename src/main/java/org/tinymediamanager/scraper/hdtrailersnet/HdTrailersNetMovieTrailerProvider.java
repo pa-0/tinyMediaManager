@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,8 +136,8 @@ public class HdTrailersNetMovieTrailerProvider implements IMovieTrailerProvider 
             trailer.setUrl(url);
 
             trailer.setProvider(getProviderFromUrl(url));
-            // do not use apple trailers anymore - closed since 2023-09-01
-            if ("Apple".equalsIgnoreCase(trailer.getProvider())) {
+            // all with XXX are DEAD
+            if ("XXX".equalsIgnoreCase(trailer.getProvider())) {
               continue;
             }
 
@@ -183,19 +183,19 @@ public class HdTrailersNetMovieTrailerProvider implements IMovieTrailerProvider 
       source = "youtube";
     }
     else if (url.contains("apple.com")) {
-      source = "apple";
+      source = "XXX";// "apple";
     }
     else if (url.contains("aol.com")) {
-      source = "aol";
+      source = "XXX";// "aol"; // pdl.stream.aol.com; former moviefone
     }
     else if (url.contains("yahoo.com") || url.contains("yahoo.net")) {
-      source = "yahoo";
+      source = "XXX";// "yahoo";
     }
     else if (url.contains("hd-trailers.net")) {
       source = "hdtrailers";
     }
     else if (url.contains("moviefone.com")) {
-      source = "moviefone";
+      source = "XXX";// "moviefone";
     }
     else if (url.contains("mtv.com")) {
       source = "mtv";
@@ -203,8 +203,11 @@ public class HdTrailersNetMovieTrailerProvider implements IMovieTrailerProvider 
     else if (url.contains("ign.com")) {
       source = "ign";
     }
+    else if (url.contains("ordienetworks.com")) {
+      source = "XXX";// "ordienetworks";
+    }
     else if (url.contains("5min.com")) {
-      source = "5min";
+      source = "XXX";// "5min"; // moviefone old
     }
     return source;
   }

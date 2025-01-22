@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ import org.tinymediamanager.scraper.moviemeter.MovieMeterMovieMetadataProvider;
 import org.tinymediamanager.scraper.mpdbtv.MpdbMovieArtworkMetadataProvider;
 import org.tinymediamanager.scraper.mpdbtv.MpdbMovieMetadataProvider;
 import org.tinymediamanager.scraper.ofdb.OfdbMovieMetadataProvider;
-import org.tinymediamanager.scraper.ofdb.OfdbMovieTrailerProvider;
 import org.tinymediamanager.scraper.omdb.OmdbMovieMetadataProvider;
 import org.tinymediamanager.scraper.omdb.OmdbTvShowMetadataProvider;
 import org.tinymediamanager.scraper.opensubtitles_com.OpenSubtitlesComMovieSubtitleProvider;
@@ -160,7 +159,6 @@ public class MediaProviders {
     /////////////////////////////////////////////
     loadProvider(TmdbMovieTrailerProvider.class);
     loadProvider(HdTrailersNetMovieTrailerProvider.class);
-    loadProvider(OfdbMovieTrailerProvider.class);
     loadProvider(ImdbMovieTrailerProvider.class);
 
     // addons

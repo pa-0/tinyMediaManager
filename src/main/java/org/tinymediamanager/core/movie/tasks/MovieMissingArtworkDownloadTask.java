@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,6 @@ public class MovieMissingArtworkDownloadTask extends TmmThreadPool {
             try {
               lock.writeLock().lock();
               artwork.addAll(artworkProvider.getArtwork(options));
-              lock.writeLock().unlock();
             }
             catch (MissingIdException e) {
               LOGGER.debug("missing ID for scraper {}", artworkProvider.getProviderInfo().getId());
@@ -137,6 +136,9 @@ public class MovieMissingArtworkDownloadTask extends TmmThreadPool {
               LOGGER.error("getArtwork", e);
               MessageManager.instance.pushMessage(
                   new Message(MessageLevel.ERROR, movie, "message.scrape.moviesetartworkfailed", new String[] { ":", e.getLocalizedMessage() }));
+            }
+            finally {
+              lock.writeLock().unlock();
             }
           });
 

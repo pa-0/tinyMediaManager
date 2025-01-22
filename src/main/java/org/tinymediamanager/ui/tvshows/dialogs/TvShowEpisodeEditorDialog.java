@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -96,6 +98,7 @@ import org.tinymediamanager.scraper.kodi.KodiTvShowMetadataProvider;
 import org.tinymediamanager.scraper.rating.RatingProvider;
 import org.tinymediamanager.scraper.util.ListUtils;
 import org.tinymediamanager.scraper.util.MediaIdUtil;
+import org.tinymediamanager.ui.ArtworkDragAndDropListener;
 import org.tinymediamanager.ui.IconManager;
 import org.tinymediamanager.ui.MainWindow;
 import org.tinymediamanager.ui.ShadowLayerUI;
@@ -111,8 +114,8 @@ import org.tinymediamanager.ui.components.TmmLabel;
 import org.tinymediamanager.ui.components.TmmObligatoryTextArea;
 import org.tinymediamanager.ui.components.TmmRoundTextArea;
 import org.tinymediamanager.ui.components.TmmTabbedPane;
-import org.tinymediamanager.ui.components.combobox.AutoCompleteSupport;
 import org.tinymediamanager.ui.components.combobox.AutocompleteComboBox;
+import org.tinymediamanager.ui.components.combobox.AutocompleteSupport;
 import org.tinymediamanager.ui.components.combobox.MediaScraperComboBox;
 import org.tinymediamanager.ui.components.datepicker.DatePicker;
 import org.tinymediamanager.ui.components.table.TmmTable;
@@ -162,7 +165,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
   private ImageLabel                                 lblThumb;
   private JTextArea                                  taPlot;
   private AutocompleteComboBox<String>               cbTags;
-  private AutoCompleteSupport<String>                cbTagsAutoCompleteSupport;
+  private AutocompleteSupport<String>                cbTagsAutocompleteSupport;
   private JList<String>                              listTags;
   private AutocompleteComboBox<MediaSource>          cbMediaSource;
   private AutocompleteComboBox<TvShowEpisodeEdition> cbEdition;
@@ -245,6 +248,9 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
 
       tags.addAll(episodeToEdit.getTags());
     }
+
+    // register dnd listener
+    registerDropTarget(lblThumb, tfThumb);
 
     tabbedPane.setSelectedIndex(selectedTab);
   }
@@ -513,7 +519,7 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
 
         cbTags = new AutocompleteComboBox<>(tvShowList.getTagsInEpisodes());
         cbTags.setEditable(true);
-        cbTagsAutoCompleteSupport = cbTags.getAutoCompleteSupport();
+        cbTagsAutocompleteSupport = cbTags.getAutoCompleteSupport();
         details2Panel.add(cbTags, "cell 1 5 3 1,growx");
 
         InputMap im = cbTags.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -697,6 +703,16 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
           JComponent.WHEN_IN_FOCUSED_WINDOW);
       addButton(okButton);
     }
+  }
+
+  private void registerDropTarget(ImageLabel imageLabel, JTextField textField) {
+    new DropTarget(imageLabel, new ArtworkDragAndDropListener(imageLabel) {
+      @Override
+      public void drop(DropTargetDropEvent dtde) {
+        super.drop(dtde);
+        updateArtworkUrl(imageLabel, textField);
+      }
+    });
   }
 
   private void updateArtworkUrl(ImageLabel imageLabel, JTextField textField) {
@@ -1262,9 +1278,9 @@ public class TvShowEpisodeEditorDialog extends AbstractEditorDialog {
 
         // set text combobox text input to ""
         if (editorComponent instanceof JTextField) {
-          cbTagsAutoCompleteSupport.setFirstItem("");
+          cbTagsAutocompleteSupport.setFirstItem("");
           cbTags.setSelectedIndex(0);
-          cbTagsAutoCompleteSupport.removeFirstItem();
+          cbTagsAutocompleteSupport.removeFirstItem();
         }
       }
     }

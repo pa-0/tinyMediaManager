@@ -11,6 +11,8 @@
             <includes>
                 <include>LICENSE*</include>
                 <include>changelog*</include>
+                <!-- needs to be included to deploy it to /build on the webserver -->
+                <include>external-tools.json</include>
             </includes>
         </fileSet>
         <fileSet>

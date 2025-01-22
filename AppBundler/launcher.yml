@@ -4,6 +4,7 @@ classpath:
   - tmm.jar
   - /lib/*
   - /addons/*
+  - CONTENT_DIR/addons/*
 jvmOpts:
   - '-Xms64m'
   - '-Xmx512m'

@@ -19,6 +19,15 @@ public class ParserUtilsTest extends BasicTest {
     assertEqual("2012 | 2008", detectTY("2012.(2008).WEB-DL.1080p.mkv"));
     assertEqual("movie | 2008", detectTY("UNRATED movie 2008 DTS something bla bla.mkv"));
 
+    // remove AKA second titles (like Kodi)
+    assertEqual("Porcile | 1969", detectTY("Porcile AkA Pigsty (1969) -- Pier Paolo Pasolini"));
+    assertEqual("AkA | 2023", detectTY(" AkA (2023)"));
+    assertEqual("AkA | 2023", detectTY("AkA (2023)"));
+    assertEqual("AkA", detectTY("AkA"));
+    assertEqual("AkA", detectTY(" AkA "));
+    assertEqual("AkA whatever", detectTY(" AkA whatever"));// stripped name does not have space anylonger
+    assertEqual("A K A | 2006", detectTY("A.K.A. (2006)"));
+
     assertEqual("Cowboys", detectTY("Cowboys.4k.WEB-DL.MicroHD.1080p.AVC.AC3.5.1.SPA-AC3.5.1.ENG.SUBS.mkv"));
     assertEqual("Cowboys | 2020", detectTY("Cowboys.(2020).WEB-DL.MicroHD.1080p.AVC.AC3.5.1.SPA-AC3.5.1.ENG.SUBS.mkv"));
     assertEqual("Rocketman | 2019", detectTY("Rocketman-2019-MULTi-UHD-BluRay-2160p-HDR-TrueHD-Atmos-7-1-HEVC-DDR.mkv"));

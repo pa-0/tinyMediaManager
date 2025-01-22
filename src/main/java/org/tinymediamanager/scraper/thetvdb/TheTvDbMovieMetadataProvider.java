@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.tinymediamanager.scraper.thetvdb;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,11 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinymediamanager.core.entities.MediaGenres;
+import org.tinymediamanager.core.entities.MediaTrailer;
 import org.tinymediamanager.core.entities.Person;
 import org.tinymediamanager.core.movie.MovieSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.MediaMetadata;
 import org.tinymediamanager.scraper.MediaProviderInfo;
 import org.tinymediamanager.scraper.MediaSearchResult;
+import org.tinymediamanager.scraper.TrailerSearchAndScrapeOptions;
 import org.tinymediamanager.scraper.entities.MediaArtwork;
 import org.tinymediamanager.scraper.entities.MediaCertification;
 import org.tinymediamanager.scraper.entities.MediaLanguages;
@@ -41,6 +44,7 @@ import org.tinymediamanager.scraper.exceptions.HttpException;
 import org.tinymediamanager.scraper.exceptions.MissingIdException;
 import org.tinymediamanager.scraper.exceptions.ScrapeException;
 import org.tinymediamanager.scraper.interfaces.IMovieMetadataProvider;
+import org.tinymediamanager.scraper.interfaces.IMovieTrailerProvider;
 import org.tinymediamanager.scraper.thetvdb.entities.ArtworkBaseRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.CompanyBaseRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.ContentRating;
@@ -51,6 +55,7 @@ import org.tinymediamanager.scraper.thetvdb.entities.Release;
 import org.tinymediamanager.scraper.thetvdb.entities.SearchResultRecord;
 import org.tinymediamanager.scraper.thetvdb.entities.SearchResultResponse;
 import org.tinymediamanager.scraper.thetvdb.entities.SearchType;
+import org.tinymediamanager.scraper.thetvdb.entities.Trailer;
 import org.tinymediamanager.scraper.thetvdb.entities.Translation;
 import org.tinymediamanager.scraper.thetvdb.entities.TranslationResponse;
 import org.tinymediamanager.scraper.util.LanguageUtils;
@@ -66,7 +71,7 @@ import retrofit2.Response;
  *
  * @author Manuel Laggner
  */
-public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implements IMovieMetadataProvider {
+public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implements IMovieMetadataProvider, IMovieTrailerProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(TheTvDbMovieMetadataProvider.class);
 
   @Override
@@ -474,6 +479,25 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
       md.addMediaArt(ma);
     }
 
+    // trailer
+    for (Trailer trailer : ListUtils.nullSafe(movie.trailers)) {
+      MediaTrailer t = new MediaTrailer();
+      t.setName(trailer.name);
+      t.setId(String.valueOf(trailer.id));
+      t.setUrl(trailer.url);
+      if (trailer.url.contains("youtube")) {
+        t.setProvider("youtube");
+      }
+      t.setScrapedBy(getProviderInfo().getId());
+      if (Boolean.TRUE.equals(getProviderInfo().getConfig().getValueAsBool("scrapeLanguageNames"))) {
+        t.setQuality(LanguageUtils.getLocalizedLanguageNameFromLocalizedString(options.getLanguage().toLocale(), trailer.language));
+      }
+      else {
+        t.setQuality(trailer.language);
+      }
+      md.addTrailer(t);
+    }
+
     return md;
   }
 
@@ -482,4 +506,16 @@ public class TheTvDbMovieMetadataProvider extends TheTvDbMetadataProvider implem
     calendar.setTime(date);
     return calendar.get(Calendar.YEAR);
   }
+
+  @Override
+  public List<MediaTrailer> getTrailers(TrailerSearchAndScrapeOptions options) throws ScrapeException, MissingIdException {
+    LOGGER.debug("getTrailer(): {}", options);
+    if (options.getMediaType() != MediaType.MOVIE) {
+      return Collections.emptyList();
+    }
+    MovieSearchAndScrapeOptions saso = new MovieSearchAndScrapeOptions();
+    saso.setDataFromOtherOptions(options);
+    return getMetadata(saso).getTrailers();
+  }
+
 }

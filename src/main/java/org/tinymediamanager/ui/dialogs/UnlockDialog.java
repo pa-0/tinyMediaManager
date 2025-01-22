@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,8 @@ public class UnlockDialog extends TmmDialog {
             + TmmDateFormat.MEDIUM_DATE_FORMAT.format(Date.valueOf(validUntil)) + " <==");
         TmmFontHelper.changeFont(lblLicenseInfo, TmmFontHelper.H2, Font.BOLD);
         panelContent.add(lblLicenseInfo, "cell 0 1 2 1,grow, wmin 0");
-      } else {
+      }
+      else {
         JTextArea taPurchaseHint = new ReadOnlyTextArea(TmmResourceBundle.getString("tmm.license.hint2"));
         taPurchaseHint.setLineWrap(true);
         panelContent.add(taPurchaseHint, "cell 0 2 2 1,grow, wmin 0");
@@ -85,8 +86,8 @@ public class UnlockDialog extends TmmDialog {
           }
           catch (Exception e1) {
             LOGGER.error("FAQ", e1);
-            MessageManager.instance.pushMessage(new Message(Message.MessageLevel.ERROR, url, "message.erroropenurl",
-                new String[] { ":", e1.getLocalizedMessage() }));
+            MessageManager.instance
+                .pushMessage(new Message(Message.MessageLevel.ERROR, url, "message.erroropenurl", new String[] { ":", e1.getLocalizedMessage() }));
           }
         });
         panelContent.add(btnOpenPaddle, "cell 0 3 2 1");
@@ -104,7 +105,7 @@ public class UnlockDialog extends TmmDialog {
       taLicenseCode.setLineWrap(true);
 
       // prefill when called with active license
-      if(License.getInstance().isValidLicense()){
+      if (License.getInstance().isValidLicense()) {
         taLicenseCode.setText(License.getInstance().getLicenseCode());
       }
 

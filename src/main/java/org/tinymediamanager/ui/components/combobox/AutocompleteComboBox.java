@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2024 Manuel Laggner
+ * Copyright 2012 - 2025 Manuel Laggner
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.Collection;
 
 import javax.swing.JComboBox;
 
+import org.jetbrains.annotations.Nullable;
+
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -32,7 +34,7 @@ import ca.odell.glazedlists.GlazedLists;
  */
 public class AutocompleteComboBox<E> extends JComboBox<E> {
   private final EventList<E>     items;
-  private AutoCompleteSupport<E> autoCompleteSupport;
+  private AutocompleteSupport<E> autoCompleteSupport;
 
   public AutocompleteComboBox(Collection<E> items) {
     super();
@@ -50,10 +52,10 @@ public class AutocompleteComboBox<E> extends JComboBox<E> {
   private void init() {
     setEditable(true);
     this.items.sort((o1, o2) -> o1.toString().compareToIgnoreCase(o2.toString()));
-    this.autoCompleteSupport = AutoCompleteSupport.install(this, items);
+    this.autoCompleteSupport = AutocompleteSupport.install(this, items);
 
     // fix: add a focus listener for the editor component to request the focus
-    // AutoCompleteSupport removed that for some reason
+    // AutocompleteSupport removed that for some reason
     getEditor().getEditorComponent().addFocusListener(new FocusListener() {
       @Override
       public void focusGained(FocusEvent e) {
@@ -65,10 +67,21 @@ public class AutocompleteComboBox<E> extends JComboBox<E> {
         // nothing to do
       }
     });
-
   }
 
-  public AutoCompleteSupport<E> getAutoCompleteSupport() {
+  @Nullable
+  @Override
+  public Object getSelectedItem() {
+    Object selectedItem = super.getSelectedItem();
+
+    if (selectedItem == null && isEditable()) {
+      selectedItem = getEditor().getItem();
+    }
+
+    return selectedItem;
+  }
+
+  public AutocompleteSupport<E> getAutoCompleteSupport() {
     return autoCompleteSupport;
   }
 }

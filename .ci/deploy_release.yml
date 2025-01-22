@@ -6,7 +6,7 @@ variables:
   MAVEN_CLI_OPTS: "-s .ci/settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   LFTP_OPTIONS: "set sftp:connect-program 'ssh -a -x -o StrictHostKeyChecking=no'; set net:timeout 5; set net:max-retries 2; set net:reconnect-interval-base 5;"
-  TMM_VERSION: "5.1"
+  TMM_VERSION: "5.1.1"
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
