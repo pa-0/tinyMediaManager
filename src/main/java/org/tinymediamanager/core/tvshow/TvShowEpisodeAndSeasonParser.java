@@ -76,7 +76,7 @@ public class TvShowEpisodeAndSeasonParser {
       "[-._ ]+S(?:eason ?)?(\\d{1,3})(?:[ _.-]*(?:ep?[ .]?)?(\\d{1,3})(?:[_ ]?v\\d+)?)+(?=\\b|_)[^])}]*?(?:[\\[({][^])}]+[\\])}][_.-]*)*?(?:[\\[({][\\da-f]{8}[\\])}])",
       Pattern.CASE_INSENSITIVE);
   private static final Pattern ANIME_PREPEND3_1    = Pattern.compile(
-          "\\/s(\\d{1,3})e(\\d{1,3})\\-",
+          "\\/s(\\d{1,3})e(\\d{1,3})[\\- ]?",
           Pattern.CASE_INSENSITIVE);
   private static final Pattern ANIME_PREPEND4    = Pattern.compile(
       "((?=\\b|_))(?:[ _.-]*(?:ep?[ .]?)?(\\d{1,3})(?:[_ ]?v\\d+)?)+(?=\\b|_)[^])}]*?(?:[\\[({][^])}]+[\\])}][ _.-]*)*?(?:[\\[({][\\da-f]{8}[\\])}])",
