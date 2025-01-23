@@ -75,12 +75,15 @@ public class TvShowEpisodeAndSeasonParser {
   private static final Pattern ANIME_PREPEND3    = Pattern.compile(
       "[-._ ]+S(?:eason ?)?(\\d{1,3})(?:[ _.-]*(?:ep?[ .]?)?(\\d{1,3})(?:[_ ]?v\\d+)?)+(?=\\b|_)[^])}]*?(?:[\\[({][^])}]+[\\])}][_.-]*)*?(?:[\\[({][\\da-f]{8}[\\])}])",
       Pattern.CASE_INSENSITIVE);
-  private static final Pattern ANIME_PREPEND3_1    = Pattern.compile(
+  private static final Pattern ANIME_PREPEND3_1  = Pattern.compile(
           "\\/s(\\d{1,3})e(\\d{1,3})[\\- ]?",
           Pattern.CASE_INSENSITIVE);
   private static final Pattern ANIME_PREPEND4    = Pattern.compile(
       "((?=\\b|_))(?:[ _.-]*(?:ep?[ .]?)?(\\d{1,3})(?:[_ ]?v\\d+)?)+(?=\\b|_)[^])}]*?(?:[\\[({][^])}]+[\\])}][ _.-]*)*?(?:[\\[({][\\da-f]{8}[\\])}])",
       Pattern.CASE_INSENSITIVE);
+  private static final Pattern ANIME_PREPEND4_1  = Pattern.compile(
+          "/.* (\\d)nd season[ \\-_]*(\\d{1,3}) ?",
+          Pattern.CASE_INSENSITIVE);
 
   private static final Pattern ANIME_APPEND1     = Pattern.compile(
       "(Special|SP|OVA|OAV|Picture Drama)(?:[ _.-]*(?:ep?[ .]?)?(\\d{1,3})(?:[_ ]?v\\d+)?)+(?=\\b|_)[^\\])}]*?(?:[\\[({][^\\])}]+[\\])}][ _.-]*)*?[^\\]\\[)(}{\\\\/]*$",
@@ -745,13 +748,24 @@ public class TvShowEpisodeAndSeasonParser {
     if (result.episodes.isEmpty()) {
       // Anything else gets the default blank first capture, which sets the file to season 1
       m = ANIME_PREPEND4.matcher(name);
+      // more specific match for "2nd season" in file name
+      Matcher mFileName = ANIME_PREPEND4_1.matcher(name);
       if (m.find()) {
-        try {
-          int ep = Integer.parseInt(m.group(2));
-          result.episodes.add(ep);
-          result.season = 1;
+        if (mFileName.find()) {
+          try {
+            int ep = Integer.parseInt(mFileName.group(2));
+            result.episodes.add(ep);
+            result.season = Integer.parseInt(mFileName.group(1));
+          } catch (NumberFormatException nfe) {
+          }
         }
-        catch (NumberFormatException nfe) {
+        else {
+          try {
+            int ep = Integer.parseInt(m.group(2));
+            result.episodes.add(ep);
+            result.season = 1;
+          } catch (NumberFormatException nfe) {
+          }
         }
       }
     }
