@@ -312,6 +312,16 @@ public class TvShowTreePanel extends TmmListPanel {
     };
     tree.addMouseListener(mouseListener);
 
+    KeyListener enterKeyListener = new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        if (!e.isConsumed() && e.getKeyCode() == KeyEvent.VK_ENTER) {
+          new TvShowEditAction().actionPerformed(new ActionEvent(e, 0, ""));
+        }
+      }
+    };
+    tree.addKeyListener(enterKeyListener);
+
     // context menu by keyboard
     InputMap inputMap = tree.getInputMap(WHEN_FOCUSED);
     ActionMap actionMap = tree.getActionMap();
