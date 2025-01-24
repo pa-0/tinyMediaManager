@@ -102,7 +102,7 @@ public class ParserUtils {
 
     // try the badwords on the whole term (to apply regular expressions which apply on the whole term)
     String savedFname = fname;
-    for (String badword : badWords) {
+    for (String badword : ListUtils.nullSafe(badWords)) {
       fname = fname.replaceAll("(?i)" + badword, ""); // keep case, but replace insensitive
     }
 
@@ -218,7 +218,7 @@ public class ParserUtils {
         String lc = s[i].toLowerCase(Locale.ROOT);
 
         // check for bad words
-        for (String badword : badWords) {
+        for (String badword : ListUtils.nullSafe(badWords)) {
           if (lc.matches(badword)) {
             continue;
           }
