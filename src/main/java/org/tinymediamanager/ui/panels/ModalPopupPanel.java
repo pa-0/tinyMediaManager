@@ -20,23 +20,27 @@ import static javax.swing.SwingConstants.CENTER;
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyAdapter;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 
+import javax.annotation.Nullable;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
 import org.tinymediamanager.ui.EqualsLayout;
@@ -56,6 +60,9 @@ public class ModalPopupPanel extends JPanel {
   private final JLabel                   lblTitle;
   private final JPanel                   contentPanel;
   private final JPanel                   buttonPanel;
+
+  @Nullable private AbstractButton       closeButton;
+  @Nullable private AbstractButton       cancelButton;
 
   private Runnable                       onCloseHandler;
   private Runnable                       onCancelHandler;
@@ -123,6 +130,12 @@ public class ModalPopupPanel extends JPanel {
       buttonPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
       bottomPanel.add(buttonPanel, "cell 1 1");
     }
+
+    {
+      registerKeyboardAction(new CancelAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+      registerKeyboardAction(new SaveAction(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+      registerKeyboardAction(new SaveAction(), KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK), JComponent.WHEN_IN_FOCUSED_WINDOW);
+    }
   }
 
   @Override
@@ -159,22 +172,13 @@ public class ModalPopupPanel extends JPanel {
     });
     contentPanel.add(content);
 
-    if (panel.getCancelButton() != null) {
-      buttonPanel.add(panel.getCancelButton());
+    cancelButton = panel.getCancelButton();
+    closeButton = panel.getCloseButton();
+    if (cancelButton != null) {
+      buttonPanel.add(cancelButton);
     }
-    if (panel.getCloseButton() != null) {
-      buttonPanel.add(panel.getCloseButton());
-
-      for (Component component : content.getComponents()) {
-        component.addKeyListener(new KeyAdapter() {
-          @Override
-          public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-              panel.getCloseButton().doClick();
-            }
-          }
-        });
-      }
+    if (closeButton != null) {
+      buttonPanel.add(closeButton);
     }
   }
 
@@ -195,6 +199,24 @@ public class ModalPopupPanel extends JPanel {
   protected void onCancel() {
     if (onCancelHandler != null) {
       onCancelHandler.run();
+    }
+  }
+
+  private class SaveAction extends AbstractAction {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (closeButton != null) {
+        closeButton.doClick();
+      }
+    }
+  }
+
+  private class CancelAction extends AbstractAction {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if (cancelButton != null) {
+        cancelButton.doClick();
+      }
     }
   }
 }

@@ -396,7 +396,7 @@ public class MovieChooserDialog extends TmmDialog implements ActionListener {
         okButton.setIcon(IconManager.APPLY_INV);
         okButton.setActionCommand("OK");
         okButton.addActionListener(this);
-        addButton(okButton);
+        addDefaultButton(okButton);
       }
     }
 

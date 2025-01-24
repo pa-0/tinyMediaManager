@@ -279,13 +279,13 @@ public class MovieJmteExplorerDialog extends TmmDialog {
         JButton btnDone = new JButton(TmmResourceBundle.getString("Button.apply"));
         btnDone.setIcon(IconManager.APPLY_INV);
         btnDone.addActionListener(e -> setVisible(false));
-        addButton(btnDone);
+        addDefaultButton(btnDone);
       }
       else {
         JButton btnDone = new JButton(TmmResourceBundle.getString("Button.close"));
         btnDone.setIcon(IconManager.APPLY_INV);
         btnDone.addActionListener(e -> setVisible(false));
-        addButton(btnDone);
+        addDefaultButton(btnDone);
       }
     }
 

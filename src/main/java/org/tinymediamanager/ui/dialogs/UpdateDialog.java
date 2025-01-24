@@ -118,7 +118,7 @@ public class UpdateDialog extends TmmDialog {
         btnUpdate.setEnabled(false);
       }
 
-      addButton(btnUpdate);
+      addDefaultButton(btnUpdate);
     }
   }
 

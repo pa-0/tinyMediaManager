@@ -198,6 +198,10 @@ public class TvShowRenamerPreviewDialog extends TmmDialog {
       }
     }
     {
+      JButton btnClose = new JButton(TmmResourceBundle.getString("Button.close"));
+      btnClose.addActionListener(arg0 -> setVisible(false));
+      addButton(btnClose);
+
       JButton btnRename = new JButton(TmmResourceBundle.getString("Button.rename"));
       btnRename.setToolTipText(TmmResourceBundle.getString("movie.rename"));
       btnRename.addActionListener(arg0 -> {
@@ -214,11 +218,7 @@ public class TvShowRenamerPreviewDialog extends TmmDialog {
         TmmTaskManager.getInstance().addMainTask(renameTask);
         results.removeAll(selectedResults);
       });
-      addButton(btnRename);
-
-      JButton btnClose = new JButton(TmmResourceBundle.getString("Button.close"));
-      btnClose.addActionListener(arg0 -> setVisible(false));
-      addDefaultButton(btnClose);
+      addDefaultButton(btnRename);
     }
 
     // start calculation of the preview

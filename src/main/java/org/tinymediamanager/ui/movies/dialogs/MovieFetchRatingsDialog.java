@@ -75,7 +75,7 @@ public class MovieFetchRatingsDialog extends TmmDialog {
         storeDefaults();
         setVisible(false);
       });
-      addButton(btnOk);
+      addDefaultButton(btnOk);
     }
   }
 

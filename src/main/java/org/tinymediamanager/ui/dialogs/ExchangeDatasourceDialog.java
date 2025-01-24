@@ -100,7 +100,7 @@ public class ExchangeDatasourceDialog extends TmmDialog {
       });
       okButton.setIcon(IconManager.APPLY_INV);
 
-      addButton(okButton);
+      addDefaultButton(okButton);
     }
   }
 
